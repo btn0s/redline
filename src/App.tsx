@@ -68,7 +68,7 @@ export function App() {
     activeCommentId,
     setActiveCommentId,
     addComment,
-    updateCommentBody,
+    addReplyToComment,
     deleteComment,
     copyComments,
     hasComments,
@@ -306,8 +306,15 @@ export function App() {
                 />
               </div>
 
-              {showCommentSidebar ? (
-                <aside className="hidden w-[320px] min-w-0 flex-none lg:sticky lg:top-6 lg:block">
+              <aside
+                className={
+                  showCommentSidebar
+                    ? "hidden min-h-0 w-[320px] min-w-0 flex-none overflow-hidden opacity-100 transition-[width,opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] lg:sticky lg:top-6 lg:block"
+                    : "hidden min-h-0 w-0 min-w-0 flex-none translate-x-2 overflow-hidden opacity-0 transition-[width,opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none lg:sticky lg:top-6 lg:block"
+                }
+                aria-hidden={!showCommentSidebar}
+              >
+                <div className="w-[320px] min-w-[320px]">
                   <CommentSidebar
                     editor={editor}
                     comments={comments}
@@ -317,11 +324,11 @@ export function App() {
                     onSubmitNewComment={handleSubmitNewComment}
                     activeCommentId={activeCommentId}
                     setActiveCommentId={setActiveCommentId}
-                    updateCommentBody={updateCommentBody}
+                    addReplyToComment={addReplyToComment}
                     deleteComment={deleteComment}
                   />
-                </aside>
-              ) : null}
+                </div>
+              </aside>
 
               {showCommentSidebar ? (
                 <aside className="w-full min-w-0 lg:hidden">
@@ -334,7 +341,7 @@ export function App() {
                     onSubmitNewComment={handleSubmitNewComment}
                     activeCommentId={activeCommentId}
                     setActiveCommentId={setActiveCommentId}
-                    updateCommentBody={updateCommentBody}
+                    addReplyToComment={addReplyToComment}
                     deleteComment={deleteComment}
                   />
                 </aside>

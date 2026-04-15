@@ -1,10 +1,16 @@
 import { useState, useCallback } from "react"
 import type { Editor } from "@tiptap/core"
 
+export interface CommentMessage {
+  id: string
+  body: string
+  createdAt: string
+}
+
 export interface Comment {
   id: string
   quotedText: string
-  body: string
+  messages: CommentMessage[]
   createdAt: string
   /** First character position in the document (for ordering threads in the gutter). */
   anchorFrom: number
@@ -20,12 +26,13 @@ export function useComments() {
 
     const quotedText = editor.state.doc.textBetween(from, to, " ")
     const id = crypto.randomUUID()
+    const createdAt = new Date().toISOString()
 
     const comment: Comment = {
       id,
       quotedText,
-      body,
-      createdAt: new Date().toISOString(),
+      messages: [{ id: crypto.randomUUID(), body, createdAt }],
+      createdAt,
       anchorFrom: from,
     }
 
@@ -66,12 +73,50 @@ export function useComments() {
   }, [])
 
   const formatComments = useCallback(() => {
-    return comments.map((c) => `> ${c.quotedText}\n${c.body}`).join("\n\n")
+    return comments
+      .map((c) => {
+        const thread = c.messages.map((m) => `- ${m.body}`).join("\n")
+        return `> ${c.quotedText}\n${thread}`
+      })
+      .join("\n\n")
   }, [comments])
 
   const updateCommentBody = useCallback((commentId: string, body: string) => {
     setComments((prev) =>
-      prev.map((c) => (c.id === commentId ? { ...c, body } : c)),
+      prev.map((c) => {
+        if (c.id !== commentId || c.messages.length === 0) {
+          return c
+        }
+
+        const [first, ...rest] = c.messages
+        return {
+          ...c,
+          messages: [{ ...first, body }, ...rest],
+        }
+      }),
+    )
+  }, [])
+
+  const addReplyToComment = useCallback((commentId: string, body: string) => {
+    const trimmed = body.trim()
+    if (!trimmed) return
+
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              messages: [
+                ...c.messages,
+                {
+                  id: crypto.randomUUID(),
+                  body: trimmed,
+                  createdAt: new Date().toISOString(),
+                },
+              ],
+            }
+          : c,
+      ),
     )
   }, [])
 
@@ -86,6 +131,7 @@ export function useComments() {
     setActiveCommentId,
     addComment,
     updateCommentBody,
+    addReplyToComment,
     deleteComment,
     copyComments,
     hasComments: comments.length > 0,

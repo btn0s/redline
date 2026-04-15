@@ -20,7 +20,7 @@ interface CommentSidebarProps {
   onSubmitNewComment: (body: string) => void
   activeCommentId: string | null
   setActiveCommentId: (id: string | null) => void
-  updateCommentBody: (commentId: string, body: string) => void
+  addReplyToComment: (commentId: string, body: string) => void
   deleteComment: (editor: TiptapEditor, commentId: string) => void
 }
 
@@ -33,7 +33,7 @@ export function CommentSidebar({
   onSubmitNewComment,
   activeCommentId,
   setActiveCommentId,
-  updateCommentBody,
+  addReplyToComment,
   deleteComment,
 }: CommentSidebarProps) {
   const ordered = useMemo(
@@ -74,20 +74,17 @@ export function CommentSidebar({
             ref={(el) => {
               itemRefs.current[comment.id] = el
             }}
-            className="border-border/80 border-b last:border-b-0"
+            className="border-border/60 border-b py-2 last:border-b-0"
           >
             <ThreadRow
               comment={comment}
               isActive={activeCommentId === comment.id}
               onSelect={() => setActiveCommentId(comment.id)}
-              onUpdateBody={(body) => {
-                updateCommentBody(comment.id, body)
-                setActiveCommentId(null)
-              }}
+              onReply={(body) => addReplyToComment(comment.id, body)}
               onDelete={() => {
                 if (editor) deleteComment(editor, comment.id)
               }}
-              onCloseEdit={() => setActiveCommentId(null)}
+              onCloseThread={() => setActiveCommentId(null)}
             />
           </div>
         ))}
@@ -125,9 +122,9 @@ function NewCommentDraft({
   return (
     <div className="border-border/80 space-y-2 border-b pb-4">
       {quotedText ? (
-        <p className="text-muted-foreground text-[12px] leading-snug italic">
+        <blockquote className="text-muted-foreground border-border/70 bg-muted/30 rounded-r-md border-l-2 px-2 py-1 text-[11px] leading-snug italic">
           {quotedText}
-        </p>
+        </blockquote>
       ) : null}
       <Textarea
         autoFocus
@@ -161,83 +158,98 @@ function ThreadRow({
   comment,
   isActive,
   onSelect,
-  onUpdateBody,
+  onReply,
   onDelete,
-  onCloseEdit,
+  onCloseThread,
 }: {
   comment: Comment
   isActive: boolean
   onSelect: () => void
-  onUpdateBody: (body: string) => void
+  onReply: (body: string) => void
   onDelete: () => void
-  onCloseEdit: () => void
+  onCloseThread: () => void
 }) {
-  const [editBody, setEditBody] = useState(comment.body)
+  const [replyBody, setReplyBody] = useState("")
+  const latestMessage = comment.messages[comment.messages.length - 1]
 
-  useEffect(() => {
-    setEditBody(comment.body)
-  }, [comment.id, comment.body])
-
-  const handleSave = () => {
-    const trimmed = editBody.trim()
+  const handleReply = () => {
+    const trimmed = replyBody.trim()
     if (!trimmed) return
-    onUpdateBody(trimmed)
+    onReply(trimmed)
+    setReplyBody("")
   }
 
   const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && e.metaKey) {
       e.preventDefault()
-      handleSave()
+      handleReply()
     }
-    if (e.key === "Escape") onCloseEdit()
+    if (e.key === "Escape") onCloseThread()
   }
 
   if (isActive) {
     return (
       <article
-        className="-mx-1 rounded-md bg-muted/50 px-1 py-3"
+        className="space-y-2 rounded-lg bg-muted/40 p-2"
         aria-labelledby={`comment-${comment.id}-quote`}
       >
-        <p
+        <blockquote
           id={`comment-${comment.id}-quote`}
-          className="text-muted-foreground mb-1.5 text-[12px] leading-snug italic"
+          className="text-muted-foreground border-border/70 bg-muted/30 rounded-r-md border-l-2 px-2 py-1 text-[11px] leading-snug italic"
         >
           {comment.quotedText}
-        </p>
+        </blockquote>
+        <div className="space-y-1.5">
+          {comment.messages.map((message, index) => (
+            <p
+              key={message.id}
+              className={
+                index === 0
+                  ? "rounded-md bg-background/85 px-2 py-1.5 text-[12px] leading-relaxed whitespace-pre-wrap"
+                  : "rounded-md bg-background/70 px-2 py-1.5 text-[12px] leading-relaxed whitespace-pre-wrap"
+              }
+            >
+              {message.body}
+            </p>
+          ))}
+        </div>
         <Textarea
           autoFocus
-          value={editBody}
-          onChange={(e) => setEditBody(e.target.value)}
+          value={replyBody}
+          onChange={(e) => setReplyBody(e.target.value)}
           onKeyDown={handleKeyDown}
-          aria-label="Edit comment"
-          rows={3}
-          className="resize-none text-[13px]"
+          aria-label="Reply to comment thread"
+          rows={2}
+          placeholder="Reply…"
+          className="resize-none text-[12px]"
         />
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <button
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
+          <Button
             type="button"
-            className="text-destructive/90 hover:text-destructive text-[11px]"
+            variant="ghost"
+            size="sm"
+            className="text-destructive/90 hover:text-destructive h-7 px-2 text-[11px]"
             onClick={onDelete}
           >
-            Delete
-          </button>
+            Delete thread
+          </Button>
           <div className="flex gap-1.5">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="text-muted-foreground h-7 text-xs"
-              onClick={onCloseEdit}
+              className="text-muted-foreground h-7 px-2 text-[11px]"
+              onClick={onCloseThread}
             >
-              Cancel
+              Close
             </Button>
             <Button
               type="button"
               size="sm"
-              className="h-7 text-xs"
-              onClick={handleSave}
+              className="h-7 px-2 text-[11px]"
+              onClick={handleReply}
             >
-              Save
+              Reply
             </Button>
           </div>
         </div>
@@ -255,17 +267,20 @@ function ThreadRow({
           onSelect()
         }
       }}
-      className="-mx-1 cursor-pointer rounded-md px-1 py-3 transition-colors hover:bg-muted/30"
+      className="cursor-pointer rounded-md px-1 py-1.5 transition-colors hover:bg-muted/30"
       onClick={(e) => {
         e.stopPropagation()
         onSelect()
       }}
     >
-      <p className="text-muted-foreground mb-1.5 text-[12px] leading-snug italic">
+      <blockquote className="text-muted-foreground border-border/60 bg-muted/25 mb-1 rounded-r-md border-l-2 px-2 py-1 text-[11px] leading-snug italic">
         {comment.quotedText}
+      </blockquote>
+      <p className="text-[12px] leading-relaxed whitespace-pre-wrap">
+        {latestMessage?.body}
       </p>
-      <p className="text-[13px] leading-relaxed whitespace-pre-wrap">
-        {comment.body}
+      <p className="text-muted-foreground mt-1 text-[10px]">
+        {comment.messages.length} {comment.messages.length === 1 ? "message" : "messages"}
       </p>
     </div>
   )
