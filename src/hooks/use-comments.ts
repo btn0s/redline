@@ -20,12 +20,13 @@ export function useComments() {
   const [comments, setComments] = useState<Comment[]>([])
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
 
-  const addComment = useCallback((editor: Editor, body: string) => {
+  const addComment = useCallback(
+    (editor: Editor, body: string, existingCommentId?: string) => {
     const { from, to } = editor.state.selection
     if (from === to) return null
 
     const quotedText = editor.state.doc.textBetween(from, to, " ")
-    const id = crypto.randomUUID()
+    const id = existingCommentId ?? crypto.randomUUID()
     const createdAt = new Date().toISOString()
 
     const comment: Comment = {
@@ -36,11 +37,14 @@ export function useComments() {
       anchorFrom: from,
     }
 
-    editor.chain().focus().setCommentMark(id).run()
+    if (!existingCommentId) {
+      editor.chain().focus().setCommentMark(id).run()
+    }
     setComments((prev) => [...prev, comment])
     setActiveCommentId(id)
     return comment
-  }, [])
+  },
+  [])
 
   const deleteComment = useCallback((editor: Editor, commentId: string) => {
     const { doc } = editor.state

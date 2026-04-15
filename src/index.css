@@ -131,3 +131,28 @@
     @apply font-sans;
     }
 }
+
+.tiptap ::selection {
+  background-color: Highlight;
+  color: HighlightText;
+}
+
+.tiptap mark.comment-mark {
+  background-color: Highlight !important;
+  color: HighlightText !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  font-family: inherit !important;
+  display: inline !important;
+  vertical-align: baseline !important;
+  text-decoration: none !important;
+}
+
+.tiptap mark.comment-mark::selection {
+  background-color: Highlight !important;
+  color: HighlightText !important;
+}

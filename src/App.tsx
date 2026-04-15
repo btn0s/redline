@@ -77,6 +77,9 @@ export function App() {
   const [editor, setEditor] = useState<TiptapEditor | null>(null)
   const [showNewComment, setShowNewComment] = useState(false)
   const [draftQuotedText, setDraftQuotedText] = useState("")
+  const [pendingDraftCommentId, setPendingDraftCommentId] = useState<string | null>(
+    null,
+  )
   const shellRef = useRef<HTMLDivElement | null>(null)
   const editorPanelRef = useRef<HTMLDivElement | null>(null)
   const [floatingCommentTop, setFloatingCommentTop] = useState<number | null>(null)
@@ -95,6 +98,9 @@ export function App() {
       if (mark) {
         const commentId = mark.getAttribute("data-comment-id")
         if (commentId) {
+          if (commentId.startsWith("draft-")) {
+            return
+          }
           setActiveCommentId(commentId)
           setShowNewComment(false)
         }
@@ -109,18 +115,61 @@ export function App() {
     if (!editor) return
     const { from, to } = editor.state.selection
     if (from === to) return
+    const draftId = `draft-${crypto.randomUUID()}`
+    editor.chain().focus().setCommentMark(draftId).run()
+    setPendingDraftCommentId(draftId)
     setDraftQuotedText(editor.state.doc.textBetween(from, to, " "))
     setShowNewComment(true)
     setActiveCommentId(null)
   }, [editor, setActiveCommentId])
 
+  const clearDraftMark = useCallback(
+    (draftId: string) => {
+      if (!editor) return
+      const { doc } = editor.state
+      let markFrom: number | null = null
+      let markTo: number | null = null
+
+      doc.descendants((node, pos) => {
+        node.marks.forEach((mark) => {
+          if (
+            mark.type.name === "commentMark" &&
+            mark.attrs.commentId === draftId
+          ) {
+            if (markFrom === null) markFrom = pos
+            markTo = pos + node.nodeSize
+          }
+        })
+      })
+
+      if (markFrom !== null && markTo !== null) {
+        editor
+          .chain()
+          .focus()
+          .setTextSelection({ from: markFrom, to: markTo })
+          .unsetCommentMark()
+          .run()
+      }
+    },
+    [editor],
+  )
+
+  const handleCloseNewComment = useCallback(() => {
+    if (pendingDraftCommentId) {
+      clearDraftMark(pendingDraftCommentId)
+      setPendingDraftCommentId(null)
+    }
+    setShowNewComment(false)
+  }, [clearDraftMark, pendingDraftCommentId])
+
   const handleSubmitNewComment = useCallback(
     (body: string) => {
       if (!editor) return
-      addComment(editor, body)
+      addComment(editor, body, pendingDraftCommentId ?? undefined)
+      setPendingDraftCommentId(null)
       setShowNewComment(false)
     },
-    [editor, addComment],
+    [editor, addComment, pendingDraftCommentId],
   )
 
   useEffect(() => {
@@ -320,7 +369,7 @@ export function App() {
                     comments={comments}
                     showNewComment={showNewComment}
                     draftQuotedText={draftQuotedText}
-                    onCloseNewComment={() => setShowNewComment(false)}
+                    onCloseNewComment={handleCloseNewComment}
                     onSubmitNewComment={handleSubmitNewComment}
                     activeCommentId={activeCommentId}
                     setActiveCommentId={setActiveCommentId}
@@ -337,7 +386,7 @@ export function App() {
                     comments={comments}
                     showNewComment={showNewComment}
                     draftQuotedText={draftQuotedText}
-                    onCloseNewComment={() => setShowNewComment(false)}
+                    onCloseNewComment={handleCloseNewComment}
                     onSubmitNewComment={handleSubmitNewComment}
                     activeCommentId={activeCommentId}
                     setActiveCommentId={setActiveCommentId}

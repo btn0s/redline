@@ -42,8 +42,7 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
     return [
       "mark",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class:
-          "cursor-pointer rounded-sm bg-blue-600 px-0.5 font-medium text-white transition-colors hover:bg-blue-500",
+        class: "comment-mark cursor-pointer",
       }),
       0,
     ]
