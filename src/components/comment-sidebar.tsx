@@ -267,7 +267,7 @@ function ThreadRow({
           onSelect()
         }
       }}
-      className="cursor-pointer rounded-md px-1 py-1.5 transition-colors hover:bg-muted/30"
+      className="cursor-pointer rounded-md px-1 py-1.5 transition-[background-color] duration-150 ease-out hover:bg-muted/30"
       onClick={(e) => {
         e.stopPropagation()
         onSelect()

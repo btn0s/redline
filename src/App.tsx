@@ -53,7 +53,7 @@ function ThemeCycleButton() {
       onClick={cycle}
       title={`${label} — click to cycle`}
       aria-label={`Cycle color theme. Current: ${label}.`}
-      className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100"
+      className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
     >
       <Icon className="size-3.5 stroke-[1.5]" aria-hidden />
     </Button>
@@ -419,8 +419,8 @@ export function App() {
               <aside
                 className={
                   showCommentSidebar
-                    ? "hidden min-h-0 w-[320px] min-w-0 flex-none overflow-hidden opacity-100 transition-[width,opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] lg:sticky lg:top-6 lg:block"
-                    : "hidden min-h-0 w-0 min-w-0 flex-none translate-x-2 overflow-hidden opacity-0 transition-[width,opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none lg:sticky lg:top-6 lg:block"
+                    ? "hidden min-h-0 w-[320px] min-w-0 flex-none overflow-hidden opacity-100 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] lg:sticky lg:top-6 lg:block"
+                    : "hidden min-h-0 w-0 min-w-0 flex-none scale-[0.98] overflow-hidden opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none lg:sticky lg:top-6 lg:block"
                 }
                 aria-hidden={!showCommentSidebar}
               >
@@ -478,14 +478,14 @@ export function App() {
             onClick={() => void copyComments()}
             title="Copy all comments"
             aria-label="Copy all comments"
-            className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100"
+            className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
           >
             <Copy className="size-3.5 stroke-[1.5]" aria-hidden />
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100 dark:focus-visible:ring-white/30"
+              className="inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground outline-none transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] dark:text-zinc-400 dark:focus-visible:ring-white/30"
               title="Settings"
               aria-label="Settings"
             >

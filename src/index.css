@@ -205,3 +205,41 @@
     transform: scaleX(1.04);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .tiptap mark.comment-mark::before {
+    transition: none;
+  }
+}
+
+.bubble-menu {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition:
+    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble-menu {
+    transition: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [role="toolbar"] button:hover,
+  .bubble-menu button:hover {
+    background-color: var(--muted);
+  }
+
+  :is(.dark) [role="toolbar"] button:hover,
+  :is(.dark) .bubble-menu button:hover {
+    background-color: oklch(1 0 0 / 0.1);
+    color: var(--zinc-100, #f4f4f5);
+  }
+}
