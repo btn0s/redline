@@ -24,6 +24,10 @@ const CommentShortcuts = Extension.create({
         window.dispatchEvent(new CustomEvent("review-md:copy-comments"))
         return true
       },
+      "Mod-Shift-l": () => {
+        window.dispatchEvent(new CustomEvent("review-md:toggle-comments-panel"))
+        return true
+      },
     }
   },
 })

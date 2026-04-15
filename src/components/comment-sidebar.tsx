@@ -10,6 +10,7 @@ import type { Comment } from "@/hooks/use-comments"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Kbd } from "@/components/ui/kbd"
+import { cn } from "@/lib/utils"
 
 interface CommentSidebarProps {
   editor: TiptapEditor | null
@@ -22,6 +23,7 @@ interface CommentSidebarProps {
   setActiveCommentId: (id: string | null) => void
   addReplyToComment: (commentId: string, body: string) => void
   deleteComment: (editor: TiptapEditor, commentId: string) => void
+  hoveredCommentId: string | null
 }
 
 export function CommentSidebar({
@@ -35,6 +37,7 @@ export function CommentSidebar({
   setActiveCommentId,
   addReplyToComment,
   deleteComment,
+  hoveredCommentId,
 }: CommentSidebarProps) {
   const ordered = useMemo(
     () => [...comments].sort((a, b) => a.anchorFrom - b.anchorFrom),
@@ -50,7 +53,11 @@ export function CommentSidebar({
   }, [activeCommentId])
 
   return (
-    <div className="min-h-0 max-h-[min(58svh,32rem)] overflow-y-auto pr-1">
+    <div
+      className="min-h-0 max-h-[min(58svh,32rem)] overflow-y-auto pr-1"
+      data-redlines-sidebar=""
+      aria-label="Redlines"
+    >
       <div className="space-y-0">
         {showNewComment && (
           <NewCommentDraft
@@ -63,31 +70,39 @@ export function CommentSidebar({
 
         {ordered.length === 0 && !showNewComment && (
           <p className="text-muted-foreground py-2 text-[12px] leading-snug">
-            Select text, then Comment or{" "}
-            <Kbd className="text-[10px]">⌘⇧M</Kbd>.
+            Select text, then add a comment or{" "}
+            <Kbd className="text-[10px]">⌘⇧M</Kbd>. Open redlines with the
+            toolbar or <Kbd className="text-[10px]">⌘⇧L</Kbd> to browse threads.
           </p>
         )}
 
-        {ordered.map((comment) => (
-          <div
-            key={comment.id}
-            ref={(el) => {
-              itemRefs.current[comment.id] = el
-            }}
-            className="border-border/60 border-b py-2 last:border-b-0"
-          >
-            <ThreadRow
-              comment={comment}
-              isActive={activeCommentId === comment.id}
-              onSelect={() => setActiveCommentId(comment.id)}
-              onReply={(body) => addReplyToComment(comment.id, body)}
-              onDelete={() => {
-                if (editor) deleteComment(editor, comment.id)
+        {ordered.map((comment) => {
+          const dimForLink =
+            hoveredCommentId !== null && hoveredCommentId !== comment.id
+          return (
+            <div
+              key={comment.id}
+              data-comment-thread-id={comment.id}
+              ref={(el) => {
+                itemRefs.current[comment.id] = el
               }}
-              onCloseThread={() => setActiveCommentId(null)}
-            />
-          </div>
-        ))}
+              className={cn(
+                "border-border/60 border-b py-2 transition-opacity duration-150 ease-out last:border-b-0",
+                dimForLink && "opacity-[0.4]",
+              )}
+            >
+              <ThreadRow
+                comment={comment}
+                isActive={activeCommentId === comment.id}
+                onSelect={() => setActiveCommentId(comment.id)}
+                onReply={(body) => addReplyToComment(comment.id, body)}
+                onDelete={() => {
+                  if (editor) deleteComment(editor, comment.id)
+                }}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -160,14 +175,12 @@ function ThreadRow({
   onSelect,
   onReply,
   onDelete,
-  onCloseThread,
 }: {
   comment: Comment
   isActive: boolean
   onSelect: () => void
   onReply: (body: string) => void
   onDelete: () => void
-  onCloseThread: () => void
 }) {
   const [replyBody, setReplyBody] = useState("")
   const latestMessage = comment.messages[comment.messages.length - 1]
@@ -184,7 +197,6 @@ function ThreadRow({
       e.preventDefault()
       handleReply()
     }
-    if (e.key === "Escape") onCloseThread()
   }
 
   if (isActive) {
@@ -233,25 +245,14 @@ function ThreadRow({
           >
             Delete thread
           </Button>
-          <div className="flex gap-1.5">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground h-7 px-2 text-[11px]"
-              onClick={onCloseThread}
-            >
-              Close
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="h-7 px-2 text-[11px]"
-              onClick={handleReply}
-            >
-              Reply
-            </Button>
-          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="h-7 px-2 text-[11px]"
+            onClick={handleReply}
+          >
+            Reply
+          </Button>
         </div>
       </article>
     )

@@ -205,10 +205,62 @@ export function useComments(persistenceKey: string | null) {
     )
   }, [])
 
+  const syncCommentAnchorsFromEditor = useCallback((editor: Editor) => {
+    const nextAnchors = new Map<string, { anchorFrom: number; anchorTo: number }>()
+    editor.state.doc.descendants((node, pos) => {
+      for (const mark of node.marks) {
+        if (
+          mark.type.name !== "commentMark" ||
+          typeof mark.attrs.commentId !== "string"
+        ) {
+          continue
+        }
+        const commentId = mark.attrs.commentId
+        const nextFrom = pos
+        const nextTo = pos + node.nodeSize
+        const existing = nextAnchors.get(commentId)
+        if (!existing) {
+          nextAnchors.set(commentId, { anchorFrom: nextFrom, anchorTo: nextTo })
+          continue
+        }
+        nextAnchors.set(commentId, {
+          anchorFrom: Math.min(existing.anchorFrom, nextFrom),
+          anchorTo: Math.max(existing.anchorTo, nextTo),
+        })
+      }
+    })
+
+    setComments((prev) => {
+      let changed = false
+      const next = prev.map((comment) => {
+        const resolved = nextAnchors.get(comment.id)
+        if (!resolved) return comment
+        if (
+          comment.anchorFrom === resolved.anchorFrom &&
+          comment.anchorTo === resolved.anchorTo
+        ) {
+          return comment
+        }
+        changed = true
+        return {
+          ...comment,
+          anchorFrom: resolved.anchorFrom,
+          anchorTo: resolved.anchorTo,
+        }
+      })
+      return changed ? next : prev
+    })
+  }, [])
+
   const copyComments = useCallback(async () => {
     const text = formatComments()
     await navigator.clipboard.writeText(text)
   }, [formatComments])
+
+  const clearAllComments = useCallback(() => {
+    setComments([])
+    setActiveCommentId(null)
+  }, [])
 
   return {
     comments,
@@ -217,8 +269,10 @@ export function useComments(persistenceKey: string | null) {
     addComment,
     updateCommentBody,
     addReplyToComment,
+    syncCommentAnchorsFromEditor,
     deleteComment,
     copyComments,
+    clearAllComments,
     hasComments: comments.length > 0,
   }
 }

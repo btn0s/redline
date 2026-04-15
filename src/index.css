@@ -83,10 +83,12 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
     --highlight: oklch(0.93 0.12 99);
-    --annotation-pill-bg: oklch(0.52 0.19 258);
-    --annotation-pill-fg: oklch(0.99 0.01 258);
-    --annotation-pill-border: oklch(0.45 0.17 258);
-    --annotation-pill-shadow: oklch(0.25 0.08 258 / 0.35);
+    /* Redlines — editorial markup (dim until hover / linked highlight) */
+    --annotation-pill-bg: oklch(0.62 0.2 25);
+    --annotation-pill-fg: oklch(0.99 0.01 25);
+    --annotation-pill-border: oklch(0.52 0.18 25);
+    --annotation-pill-shadow: oklch(0.35 0.12 25 / 0.35);
+    --annotation-pill-dim: 0.34;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -123,10 +125,11 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
     --highlight: oklch(0.55 0.12 99);
-    --annotation-pill-bg: oklch(0.58 0.17 258);
-    --annotation-pill-fg: oklch(0.99 0.01 258);
-    --annotation-pill-border: oklch(0.72 0.12 258 / 0.45);
-    --annotation-pill-shadow: oklch(0 0 0 / 0.45);
+    --annotation-pill-bg: oklch(0.62 0.19 22);
+    --annotation-pill-fg: oklch(0.99 0.01 22);
+    --annotation-pill-border: oklch(0.72 0.14 22 / 0.55);
+    --annotation-pill-shadow: oklch(0 0 0 / 0.5);
+    --annotation-pill-dim: 0.38;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -185,7 +188,10 @@
     inset 0 1px 0 oklch(1 0 0 / 0.12);
   pointer-events: none;
   z-index: 5;
-  transition: transform 140ms var(--annotation-ease);
+  opacity: var(--annotation-pill-dim);
+  transition:
+    opacity 160ms var(--annotation-ease),
+    transform 140ms var(--annotation-ease);
 }
 
 .tiptap mark.comment-mark::after {
@@ -202,8 +208,14 @@
 
 @media (hover: hover) and (pointer: fine) {
   .tiptap mark.comment-mark:hover::before {
+    opacity: 1;
     transform: scaleX(1.04);
   }
+}
+
+.tiptap mark.comment-mark.comment-mark--hot::before {
+  opacity: 1 !important;
+  transform: scaleX(1.04);
 }
 
 @media (prefers-reduced-motion: reduce) {
