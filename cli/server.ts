@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "http"
-import { readFileSync, writeFileSync, existsSync } from "fs"
+import { createHash } from "crypto"
+import { readFileSync, writeFileSync, existsSync, statSync } from "fs"
 import { join, dirname, basename, relative } from "path"
 import { fileURLToPath } from "url"
 
@@ -11,6 +12,39 @@ export function startServer(filePath: string, port: number): Promise<string> {
 
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url!, `http://localhost:${port}`)
+
+    // API: file metadata (mtime/size/rev)
+    if (url.pathname === "/api/file/meta" && req.method === "GET") {
+      try {
+        const st = statSync(filePath)
+        const rev = createHash("sha256")
+          .update(`${st.mtimeMs}:${st.size}`)
+          .digest("hex")
+          .slice(0, 16)
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        })
+        res.end(
+          JSON.stringify({
+            mtimeMs: st.mtimeMs,
+            size: st.size,
+            rev,
+          }),
+        )
+      } catch (e) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        })
+        res.end(
+          JSON.stringify({
+            error: e instanceof Error ? e.message : "Failed to stat file",
+          }),
+        )
+      }
+      return
+    }
 
     // API: read file
     if (url.pathname === "/api/file" && req.method === "GET") {

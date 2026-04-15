@@ -7,13 +7,48 @@ interface FileData {
   path?: string
 }
 
+export interface FileMeta {
+  mtimeMs: number
+  size: number
+  rev: string
+}
+
+function parseFileMeta(data: unknown): FileMeta | null {
+  if (!data || typeof data !== "object") return null
+  const o = data as Record<string, unknown>
+  if (
+    typeof o.mtimeMs !== "number" ||
+    typeof o.size !== "number" ||
+    typeof o.rev !== "string"
+  ) {
+    return null
+  }
+  return { mtimeMs: o.mtimeMs, size: o.size, rev: o.rev }
+}
+
 export function useFile() {
   const [file, setFile] = useState<FileData | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [baseMeta, setBaseMeta] = useState<FileMeta | null>(null)
+  const [latestMeta, setLatestMeta] = useState<FileMeta | null>(null)
+  const [workingMarkdown, setWorkingMarkdown] = useState<string | null>(null)
+  const [contentReloadNonce, setContentReloadNonce] = useState(0)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
+
+  const notifyMarkdownChange = useCallback((markdown: string) => {
+    setWorkingMarkdown(markdown)
+  }, [])
+
+  useEffect(() => {
+    if (file) {
+      setWorkingMarkdown(file.content)
+    } else {
+      setWorkingMarkdown(null)
+    }
+  }, [file])
 
   useEffect(() => {
     setLoadError(null)
@@ -44,7 +79,25 @@ export function useFile() {
         ) {
           throw new Error("Invalid response from /api/file")
         }
-        setFile(data as FileData)
+        return data as FileData
+      })
+      .then(async (loaded) => {
+        setFile(loaded)
+        const metaRes = await fetch("/api/file/meta")
+        if (!metaRes.ok) return
+        const metaText = await metaRes.text()
+        let metaJson: unknown
+        try {
+          metaJson =
+            metaText.trim() === "" ? null : JSON.parse(metaText)
+        } catch {
+          return
+        }
+        const meta = parseFileMeta(metaJson)
+        if (meta) {
+          setBaseMeta(meta)
+          setLatestMeta(meta)
+        }
       })
       .catch((e: unknown) => {
         setLoadError(e instanceof Error ? e.message : "Failed to load file")
@@ -54,18 +107,122 @@ export function useFile() {
     }
   }, [])
 
+  useEffect(() => {
+    if (loadError || !file) return
+
+    const poll = async () => {
+      try {
+        const r = await fetch("/api/file/meta")
+        if (!r.ok) return
+        const text = await r.text()
+        let data: unknown
+        try {
+          data = text.trim() === "" ? null : JSON.parse(text)
+        } catch {
+          return
+        }
+        const meta = parseFileMeta(data)
+        if (meta) setLatestMeta(meta)
+      } catch {
+        // ignore network errors during poll
+      }
+    }
+
+    void poll()
+    const id = window.setInterval(poll, 2000)
+    return () => window.clearInterval(id)
+  }, [loadError, file])
+
   const save = useCallback((content: string) => {
     clearTimeout(timeoutRef.current)
     timeoutRef.current = setTimeout(async () => {
       setSaving(true)
-      await fetch("/api/file", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      })
-      setSaving(false)
+      try {
+        const res = await fetch("/api/file", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        })
+        if (res.ok) {
+          setFile((f) => (f ? { ...f, content } : f))
+          setWorkingMarkdown(content)
+          const metaRes = await fetch("/api/file/meta")
+          if (metaRes.ok) {
+            const metaText = await metaRes.text()
+            let metaJson: unknown
+            try {
+              metaJson =
+                metaText.trim() === "" ? null : JSON.parse(metaText)
+            } catch {
+              return
+            }
+            const meta = parseFileMeta(metaJson)
+            if (meta) {
+              setBaseMeta(meta)
+              setLatestMeta(meta)
+            }
+          }
+        }
+      } finally {
+        setSaving(false)
+      }
     }, 500)
   }, [])
 
-  return { file, save, saving, loadError }
+  const reloadFromDisk = useCallback(async () => {
+    const res = await fetch("/api/file")
+    const text = await res.text()
+    let data: unknown
+    try {
+      data = text.trim() === "" ? null : JSON.parse(text)
+    } catch {
+      throw new Error(
+        res.ok
+          ? "Invalid JSON from /api/file."
+          : `Server error (${res.status})`,
+      )
+    }
+    if (!res.ok || !data || typeof data !== "object" || !("content" in data)) {
+      throw new Error("Failed to reload file")
+    }
+    setFile(data as FileData)
+    const metaRes = await fetch("/api/file/meta")
+    if (metaRes.ok) {
+      const metaText = await metaRes.text()
+      try {
+        const metaJson =
+          metaText.trim() === "" ? null : JSON.parse(metaText)
+        const meta = parseFileMeta(metaJson)
+        if (meta) {
+          setBaseMeta(meta)
+          setLatestMeta(meta)
+        }
+      } catch {
+        // ignore meta parse errors; file content still reloaded below
+      }
+    }
+    setContentReloadNonce((n) => n + 1)
+  }, [])
+
+  const dirty =
+    file !== null &&
+    workingMarkdown !== null &&
+    workingMarkdown !== file.content
+
+  const isOutdated =
+    baseMeta !== null &&
+    latestMeta !== null &&
+    baseMeta.rev !== latestMeta.rev
+
+  return {
+    file,
+    save,
+    saving,
+    loadError,
+    isOutdated,
+    reloadFromDisk,
+    notifyMarkdownChange,
+    dirty,
+    contentReloadNonce,
+  }
 }

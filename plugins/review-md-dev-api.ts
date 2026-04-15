@@ -1,9 +1,19 @@
+import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 import type { Plugin } from "vite"
 
+function fileMetaFromStats(st: fs.Stats) {
+  const rev = crypto
+    .createHash("sha256")
+    .update(`${st.mtimeMs}:${st.size}`)
+    .digest("hex")
+    .slice(0, 16)
+  return { mtimeMs: st.mtimeMs, size: st.size, rev }
+}
+
 /**
- * In development, serves GET/PUT /api/file from disk when REVIEW_MD_FILE is set
+ * In development, serves GET/PUT /api/file and GET /api/file/meta from disk when REVIEW_MD_FILE is set
  * (path relative to cwd or absolute). Lets `pnpm dev` work without the CLI.
  */
 export function reviewMdDevApi(fileFromEnv: string): Plugin {
@@ -17,7 +27,7 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const pathname = req.url?.split("?")[0] ?? ""
-        if (pathname !== "/api/file") {
+        if (pathname !== "/api/file" && pathname !== "/api/file/meta") {
           next()
           return
         }
@@ -29,6 +39,34 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
           res.setHeader("Access-Control-Allow-Headers", "Content-Type")
           res.statusCode = 204
           res.end()
+          return
+        }
+
+        if (pathname === "/api/file/meta" && req.method === "GET") {
+          try {
+            if (!fs.existsSync(resolved)) {
+              res.setHeader("Content-Type", "application/json")
+              res.statusCode = 404
+              res.end(
+                JSON.stringify({
+                  error: `File not found: ${resolved}. Create it or fix REVIEW_MD_FILE.`,
+                }),
+              )
+              return
+            }
+            const st = fs.statSync(resolved)
+            res.setHeader("Content-Type", "application/json")
+            res.statusCode = 200
+            res.end(JSON.stringify(fileMetaFromStats(st)))
+          } catch (e) {
+            res.setHeader("Content-Type", "application/json")
+            res.statusCode = 500
+            res.end(
+              JSON.stringify({
+                error: e instanceof Error ? e.message : "Failed to stat file",
+              }),
+            )
+          }
           return
         }
 

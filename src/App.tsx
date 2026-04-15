@@ -81,7 +81,17 @@ function resolveCommentRange(
 }
 
 export function App() {
-  const { file, save, saving, loadError } = useFile()
+  const {
+    file,
+    save,
+    saving,
+    loadError,
+    isOutdated,
+    reloadFromDisk,
+    notifyMarkdownChange,
+    dirty,
+    contentReloadNonce,
+  } = useFile()
   const commentsPersistenceKey = file ? (file.path ?? file.filename) : null
   const {
     comments,
@@ -107,6 +117,31 @@ export function App() {
   const handleEditorReady = useCallback((ed: TiptapEditor) => {
     setEditor(ed)
   }, [])
+
+  const handleMarkdownUpdate = useCallback(
+    (md: string) => {
+      notifyMarkdownChange(md)
+      save(md)
+    },
+    [notifyMarkdownChange, save],
+  )
+
+  const handleReloadFromDisk = useCallback(() => {
+    const run = async () => {
+      if (dirty) {
+        const ok = window.confirm(
+          "Discard local edits and reload the latest file from disk?",
+        )
+        if (!ok) return
+      }
+      try {
+        await reloadFromDisk()
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    void run()
+  }, [dirty, reloadFromDisk])
 
   useEffect(() => {
     if (!editor || comments.length === 0) return
@@ -435,6 +470,18 @@ export function App() {
             >
               {pathLeft}
             </span>
+            {isOutdated ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-5 shrink-0 rounded-full px-2 py-0 text-[0.625rem] font-medium"
+                onClick={handleReloadFromDisk}
+                title="File changed on disk — reload to view latest"
+              >
+                Outdated · Reload
+              </Button>
+            ) : null}
             {saving && (
               <span
                 role="status"
@@ -473,7 +520,8 @@ export function App() {
               >
                 <Editor
                   content={file.content}
-                  onUpdate={save}
+                  onUpdate={handleMarkdownUpdate}
+                  contentReloadNonce={contentReloadNonce}
                   onEditorReady={handleEditorReady}
                   bubbleMenuSuppressed
                 />

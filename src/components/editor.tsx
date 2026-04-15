@@ -32,6 +32,8 @@ interface EditorProps {
   content: string
   onUpdate: (markdown: string) => void
   onEditorReady: (editor: TiptapEditor) => void
+  /** Increment to replace the document from `content` (e.g. reload from disk). */
+  contentReloadNonce?: number
   /** Hide the selection bubble while the comment form or another overlay is open. */
   bubbleMenuSuppressed?: boolean
   onAddCommentFromBubble?: () => void
@@ -41,10 +43,12 @@ export function Editor({
   content,
   onUpdate,
   onEditorReady,
+  contentReloadNonce = 0,
   bubbleMenuSuppressed = false,
   onAddCommentFromBubble,
 }: EditorProps) {
   const lastMarkdownRef = useRef(content)
+  const lastReloadNonceRef = useRef(0)
 
   useEffect(() => {
     lastMarkdownRef.current = content
@@ -88,6 +92,18 @@ export function Editor({
   useEffect(() => {
     if (editor) onEditorReady(editor)
   }, [editor, onEditorReady])
+
+  useEffect(() => {
+    if (!editor) return
+    if (contentReloadNonce === 0) {
+      lastReloadNonceRef.current = 0
+      return
+    }
+    if (contentReloadNonce === lastReloadNonceRef.current) return
+    lastReloadNonceRef.current = contentReloadNonce
+    editor.commands.setContent(content, { emitUpdate: false })
+    lastMarkdownRef.current = content
+  }, [contentReloadNonce, content, editor])
 
   return (
     <>

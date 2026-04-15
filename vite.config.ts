@@ -10,12 +10,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "")
   const reviewMdFile = env.REVIEW_MD_FILE?.trim()
   const useDevFileApi = Boolean(reviewMdFile)
+  const resolvedReviewMdFile =
+    mode === "development" && reviewMdFile
+      ? path.isAbsolute(reviewMdFile)
+        ? path.normalize(reviewMdFile)
+        : path.resolve(process.cwd(), reviewMdFile)
+      : null
 
-  if (mode === "development" && useDevFileApi) {
-    const resolved = path.isAbsolute(reviewMdFile!)
-      ? path.normalize(reviewMdFile!)
-      : path.resolve(process.cwd(), reviewMdFile!)
-    console.info(`[review-md] dev: REVIEW_MD_FILE → ${resolved}`)
+  if (mode === "development" && useDevFileApi && resolvedReviewMdFile) {
+    console.info(`[review-md] dev: REVIEW_MD_FILE → ${resolvedReviewMdFile}`)
   }
 
   return {
@@ -30,7 +33,13 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: useDevFileApi
-      ? {}
+      ? resolvedReviewMdFile
+        ? {
+            watch: {
+              ignored: [resolvedReviewMdFile],
+            },
+          }
+        : {}
       : {
           proxy: {
             "/api": "http://localhost:4700",
