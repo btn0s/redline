@@ -91,25 +91,78 @@ export function App() {
   useEffect(() => {
     if (!editor) return
     const dom = editor.view.dom
-
-    const onMarkClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      const mark = target.closest("mark[data-comment-id]")
-      if (mark) {
-        const commentId = mark.getAttribute("data-comment-id")
-        if (commentId) {
-          if (commentId.startsWith("draft-")) {
-            return
-          }
-          setActiveCommentId(commentId)
-          setShowNewComment(false)
+    const getCommentMarkFromEvent = (event: MouseEvent) => {
+      const path = event.composedPath()
+      for (const node of path) {
+        if (
+          node instanceof HTMLElement &&
+          node.matches("mark.comment-mark[data-comment-id]")
+        ) {
+          return node
         }
       }
+
+      if (event.target instanceof HTMLElement) {
+        const closest = event.target.closest("mark.comment-mark[data-comment-id]")
+        return closest instanceof HTMLElement ? closest : null
+      }
+
+      return null
     }
 
+    const openThreadFromMark = (mark: HTMLElement | null) => {
+      if (!mark) return
+      const commentId = mark.getAttribute("data-comment-id")
+      if (!commentId || commentId.startsWith("draft-")) return
+      setActiveCommentId(commentId)
+      setShowNewComment(false)
+    }
+
+    const onMarkMouseDown = (event: MouseEvent) => {
+      const mark = getCommentMarkFromEvent(event)
+      if (!mark) return
+      event.preventDefault()
+      openThreadFromMark(mark)
+    }
+
+    const onMarkClick = (event: MouseEvent) => {
+      openThreadFromMark(getCommentMarkFromEvent(event))
+    }
+
+    dom.addEventListener("mousedown", onMarkMouseDown)
     dom.addEventListener("click", onMarkClick)
-    return () => dom.removeEventListener("click", onMarkClick)
+    return () => {
+      dom.removeEventListener("mousedown", onMarkMouseDown)
+      dom.removeEventListener("click", onMarkClick)
+    }
   }, [editor, setActiveCommentId])
+
+  useEffect(() => {
+    if (!editor) return
+    const marks = editor.view.dom.querySelectorAll<HTMLElement>(
+      "mark.comment-mark[data-comment-id]",
+    )
+    const threadMessageCountById = new Map(
+      comments.map((comment) => [comment.id, comment.messages.length]),
+    )
+
+    marks.forEach((mark) => {
+      const commentId = mark.getAttribute("data-comment-id")
+      if (!commentId) return
+      if (commentId.startsWith("draft-")) {
+        mark.setAttribute("data-comment-count", "1")
+        mark.setAttribute("data-comment-label", "1 comment")
+        return
+      }
+
+      const messageCount = threadMessageCountById.get(commentId) ?? 1
+      mark.setAttribute("data-comment-count", String(messageCount))
+      mark.setAttribute(
+        "data-comment-label",
+        `${messageCount} ${messageCount === 1 ? "comment" : "comments"}`,
+      )
+    })
+  }, [editor, comments, showNewComment, pendingDraftCommentId])
 
   const handleAddCommentClick = useCallback(() => {
     if (!editor) return

@@ -83,6 +83,11 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
     --highlight: oklch(0.93 0.12 99);
+    --annotation-pill-bg: oklch(0.52 0.19 258);
+    --annotation-pill-fg: oklch(0.99 0.01 258);
+    --annotation-pill-border: oklch(0.45 0.17 258);
+    --annotation-pill-shadow: oklch(0.25 0.08 258 / 0.35);
+    --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .dark {
@@ -118,6 +123,11 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
     --highlight: oklch(0.55 0.12 99);
+    --annotation-pill-bg: oklch(0.58 0.17 258);
+    --annotation-pill-fg: oklch(0.99 0.01 258);
+    --annotation-pill-border: oklch(0.72 0.12 258 / 0.45);
+    --annotation-pill-shadow: oklch(0 0 0 / 0.45);
+    --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @layer base {
@@ -138,8 +148,8 @@
 }
 
 .tiptap mark.comment-mark {
-  background-color: Highlight !important;
-  color: HighlightText !important;
+  background-color: transparent !important;
+  color: inherit !important;
   border-radius: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -147,12 +157,125 @@
   font-size: inherit !important;
   font-weight: inherit !important;
   font-family: inherit !important;
-  display: inline !important;
+  display: inline-block !important;
+  position: relative !important;
   vertical-align: baseline !important;
   text-decoration: none !important;
+  cursor: pointer !important;
+  outline: none !important;
 }
 
+.tiptap mark.comment-mark:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  border-radius: 2px !important;
+}
+
+.tiptap mark.comment-mark::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 5px);
+  width: 2rem;
+  min-width: 2rem;
+  height: 4px;
+  border-radius: 9999px;
+  background-color: var(--annotation-pill-bg);
+  border: 1px solid var(--annotation-pill-border);
+  box-shadow:
+    0 1px 2px var(--annotation-pill-shadow),
+    inset 0 1px 0 oklch(1 0 0 / 0.12);
+  transform: translateX(-50%);
+  transition:
+    opacity 140ms var(--annotation-ease),
+    transform 140ms var(--annotation-ease);
+  z-index: 5;
+  pointer-events: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tiptap mark.comment-mark:hover::before {
+    transform: translateX(-50%) scale(1.04);
+  }
+}
+
+.tiptap mark.comment-mark:active::before {
+  transform: translateX(-50%) scale(0.97);
+  transition-duration: 100ms;
+}
+
+.tiptap mark.comment-mark::after {
+  content: attr(data-comment-label);
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 2px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%) translateY(-3px) scale(0.97);
+  min-width: 4.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background-color: var(--annotation-pill-bg);
+  border: 1px solid var(--annotation-pill-border);
+  color: var(--annotation-pill-fg);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  vertical-align: top;
+  z-index: 5;
+  pointer-events: none;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow:
+    0 2px 8px var(--annotation-pill-shadow),
+    inset 0 1px 0 oklch(1 0 0 / 0.14);
+  transition:
+    opacity 180ms var(--annotation-ease),
+    transform 180ms var(--annotation-ease),
+    visibility 180ms var(--annotation-ease);
+}
+
+.tiptap mark.comment-mark:hover::before,
+.tiptap mark.comment-mark:focus-visible::before {
+  opacity: 0;
+}
+
+.tiptap mark.comment-mark:hover::after,
+.tiptap mark.comment-mark:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.tiptap mark.comment-mark:active::after {
+  transform: translateX(-50%) translateY(1px) scale(0.98);
+  transition-duration: 100ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tiptap mark.comment-mark::before,
+  .tiptap mark.comment-mark::after {
+    transition-duration: 0ms;
+  }
+
+  .tiptap mark.comment-mark:hover::before {
+    transform: translateX(-50%);
+  }
+
+  .tiptap mark.comment-mark:active::before,
+  .tiptap mark.comment-mark:active::after {
+    transform: translateX(-50%);
+  }
+}
+
+
 .tiptap mark.comment-mark::selection {
-  background-color: Highlight !important;
-  color: HighlightText !important;
+  background-color: Highlight;
+  color: HighlightText;
 }
