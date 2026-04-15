@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import {
   Copy,
   Loader2,
+  MessageSquarePlus,
   Monitor,
   Moon,
   Settings,
@@ -76,6 +77,9 @@ export function App() {
   const [editor, setEditor] = useState<TiptapEditor | null>(null)
   const [showNewComment, setShowNewComment] = useState(false)
   const [draftQuotedText, setDraftQuotedText] = useState("")
+  const shellRef = useRef<HTMLDivElement | null>(null)
+  const editorPanelRef = useRef<HTMLDivElement | null>(null)
+  const [floatingCommentTop, setFloatingCommentTop] = useState<number | null>(null)
 
   const handleEditorReady = useCallback((ed: TiptapEditor) => {
     setEditor(ed)
@@ -132,6 +136,77 @@ export function App() {
       window.removeEventListener("review-md:copy-comments", handleCopy)
     }
   }, [handleAddCommentClick, copyComments, hasComments])
+
+  const showCommentSidebar = showNewComment || activeCommentId !== null
+
+  const updateFloatingCommentButtonPosition = useCallback(() => {
+    if (showCommentSidebar || !editor) {
+      setFloatingCommentTop(null)
+      return
+    }
+
+    const shellEl = shellRef.current
+    const editorEl = editorPanelRef.current
+    if (!shellEl || !editorEl) {
+      setFloatingCommentTop(null)
+      return
+    }
+
+    const { from, to } = editor.state.selection
+    if (from === to) {
+      setFloatingCommentTop(null)
+      return
+    }
+
+    const resolved = editor.state.doc.resolve(from)
+    if (resolved.marks().some((mark) => mark.type.name === "commentMark")) {
+      setFloatingCommentTop(null)
+      return
+    }
+
+    const fromCoords = editor.view.coordsAtPos(from)
+    const toCoords = editor.view.coordsAtPos(to)
+    const selectionMidY =
+      (Math.min(fromCoords.top, toCoords.top) +
+        Math.max(fromCoords.bottom, toCoords.bottom)) /
+      2
+    const shellRect = shellEl.getBoundingClientRect()
+    const editorRect = editorEl.getBoundingClientRect()
+    const top = selectionMidY - shellRect.top - 16
+    const clampedTop = Math.max(0, Math.min(top, shellRect.height - 32))
+
+    // Keep the button in the right margin, aligned to selection Y.
+    shellEl.style.setProperty(
+      "--floating-comment-left",
+      `${editorRect.right - shellRect.left + 12}px`,
+    )
+    setFloatingCommentTop(clampedTop)
+  }, [editor, showCommentSidebar])
+
+  useEffect(() => {
+    if (!editor) return
+
+    const syncFloatingButton = () => updateFloatingCommentButtonPosition()
+    editor.on("selectionUpdate", syncFloatingButton)
+    editor.on("transaction", syncFloatingButton)
+    syncFloatingButton()
+
+    return () => {
+      editor.off("selectionUpdate", syncFloatingButton)
+      editor.off("transaction", syncFloatingButton)
+    }
+  }, [editor, updateFloatingCommentButtonPosition])
+
+  useEffect(() => {
+    const syncFloatingButton = () => updateFloatingCommentButtonPosition()
+    window.addEventListener("resize", syncFloatingButton)
+    window.addEventListener("scroll", syncFloatingButton, true)
+
+    return () => {
+      window.removeEventListener("resize", syncFloatingButton)
+      window.removeEventListener("scroll", syncFloatingButton, true)
+    }
+  }, [updateFloatingCommentButtonPosition])
 
   if (loadError) {
     return (
@@ -210,34 +285,81 @@ export function App() {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col">
         <main className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
           <h1 className="sr-only">Review {file.filename}</h1>
-          <div className="mx-auto max-w-3xl px-6 py-6">
-            <Editor
-              content={file.content}
-              onUpdate={save}
-              onEditorReady={handleEditorReady}
-              bubbleMenuSuppressed={showNewComment || !!activeCommentId}
-              onAddCommentFromBubble={handleAddCommentClick}
-            />
+          <div ref={shellRef} className="mx-auto w-full max-w-[72rem] px-6 py-6">
+            <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-6">
+              <div
+                ref={editorPanelRef}
+                className={
+                  showCommentSidebar
+                    ? "min-w-0 w-full max-w-3xl"
+                    : "mx-auto min-w-0 w-full max-w-3xl"
+                }
+              >
+                <Editor
+                  content={file.content}
+                  onUpdate={save}
+                  onEditorReady={handleEditorReady}
+                  bubbleMenuSuppressed
+                />
+              </div>
+
+              {showCommentSidebar ? (
+                <aside className="hidden w-[320px] min-w-0 flex-none lg:sticky lg:top-6 lg:block">
+                  <CommentSidebar
+                    editor={editor}
+                    comments={comments}
+                    showNewComment={showNewComment}
+                    draftQuotedText={draftQuotedText}
+                    onCloseNewComment={() => setShowNewComment(false)}
+                    onSubmitNewComment={handleSubmitNewComment}
+                    activeCommentId={activeCommentId}
+                    setActiveCommentId={setActiveCommentId}
+                    updateCommentBody={updateCommentBody}
+                    deleteComment={deleteComment}
+                  />
+                </aside>
+              ) : null}
+
+              {showCommentSidebar ? (
+                <aside className="w-full min-w-0 lg:hidden">
+                  <CommentSidebar
+                    editor={editor}
+                    comments={comments}
+                    showNewComment={showNewComment}
+                    draftQuotedText={draftQuotedText}
+                    onCloseNewComment={() => setShowNewComment(false)}
+                    onSubmitNewComment={handleSubmitNewComment}
+                    activeCommentId={activeCommentId}
+                    setActiveCommentId={setActiveCommentId}
+                    updateCommentBody={updateCommentBody}
+                    deleteComment={deleteComment}
+                  />
+                </aside>
+              ) : null}
+            </div>
+
+            {!showCommentSidebar && floatingCommentTop !== null ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                title="Add comment from selected text"
+                aria-label="Add comment from selected text"
+                className="absolute hidden h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full border border-border bg-card/95 text-muted-foreground shadow-lg ring-1 ring-black/5 backdrop-blur-md hover:bg-muted dark:border-white/10 dark:bg-[#141414]/95 dark:text-zinc-300 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:ring-black/20 dark:hover:bg-white/10 dark:hover:text-zinc-100 lg:inline-flex"
+                style={{
+                  top: `${floatingCommentTop}px`,
+                  left: "var(--floating-comment-left)",
+                }}
+                onClick={handleAddCommentClick}
+              >
+                <MessageSquarePlus className="size-3.5 stroke-[1.5]" aria-hidden />
+              </Button>
+            ) : null}
           </div>
         </main>
-
-        <aside className="border-border flex max-h-[min(42svh,380px)] min-h-0 w-full flex-1 flex-col border-t lg:max-h-none lg:w-[min(100%,320px)] lg:flex-none lg:self-stretch lg:border-t-0 lg:border-l">
-          <CommentSidebar
-            editor={editor}
-            comments={comments}
-            showNewComment={showNewComment}
-            draftQuotedText={draftQuotedText}
-            onCloseNewComment={() => setShowNewComment(false)}
-            onSubmitNewComment={handleSubmitNewComment}
-            activeCommentId={activeCommentId}
-            setActiveCommentId={setActiveCommentId}
-            updateCommentBody={updateCommentBody}
-            deleteComment={deleteComment}
-          />
-        </aside>
       </div>
 
       <div

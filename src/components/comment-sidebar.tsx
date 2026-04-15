@@ -50,12 +50,8 @@ export function CommentSidebar({
   }, [activeCommentId])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <h2 className="text-muted-foreground shrink-0 px-3 py-2.5 text-[11px] font-medium tracking-wide uppercase">
-        Comments
-      </h2>
-
-      <div className="min-h-0 flex-1 space-y-0 overflow-y-auto px-3 pb-4">
+    <div className="min-h-0 max-h-[min(58svh,32rem)] overflow-y-auto pr-1">
+      <div className="space-y-0">
         {showNewComment && (
           <NewCommentDraft
             key={draftQuotedText}
