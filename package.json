@@ -18,7 +18,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "review-md": "node dist/cli/index.js"
+    "review-md": "pnpm build; node dist/cli/index.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

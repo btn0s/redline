@@ -6,6 +6,8 @@ export interface Comment {
   quotedText: string
   body: string
   createdAt: string
+  /** First character position in the document (for ordering threads in the gutter). */
+  anchorFrom: number
 }
 
 export function useComments() {
@@ -24,6 +26,7 @@ export function useComments() {
       quotedText,
       body,
       createdAt: new Date().toISOString(),
+      anchorFrom: from,
     }
 
     editor.chain().focus().setCommentMark(id).run()
