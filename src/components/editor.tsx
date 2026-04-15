@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import StarterKit from "@tiptap/starter-kit"
@@ -43,6 +43,12 @@ export function Editor({
   bubbleMenuSuppressed = false,
   onAddCommentFromBubble,
 }: EditorProps) {
+  const lastMarkdownRef = useRef(content)
+
+  useEffect(() => {
+    lastMarkdownRef.current = content
+  }, [content])
+
   const extensions = useMemo(
     () => [
       StarterKit,
@@ -64,12 +70,16 @@ export function Editor({
       const md = (
         editor.storage as unknown as { markdown: { getMarkdown: () => string } }
       ).markdown.getMarkdown()
+      if (md === lastMarkdownRef.current) {
+        return
+      }
+      lastMarkdownRef.current = md
       onUpdate(md)
     },
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm prose-slate max-w-none min-h-[min(100vh,32rem)] py-12 outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:prose-invert",
+          "prose prose-sm prose-slate max-w-none min-h-[min(100vh,32rem)] py-12 outline-none focus-visible:outline-none dark:prose-invert",
       },
     },
   })
