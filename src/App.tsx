@@ -3,7 +3,6 @@ import type { Editor as TiptapEditor } from "@tiptap/core"
 import {
   Copy,
   Loader2,
-  MessageSquarePlus,
   Monitor,
   Moon,
   Settings,
@@ -111,8 +110,6 @@ export function App() {
     null,
   )
   const shellRef = useRef<HTMLDivElement | null>(null)
-  const editorPanelRef = useRef<HTMLDivElement | null>(null)
-  const [floatingCommentTop, setFloatingCommentTop] = useState<number | null>(null)
 
   const handleEditorReady = useCallback((ed: TiptapEditor) => {
     setEditor(ed)
@@ -188,87 +185,30 @@ export function App() {
     if (!editor) return
     const dom = editor.view.dom
 
-    const findCommentMark = (target: EventTarget | null): HTMLElement | null => {
-      let node: Node | null = target instanceof Node ? target : null
-      while (node) {
-        if (
-          node instanceof HTMLElement &&
-          node.matches("mark.comment-mark[data-comment-id]")
-        ) {
-          return node
+    const onPillClick = (event: MouseEvent) => {
+      let el = event.target as HTMLElement | null
+      while (el && el !== dom) {
+        if (el.matches("mark.comment-mark[data-comment-id]")) {
+          const rect = el.getBoundingClientRect()
+          if (event.clientY >= rect.bottom - 8) {
+            const commentId = el.getAttribute("data-comment-id")
+            if (!commentId) return
+            const hasSavedThread = comments.some((c) => c.id === commentId)
+            if (commentId.startsWith("draft-") && !hasSavedThread) return
+            event.preventDefault()
+            event.stopPropagation()
+            setActiveCommentId(commentId)
+            setShowNewComment(false)
+          }
+          return
         }
-        node = node.parentElement
+        el = el.parentElement
       }
-      return null
     }
 
-    const openThreadFromMark = (mark: HTMLElement | null) => {
-      if (!mark) return
-      const commentId = mark.getAttribute("data-comment-id")
-      if (!commentId) return
-
-      const hasSavedThread = comments.some((c) => c.id === commentId)
-      const isPendingDraftOnly =
-        commentId.startsWith("draft-") && !hasSavedThread
-
-      if (isPendingDraftOnly) return
-
-      setActiveCommentId(commentId)
-      setShowNewComment(false)
-    }
-
-    /** Capture so this runs before ProseMirror; walk from target for text-node hits. */
-    const onMarkClickCapture = (event: MouseEvent) => {
-      const markFromTarget = findCommentMark(event.target)
-      let markFromPath: HTMLElement | null = null
-      for (const node of event.composedPath()) {
-        if (
-          node instanceof HTMLElement &&
-          node.matches("mark.comment-mark[data-comment-id]")
-        ) {
-          markFromPath = node
-          break
-        }
-      }
-      const mark = markFromTarget ?? markFromPath
-      if (!mark) return
-      event.preventDefault()
-      event.stopPropagation()
-      openThreadFromMark(mark)
-    }
-
-    dom.addEventListener("click", onMarkClickCapture, true)
-    return () => {
-      dom.removeEventListener("click", onMarkClickCapture, true)
-    }
+    dom.addEventListener("click", onPillClick, true)
+    return () => dom.removeEventListener("click", onPillClick, true)
   }, [editor, setActiveCommentId, comments])
-
-  useEffect(() => {
-    if (!editor) return
-    const marks = editor.view.dom.querySelectorAll<HTMLElement>(
-      "mark.comment-mark[data-comment-id]",
-    )
-    const threadMessageCountById = new Map(
-      comments.map((comment) => [comment.id, comment.messages.length]),
-    )
-
-    marks.forEach((mark) => {
-      const commentId = mark.getAttribute("data-comment-id")
-      if (!commentId) return
-      if (commentId.startsWith("draft-") && !threadMessageCountById.has(commentId)) {
-        mark.setAttribute("data-comment-count", "1")
-        mark.setAttribute("data-comment-label", "1 comment")
-        return
-      }
-
-      const messageCount = threadMessageCountById.get(commentId) ?? 1
-      mark.setAttribute("data-comment-count", String(messageCount))
-      mark.setAttribute(
-        "data-comment-label",
-        `${messageCount} ${messageCount === 1 ? "comment" : "comments"}`,
-      )
-    })
-  }, [editor, comments, showNewComment, pendingDraftCommentId])
 
   const handleAddCommentClick = useCallback(() => {
     if (!editor) return
@@ -347,74 +287,23 @@ export function App() {
 
   const showCommentSidebar = showNewComment || activeCommentId !== null
 
-  const updateFloatingCommentButtonPosition = useCallback(() => {
-    if (showCommentSidebar || !editor) {
-      setFloatingCommentTop(null)
-      return
-    }
-
-    const shellEl = shellRef.current
-    const editorEl = editorPanelRef.current
-    if (!shellEl || !editorEl) {
-      setFloatingCommentTop(null)
-      return
-    }
-
-    const { from, to } = editor.state.selection
-    if (from === to) {
-      setFloatingCommentTop(null)
-      return
-    }
-
-    const resolved = editor.state.doc.resolve(from)
-    if (resolved.marks().some((mark) => mark.type.name === "commentMark")) {
-      setFloatingCommentTop(null)
-      return
-    }
-
-    const fromCoords = editor.view.coordsAtPos(from)
-    const toCoords = editor.view.coordsAtPos(to)
-    const selectionMidY =
-      (Math.min(fromCoords.top, toCoords.top) +
-        Math.max(fromCoords.bottom, toCoords.bottom)) /
-      2
-    const shellRect = shellEl.getBoundingClientRect()
-    const editorRect = editorEl.getBoundingClientRect()
-    const top = selectionMidY - shellRect.top - 16
-    const clampedTop = Math.max(0, Math.min(top, shellRect.height - 32))
-
-    // Keep the button in the right margin, aligned to selection Y.
-    shellEl.style.setProperty(
-      "--floating-comment-left",
-      `${editorRect.right - shellRect.left + 12}px`,
-    )
-    setFloatingCommentTop(clampedTop)
-  }, [editor, showCommentSidebar])
+  const closeSidebar = useCallback(() => {
+    if (showNewComment) handleCloseNewComment()
+    if (activeCommentId) setActiveCommentId(null)
+  }, [showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId])
 
   useEffect(() => {
-    if (!editor) return
-
-    const syncFloatingButton = () => updateFloatingCommentButtonPosition()
-    editor.on("selectionUpdate", syncFloatingButton)
-    editor.on("transaction", syncFloatingButton)
-    syncFloatingButton()
-
-    return () => {
-      editor.off("selectionUpdate", syncFloatingButton)
-      editor.off("transaction", syncFloatingButton)
+    if (!showCommentSidebar) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation()
+        e.preventDefault()
+        closeSidebar()
+      }
     }
-  }, [editor, updateFloatingCommentButtonPosition])
-
-  useEffect(() => {
-    const syncFloatingButton = () => updateFloatingCommentButtonPosition()
-    window.addEventListener("resize", syncFloatingButton)
-    window.addEventListener("scroll", syncFloatingButton, true)
-
-    return () => {
-      window.removeEventListener("resize", syncFloatingButton)
-      window.removeEventListener("scroll", syncFloatingButton, true)
-    }
-  }, [updateFloatingCommentButtonPosition])
+    window.addEventListener("keydown", handleKeyDown, true)
+    return () => window.removeEventListener("keydown", handleKeyDown, true)
+  }, [showCommentSidebar, closeSidebar])
 
   if (loadError) {
     return (
@@ -459,7 +348,7 @@ export function App() {
   return (
     <div className="flex min-h-svh flex-col pt-[calc(env(safe-area-inset-top)+2.75rem)] pb-[max(3.5rem,env(safe-area-inset-bottom))]">
       <header
-        className="fixed inset-x-0 top-0 z-40 border-b border-border/50 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md supports-backdrop-filter:bg-background/70"
+        className="fixed inset-x-0 top-0 z-40 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md supports-backdrop-filter:bg-background/70"
         aria-label="Current file and repository"
       >
         <div className="flex h-9 min-h-9 items-center justify-between gap-3 px-4 text-[11px] leading-none">
@@ -511,7 +400,6 @@ export function App() {
           <div ref={shellRef} className="mx-auto w-full max-w-[72rem] px-6 py-6">
             <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-6">
               <div
-                ref={editorPanelRef}
                 className={
                   showCommentSidebar
                     ? "min-w-0 w-full max-w-3xl"
@@ -523,7 +411,8 @@ export function App() {
                   onUpdate={handleMarkdownUpdate}
                   contentReloadNonce={contentReloadNonce}
                   onEditorReady={handleEditorReady}
-                  bubbleMenuSuppressed
+                  bubbleMenuSuppressed={showCommentSidebar}
+                  onAddComment={handleAddCommentClick}
                 />
               </div>
 
@@ -569,23 +458,6 @@ export function App() {
               ) : null}
             </div>
 
-            {!showCommentSidebar && floatingCommentTop !== null ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                title="Add comment from selected text"
-                aria-label="Add comment from selected text"
-                className="absolute hidden h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full border border-border bg-card/95 text-muted-foreground shadow-lg ring-1 ring-black/5 backdrop-blur-md hover:bg-muted dark:border-white/10 dark:bg-[#141414]/95 dark:text-zinc-300 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:ring-black/20 dark:hover:bg-white/10 dark:hover:text-zinc-100 lg:inline-flex"
-                style={{
-                  top: `${floatingCommentTop}px`,
-                  left: "var(--floating-comment-left)",
-                }}
-                onClick={handleAddCommentClick}
-              >
-                <MessageSquarePlus className="size-3.5 stroke-[1.5]" aria-hidden />
-              </Button>
-            ) : null}
           </div>
         </main>
       </div>

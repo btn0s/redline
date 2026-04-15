@@ -36,7 +36,7 @@ interface EditorProps {
   contentReloadNonce?: number
   /** Hide the selection bubble while the comment form or another overlay is open. */
   bubbleMenuSuppressed?: boolean
-  onAddCommentFromBubble?: () => void
+  onAddComment?: () => void
 }
 
 export function Editor({
@@ -45,7 +45,7 @@ export function Editor({
   onEditorReady,
   contentReloadNonce = 0,
   bubbleMenuSuppressed = false,
-  onAddCommentFromBubble,
+  onAddComment,
 }: EditorProps) {
   const lastMarkdownRef = useRef(content)
   const lastReloadNonceRef = useRef(0)
@@ -108,7 +108,7 @@ export function Editor({
   return (
     <>
       <EditorContent editor={editor} />
-      {editor && onAddCommentFromBubble ? (
+      {editor && onAddComment ? (
         <BubbleMenu
           editor={editor}
           appendTo={() => document.body}
@@ -139,7 +139,7 @@ export function Editor({
             className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100"
             onMouseDown={(e) => {
               e.preventDefault()
-              onAddCommentFromBubble()
+              onAddComment()
             }}
           >
             <MessageSquarePlus className="size-3.5 stroke-[1.5]" aria-hidden />

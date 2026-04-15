@@ -42,7 +42,7 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
     return [
       "mark",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class: "comment-mark cursor-pointer",
+        class: "comment-mark",
       }),
       0,
     ]
@@ -64,7 +64,6 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
   addStorage() {
     return {
       markdown: {
-        /** Omit comment marks from saved markdown so the file stays clean. */
         serialize: {
           open: "",
           close: "",

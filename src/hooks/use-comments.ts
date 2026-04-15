@@ -148,13 +148,23 @@ export function useComments(persistenceKey: string | null) {
   }, [])
 
   const formatComments = useCallback(() => {
-    return comments
+    const fileLabel = persistenceKey?.trim() || "this file"
+    const header = [
+      `Feedback on \`${fileLabel}\``,
+      "",
+      "Review comments below. Each block quotes a passage from the file, then lists the notes for that passage.",
+      "",
+    ].join("\n")
+
+    const threads = comments
       .map((c) => {
         const thread = c.messages.map((m) => `- ${m.body}`).join("\n")
         return `> ${c.quotedText}\n${thread}`
       })
       .join("\n\n")
-  }, [comments])
+
+    return `${header}${threads}`
+  }, [comments, persistenceKey])
 
   const updateCommentBody = useCallback((commentId: string, body: string) => {
     setComments((prev) =>
