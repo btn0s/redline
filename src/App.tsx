@@ -91,22 +91,18 @@ export function App() {
   useEffect(() => {
     if (!editor) return
     const dom = editor.view.dom
-    const getCommentMarkFromEvent = (event: MouseEvent) => {
-      const path = event.composedPath()
-      for (const node of path) {
+
+    const findCommentMark = (target: EventTarget | null): HTMLElement | null => {
+      let node: Node | null = target instanceof Node ? target : null
+      while (node) {
         if (
           node instanceof HTMLElement &&
           node.matches("mark.comment-mark[data-comment-id]")
         ) {
           return node
         }
+        node = node.parentElement
       }
-
-      if (event.target instanceof HTMLElement) {
-        const closest = event.target.closest("mark.comment-mark[data-comment-id]")
-        return closest instanceof HTMLElement ? closest : null
-      }
-
       return null
     }
 
@@ -118,22 +114,18 @@ export function App() {
       setShowNewComment(false)
     }
 
-    const onMarkMouseDown = (event: MouseEvent) => {
-      const mark = getCommentMarkFromEvent(event)
+    /** Capture so this runs before ProseMirror; walk from target for text-node hits. */
+    const onMarkClickCapture = (event: MouseEvent) => {
+      const mark = findCommentMark(event.target)
       if (!mark) return
       event.preventDefault()
+      event.stopPropagation()
       openThreadFromMark(mark)
     }
 
-    const onMarkClick = (event: MouseEvent) => {
-      openThreadFromMark(getCommentMarkFromEvent(event))
-    }
-
-    dom.addEventListener("mousedown", onMarkMouseDown)
-    dom.addEventListener("click", onMarkClick)
+    dom.addEventListener("click", onMarkClickCapture, true)
     return () => {
-      dom.removeEventListener("mousedown", onMarkMouseDown)
-      dom.removeEventListener("click", onMarkClick)
+      dom.removeEventListener("click", onMarkClickCapture, true)
     }
   }, [editor, setActiveCommentId])
 
