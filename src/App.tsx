@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { useTheme } from "@/components/theme-provider.tsx"
 import { useFile } from "@/hooks/use-file"
-import { useComments } from "@/hooks/use-comments"
+import { useComments, type Comment } from "@/hooks/use-comments"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { Button } from "@/components/ui/button"
@@ -61,8 +61,28 @@ function ThemeCycleButton() {
   )
 }
 
+function resolveCommentRange(
+  editor: TiptapEditor,
+  comment: Comment,
+): { from: number; to: number } | null {
+  const docSize = editor.state.doc.content.size
+  if (docSize < 2) return null
+
+  const from = Math.max(1, Math.min(comment.anchorFrom, docSize - 1))
+  const fallbackLength = Math.max(comment.quotedText.trim().length, 1)
+  const rawTo =
+    typeof comment.anchorTo === "number"
+      ? comment.anchorTo
+      : comment.anchorFrom + fallbackLength
+  const to = Math.max(from + 1, Math.min(rawTo, docSize))
+
+  if (to <= from) return null
+  return { from, to }
+}
+
 export function App() {
   const { file, save, saving, loadError } = useFile()
+  const commentsPersistenceKey = file ? (file.path ?? file.filename) : null
   const {
     comments,
     activeCommentId,
@@ -72,7 +92,7 @@ export function App() {
     deleteComment,
     copyComments,
     hasComments,
-  } = useComments()
+  } = useComments(commentsPersistenceKey)
 
   const [editor, setEditor] = useState<TiptapEditor | null>(null)
   const [showNewComment, setShowNewComment] = useState(false)
@@ -87,6 +107,47 @@ export function App() {
   const handleEditorReady = useCallback((ed: TiptapEditor) => {
     setEditor(ed)
   }, [])
+
+  useEffect(() => {
+    if (!editor || comments.length === 0) return
+    const commentMarkType = editor.state.schema.marks.commentMark
+    if (!commentMarkType) return
+
+    const existingCommentMarkIds = new Set<string>()
+    editor.state.doc.descendants((node) => {
+      node.marks.forEach((mark) => {
+        if (
+          mark.type.name === "commentMark" &&
+          typeof mark.attrs.commentId === "string"
+        ) {
+          existingCommentMarkIds.add(mark.attrs.commentId)
+        }
+      })
+    })
+
+    const missingComments = comments.filter(
+      (comment) => !existingCommentMarkIds.has(comment.id),
+    )
+    if (missingComments.length === 0) return
+
+    let tr = editor.state.tr
+    let changed = false
+
+    for (const comment of missingComments) {
+      const range = resolveCommentRange(editor, comment)
+      if (!range) continue
+      tr = tr.addMark(
+        range.from,
+        range.to,
+        commentMarkType.create({ commentId: comment.id }),
+      )
+      changed = true
+    }
+
+    if (!changed) return
+    tr.setMeta("addToHistory", false)
+    editor.view.dispatch(tr)
+  }, [editor, comments])
 
   useEffect(() => {
     if (!editor) return
@@ -109,14 +170,32 @@ export function App() {
     const openThreadFromMark = (mark: HTMLElement | null) => {
       if (!mark) return
       const commentId = mark.getAttribute("data-comment-id")
-      if (!commentId || commentId.startsWith("draft-")) return
+      if (!commentId) return
+
+      const hasSavedThread = comments.some((c) => c.id === commentId)
+      const isPendingDraftOnly =
+        commentId.startsWith("draft-") && !hasSavedThread
+
+      if (isPendingDraftOnly) return
+
       setActiveCommentId(commentId)
       setShowNewComment(false)
     }
 
     /** Capture so this runs before ProseMirror; walk from target for text-node hits. */
     const onMarkClickCapture = (event: MouseEvent) => {
-      const mark = findCommentMark(event.target)
+      const markFromTarget = findCommentMark(event.target)
+      let markFromPath: HTMLElement | null = null
+      for (const node of event.composedPath()) {
+        if (
+          node instanceof HTMLElement &&
+          node.matches("mark.comment-mark[data-comment-id]")
+        ) {
+          markFromPath = node
+          break
+        }
+      }
+      const mark = markFromTarget ?? markFromPath
       if (!mark) return
       event.preventDefault()
       event.stopPropagation()
@@ -127,7 +206,7 @@ export function App() {
     return () => {
       dom.removeEventListener("click", onMarkClickCapture, true)
     }
-  }, [editor, setActiveCommentId])
+  }, [editor, setActiveCommentId, comments])
 
   useEffect(() => {
     if (!editor) return
@@ -141,7 +220,7 @@ export function App() {
     marks.forEach((mark) => {
       const commentId = mark.getAttribute("data-comment-id")
       if (!commentId) return
-      if (commentId.startsWith("draft-")) {
+      if (commentId.startsWith("draft-") && !threadMessageCountById.has(commentId)) {
         mark.setAttribute("data-comment-count", "1")
         mark.setAttribute("data-comment-label", "1 comment")
         return

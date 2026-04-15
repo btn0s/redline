@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import type { Editor } from "@tiptap/core"
 
 export interface CommentMessage {
@@ -14,11 +14,81 @@ export interface Comment {
   createdAt: string
   /** First character position in the document (for ordering threads in the gutter). */
   anchorFrom: number
+  /** End character position in the document for restoring comment marks. */
+  anchorTo?: number
 }
 
-export function useComments() {
+const STORAGE_PREFIX = "review-md:comments:v1:"
+
+function storageKey(fileKey: string) {
+  return `${STORAGE_PREFIX}${encodeURIComponent(fileKey)}`
+}
+
+function loadPersisted(fileKey: string): {
+  comments: Comment[]
+  activeCommentId: string | null
+} {
+  try {
+    const raw = localStorage.getItem(storageKey(fileKey))
+    if (!raw) {
+      return { comments: [], activeCommentId: null }
+    }
+    const data = JSON.parse(raw) as unknown
+    if (!data || typeof data !== "object") {
+      return { comments: [], activeCommentId: null }
+    }
+    const obj = data as Record<string, unknown>
+    const comments = Array.isArray(obj.comments) ? (obj.comments as Comment[]) : []
+    const activeCommentId =
+      obj.activeCommentId === null
+        ? null
+        : typeof obj.activeCommentId === "string"
+          ? obj.activeCommentId
+          : null
+    return { comments, activeCommentId }
+  } catch {
+    return { comments: [], activeCommentId: null }
+  }
+}
+
+function savePersisted(
+  fileKey: string,
+  comments: Comment[],
+  activeCommentId: string | null,
+) {
+  try {
+    localStorage.setItem(
+      storageKey(fileKey),
+      JSON.stringify({ comments, activeCommentId }),
+    )
+  } catch {
+    // quota / private mode
+  }
+}
+
+export function useComments(persistenceKey: string | null) {
   const [comments, setComments] = useState<Comment[]>([])
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!persistenceKey) {
+      setComments([])
+      setActiveCommentId(null)
+      setLoadedKey(null)
+      return
+    }
+    const { comments: next, activeCommentId: nextActive } =
+      loadPersisted(persistenceKey)
+    setComments(next)
+    setActiveCommentId(nextActive)
+    setLoadedKey(persistenceKey)
+  }, [persistenceKey])
+
+  useEffect(() => {
+    if (!persistenceKey || loadedKey !== persistenceKey) return
+    savePersisted(persistenceKey, comments, activeCommentId)
+  }, [persistenceKey, loadedKey, comments, activeCommentId])
 
   const addComment = useCallback(
     (editor: Editor, body: string, existingCommentId?: string) => {
@@ -35,6 +105,7 @@ export function useComments() {
       messages: [{ id: crypto.randomUUID(), body, createdAt }],
       createdAt,
       anchorFrom: from,
+      anchorTo: to,
     }
 
     if (!existingCommentId) {
