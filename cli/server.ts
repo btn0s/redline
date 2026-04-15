@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "http"
 import { readFileSync, writeFileSync, existsSync } from "fs"
-import { join, dirname, basename } from "path"
+import { join, dirname, basename, relative } from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -19,7 +19,11 @@ export function startServer(filePath: string, port: number): Promise<string> {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       })
-      res.end(JSON.stringify({ content, filename: basename(filePath) }))
+      const filename = basename(filePath)
+      const displayPath =
+        relative(process.cwd(), filePath).split(/[/\\]/).join("/") ||
+        filename
+      res.end(JSON.stringify({ content, filename, path: displayPath }))
       return
     }
 

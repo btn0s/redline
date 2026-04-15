@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from "react"
 interface FileData {
   content: string
   filename: string
+  /** Relative path for display (POSIX-style), e.g. docs/README.md */
+  path?: string
 }
 
 export function useFile() {

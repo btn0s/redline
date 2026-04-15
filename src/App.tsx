@@ -1,11 +1,64 @@
 import { useState, useCallback, useEffect } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
+import {
+  Copy,
+  Loader2,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react"
+import { useTheme } from "@/components/theme-provider.tsx"
 import { useFile } from "@/hooks/use-file"
 import { useComments } from "@/hooks/use-comments"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Spinner } from "@/components/ui/spinner"
+
+function ThemeCycleButton() {
+  const { theme, setTheme } = useTheme()
+
+  const cycle = useCallback(() => {
+    if (theme === "system") {
+      setTheme("light")
+    } else if (theme === "light") {
+      setTheme("dark")
+    } else {
+      setTheme("system")
+    }
+  }, [theme, setTheme])
+
+  const Icon = theme === "system" ? Monitor : theme === "light" ? Sun : Moon
+  const label =
+    theme === "system"
+      ? "System theme"
+      : theme === "light"
+        ? "Light theme"
+        : "Dark theme"
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      onClick={cycle}
+      title={`${label} — click to cycle`}
+      aria-label={`Cycle color theme. Current: ${label}.`}
+      className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100"
+    >
+      <Icon className="size-3.5 stroke-[1.5]" aria-hidden />
+    </Button>
+  )
+}
 
 export function App() {
   const { file, save, saving, loadError } = useFile()
@@ -117,10 +170,49 @@ export function App() {
     )
   }
 
+  const pathLeft = file.path ?? file.filename
+  const handleRight = "@btn0s/review-md"
+
   return (
-    <div className="flex min-h-svh flex-col pb-[max(5.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-svh flex-col pt-[calc(env(safe-area-inset-top)+2.75rem)] pb-[max(3.5rem,env(safe-area-inset-bottom))]">
+      <header
+        className="fixed inset-x-0 top-0 z-40 border-b border-border/50 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md supports-backdrop-filter:bg-background/70"
+        aria-label="Current file and repository"
+      >
+        <div className="flex h-9 min-h-9 items-center justify-between gap-3 px-4 text-[11px] leading-none">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span
+              className="truncate font-mono text-muted-foreground"
+              title={pathLeft}
+            >
+              {pathLeft}
+            </span>
+            {saving && (
+              <span
+                role="status"
+                aria-live="polite"
+                className="inline-flex items-center text-muted-foreground"
+              >
+                <span className="sr-only">Saving</span>
+                <Loader2
+                  className="size-3 shrink-0 animate-spin opacity-80"
+                  aria-hidden
+                />
+              </span>
+            )}
+          </div>
+          <span
+            className="shrink-0 font-mono text-muted-foreground tabular-nums"
+            title={handleRight}
+          >
+            {handleRight}
+          </span>
+        </div>
+      </header>
+
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <main className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <h1 className="sr-only">Review {file.filename}</h1>
           <div className="mx-auto max-w-3xl px-6 py-6">
             <Editor
               content={file.content}
@@ -150,40 +242,48 @@ export function App() {
 
       <div
         className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
-        aria-label="App toolbar"
+        aria-label="Quick actions"
       >
-        <div className="bg-background/90 text-foreground pointer-events-auto flex max-w-[min(100%,42rem)] items-center gap-3 rounded-2xl border px-3 py-2 shadow-lg ring-1 ring-foreground/10 backdrop-blur-md supports-backdrop-filter:bg-background/75">
-          <span className="text-muted-foreground shrink-0 text-[11px] font-semibold tracking-tight">
-            review-md
-          </span>
-          <span
-            className="text-muted-foreground min-w-0 max-w-[min(14rem,42vw)] truncate text-xs"
-            title={file.filename}
-          >
-            {file.filename}
-          </span>
-          {saving && (
-            <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-[11px]">
-              <Spinner className="size-3" />
-              Saving
-            </span>
-          )}
-          {hasComments && (
-            <span className="text-muted-foreground shrink-0 text-[11px] tabular-nums">
-              {comments.length}
-            </span>
-          )}
-          <div className="bg-border mx-0.5 h-4 w-px shrink-0" aria-hidden />
+        <div
+          className="pointer-events-auto flex items-center gap-0 rounded-full border border-border bg-card/95 px-0.5 py-0.5 text-muted-foreground shadow-lg ring-1 ring-black/5 backdrop-blur-md supports-backdrop-filter:bg-card/85 dark:border-white/10 dark:bg-[#141414]/95 dark:text-zinc-400 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:ring-black/20 dark:supports-backdrop-filter:bg-[#141414]/85"
+          role="toolbar"
+        >
           <Button
             type="button"
-            size="sm"
-            variant="secondary"
-            className="h-8 shrink-0 text-xs"
+            variant="ghost"
+            size="icon-sm"
             disabled={!hasComments}
             onClick={() => void copyComments()}
+            title="Copy all comments"
+            aria-label="Copy all comments"
+            className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100"
           >
-            Copy all
+            <Copy className="size-3.5 stroke-[1.5]" aria-hidden />
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100 dark:focus-visible:ring-white/30"
+              title="Settings"
+              aria-label="Settings"
+            >
+              <Settings className="size-3.5 stroke-[1.5]" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" side="top" sideOffset={8}>
+              <DropdownMenuLabel>review-md</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled>
+                Comments: {comments.length}
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled className="text-xs">
+                Press{" "}
+                <kbd className="bg-muted rounded px-1 py-0.5 font-mono">D</kbd>{" "}
+                to cycle theme when not editing text
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <ThemeCycleButton />
         </div>
       </div>
     </div>

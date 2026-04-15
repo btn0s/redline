@@ -10,7 +10,6 @@ import type { Comment } from "@/hooks/use-comments"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Kbd } from "@/components/ui/kbd"
-import { cn } from "@/lib/utils"
 
 interface CommentSidebarProps {
   editor: TiptapEditor | null
@@ -52,9 +51,9 @@ export function CommentSidebar({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="text-muted-foreground shrink-0 px-3 py-2.5 text-[11px] font-medium tracking-wide uppercase">
+      <h2 className="text-muted-foreground shrink-0 px-3 py-2.5 text-[11px] font-medium tracking-wide uppercase">
         Comments
-      </div>
+      </h2>
 
       <div className="min-h-0 flex-1 space-y-0 overflow-y-auto px-3 pb-4">
         {showNewComment && (
@@ -140,6 +139,7 @@ function NewCommentDraft({
         onChange={(e) => setBody(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Comment…"
+        aria-label="New comment"
         rows={3}
         className="resize-none text-[13px]"
       />
@@ -196,6 +196,59 @@ function ThreadRow({
     if (e.key === "Escape") onCloseEdit()
   }
 
+  if (isActive) {
+    return (
+      <article
+        className="-mx-1 rounded-md bg-muted/50 px-1 py-3"
+        aria-labelledby={`comment-${comment.id}-quote`}
+      >
+        <p
+          id={`comment-${comment.id}-quote`}
+          className="text-muted-foreground mb-1.5 text-[12px] leading-snug italic"
+        >
+          {comment.quotedText}
+        </p>
+        <Textarea
+          autoFocus
+          value={editBody}
+          onChange={(e) => setEditBody(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-label="Edit comment"
+          rows={3}
+          className="resize-none text-[13px]"
+        />
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <button
+            type="button"
+            className="text-destructive/90 hover:text-destructive text-[11px]"
+            onClick={onDelete}
+          >
+            Delete
+          </button>
+          <div className="flex gap-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground h-7 text-xs"
+              onClick={onCloseEdit}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={handleSave}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </article>
+    )
+  }
+
   return (
     <div
       role="button"
@@ -206,10 +259,7 @@ function ThreadRow({
           onSelect()
         }
       }}
-      className={cn(
-        "-mx-1 cursor-pointer rounded-md px-1 py-3 transition-colors",
-        isActive ? "bg-muted/50" : "hover:bg-muted/30",
-      )}
+      className="-mx-1 cursor-pointer rounded-md px-1 py-3 transition-colors hover:bg-muted/30"
       onClick={(e) => {
         e.stopPropagation()
         onSelect()
@@ -218,60 +268,9 @@ function ThreadRow({
       <p className="text-muted-foreground mb-1.5 text-[12px] leading-snug italic">
         {comment.quotedText}
       </p>
-      {isActive ? (
-        <>
-          <Textarea
-            autoFocus
-            value={editBody}
-            onChange={(e) => setEditBody(e.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={3}
-            className="resize-none text-[13px]"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            <button
-              type="button"
-              className="text-destructive/90 hover:text-destructive text-[11px]"
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
-            >
-              Delete
-            </button>
-            <div className="flex gap-1.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground h-7 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onCloseEdit()
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleSave()
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <p className="text-[13px] leading-relaxed whitespace-pre-wrap">
-          {comment.body}
-        </p>
-      )}
+      <p className="text-[13px] leading-relaxed whitespace-pre-wrap">
+        {comment.body}
+      </p>
     </div>
   )
 }

@@ -46,9 +46,18 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
             }
             const content = fs.readFileSync(resolved, "utf-8")
             const filename = path.basename(resolved)
+            const rel = path.relative(process.cwd(), resolved)
+            const displayPath =
+              rel.split(path.sep).join("/") || filename
             res.setHeader("Content-Type", "application/json")
             res.statusCode = 200
-            res.end(JSON.stringify({ content, filename }))
+            res.end(
+              JSON.stringify({
+                content,
+                filename,
+                path: displayPath,
+              }),
+            )
           } catch (e) {
             res.setHeader("Content-Type", "application/json")
             res.statusCode = 500

@@ -69,7 +69,7 @@ export function Editor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm prose-slate max-w-none min-h-[min(100vh,32rem)] py-12 focus:outline-none dark:prose-invert",
+          "prose prose-sm prose-slate max-w-none min-h-[min(100vh,32rem)] py-12 outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:prose-invert",
       },
     },
   })
