@@ -1,10 +1,9 @@
 {
-  "name": "review-md",
-  "private": true,
+  "name": "@btn0s/redline",
   "version": "0.0.1",
   "type": "module",
   "bin": {
-    "review-md": "./dist/cli/index.js"
+    "redline": "./dist/cli/index.js"
   },
   "files": [
     "dist"
@@ -18,7 +17,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "review-md": "pnpm build; node dist/cli/index.js"
+    "redline": "pnpm build; node dist/cli/index.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

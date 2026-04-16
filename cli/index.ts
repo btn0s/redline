@@ -6,7 +6,7 @@ import { startServer } from "./server.js"
 const args = process.argv.slice(2)
 
 if (args.length === 0 || args[0] === "--help") {
-  console.log("Usage: review-md <path-to-markdown-file>")
+  console.log("Usage: redline <path-to-markdown-file>")
   process.exit(0)
 }
 
@@ -25,7 +25,7 @@ if (!filePath.endsWith(".md")) {
 const port = 4700
 const url = await startServer(filePath, port)
 
-console.log(`\n  review-md`)
+console.log(`\n  redline`)
 console.log(`  Serving ${args[0]} at ${url}\n`)
 
 // Open browser (macOS)
