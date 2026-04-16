@@ -357,8 +357,7 @@ function AppShell({
       />
       {editor && <EditorCommentSyncBridge editor={editor} />}
 
-      <div className="flex min-h-0 flex-1 flex-col">
-        <main className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <main className="relative min-w-0 flex-1">
           <h1 className="sr-only">Review {file.filename}</h1>
           <div className="mx-auto w-full max-w-[72rem] px-6 py-6">
             <div
@@ -410,7 +409,6 @@ function AppShell({
             </div>
           </div>
         </main>
-      </div>
 
       <BottomToolbar />
     </div>

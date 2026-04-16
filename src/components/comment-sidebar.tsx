@@ -131,7 +131,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
         </div>
       )}
 
-      {ordered.map((comment, index) => {
+      {ordered.map((comment) => {
         const dimForLink =
           linkHighlightId !== null && linkHighlightId !== comment.id
         const y = positions[comment.id] ?? 0
@@ -154,7 +154,6 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
           >
             <ThreadRow
               comment={comment}
-              index={index + 1}
               isActive={activeCommentId === comment.id}
               onSelect={() => setActiveCommentId(comment.id)}
               onReply={(body) => addReplyToComment(comment.id, body)}
@@ -266,20 +265,14 @@ function NewCommentDraft({
   )
 }
 
-function stickyStampLabel(index: number): string {
-  return `STICKY // ${String(index).padStart(3, "0")}`
-}
-
 const ThreadRow = memo(function ThreadRow({
   comment,
-  index,
   isActive,
   onSelect,
   onReply,
   onDelete,
 }: {
   comment: Comment
-  index: number
   isActive: boolean
   onSelect: () => void
   onReply: (body: string) => void
@@ -312,14 +305,13 @@ const ThreadRow = memo(function ThreadRow({
         style={rotateStyle}
         aria-labelledby={`comment-${comment.id}-quote`}
       >
-        <div className="mono-stamp mb-1.5 text-[color:var(--sticky-foreground)]/55">
-          {stickyStampLabel(index)}
-        </div>
         <blockquote
           id={`comment-${comment.id}-quote`}
           className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2"
         >
+          {"\u201C"}
           {comment.quotedText}
+          {"\u201D"}
         </blockquote>
         <hr className="sticky-dashed" aria-hidden />
 
@@ -393,11 +385,10 @@ const ThreadRow = memo(function ThreadRow({
         onSelect()
       }}
     >
-      <div className="mono-stamp mb-1.5 text-[color:var(--sticky-foreground)]/55">
-        {stickyStampLabel(index)}
-      </div>
       <blockquote className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
+        {"\u201C"}
         {comment.quotedText}
+        {"\u201D"}
       </blockquote>
       <hr className="sticky-dashed" aria-hidden />
       <p className="sticky-handwritten whitespace-pre-wrap line-clamp-3 text-[color:var(--sticky-foreground)]">
