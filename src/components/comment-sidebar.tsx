@@ -10,6 +10,7 @@ import { MessageSquare, Trash2 } from "lucide-react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 import { useCommentContext } from "@/contexts/comment-context"
+import { resolveCommentLinkHighlightId } from "@/extensions/comment-mark"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Kbd } from "@/components/ui/kbd"
@@ -28,6 +29,11 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
     deleteComment,
     hoveredCommentId,
   } = useCommentContext()
+
+  const linkHighlightId = resolveCommentLinkHighlightId(
+    activeCommentId,
+    hoveredCommentId,
+  )
 
   const ordered = useMemo(
     () => [...comments].sort((a, b) => a.anchorFrom - b.anchorFrom),
@@ -68,7 +74,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
 
         {ordered.map((comment, i) => {
           const dimForLink =
-            hoveredCommentId !== null && hoveredCommentId !== comment.id
+            linkHighlightId !== null && linkHighlightId !== comment.id
           return (
             <div
               key={comment.id}

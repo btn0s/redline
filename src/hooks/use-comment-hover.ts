@@ -37,7 +37,6 @@ export function useCommentHover(editor: TiptapEditor | null): {
 
       if (next === currentHovered) return
       currentHovered = next
-      setHoveredComment(editor, next)
       setHoveredCommentId(next)
     }
 

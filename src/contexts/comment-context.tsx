@@ -1,9 +1,20 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from "react"
 import type { Editor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 import { useComments } from "@/hooks/use-comments"
 import { useDraftComment } from "@/hooks/use-draft-comment"
 import { useCommentHover } from "@/hooks/use-comment-hover"
+import {
+  resolveCommentLinkHighlightId,
+  setHoveredComment,
+} from "@/extensions/comment-mark"
 
 interface CommentContextValue {
   comments: Comment[]
@@ -86,6 +97,16 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
   })
 
   const { hoveredCommentId, clearHover } = useCommentHover(editor)
+
+  const linkHighlightId = resolveCommentLinkHighlightId(
+    activeCommentId,
+    hoveredCommentId,
+  )
+
+  useEffect(() => {
+    if (!editor) return
+    setHoveredComment(editor, linkHighlightId)
+  }, [editor, linkHighlightId])
 
   const showCommentSidebar = commentsPanelOpen
 

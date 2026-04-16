@@ -11,6 +11,23 @@ export const commentHoverPluginKey = new PluginKey<string | null>(
   "commentHoverHighlight",
 )
 
+/** Editor + sidebar “linked” highlight: active thread keeps highlight until hover targets another id. */
+export function resolveCommentLinkHighlightId(
+  activeCommentId: string | null,
+  hoveredCommentId: string | null,
+): string | null {
+  if (activeCommentId) {
+    if (
+      hoveredCommentId === null ||
+      hoveredCommentId === activeCommentId
+    ) {
+      return activeCommentId
+    }
+    return hoveredCommentId
+  }
+  return hoveredCommentId
+}
+
 export function setHoveredComment(
   editor: Editor,
   commentId: string | null,
