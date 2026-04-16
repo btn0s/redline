@@ -1,5 +1,6 @@
-import { useState } from "react"
-import { CircleHelp, Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { CircleCheck, CircleHelp, Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { useCommentContext } from "@/contexts/comment-context"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
@@ -20,14 +21,34 @@ const toolbarBtnClass =
 export function BottomToolbar() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const copyResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { scheme } = useShortcutScheme()
   const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments } =
     useCommentContext()
 
+  useEffect(() => {
+    return () => {
+      if (copyResetTimerRef.current) clearTimeout(copyResetTimerRef.current)
+    }
+  }, [])
+
+  const handleCopyClick = async () => {
+    const ok = await copyComments()
+    if (!ok) return
+    setCopied(true)
+    if (copyResetTimerRef.current) clearTimeout(copyResetTimerRef.current)
+    copyResetTimerRef.current = setTimeout(() => setCopied(false), 1600)
+  }
+
   return (
     <>
       <ReviewSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <ReviewHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <ReviewHelpDialog
+        open={helpOpen}
+        onOpenChange={setHelpOpen}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       <div
         className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
         aria-label="Quick actions"
@@ -70,11 +91,27 @@ export function BottomToolbar() {
                   variant="ghost"
                   size="icon-sm"
                   disabled={!hasComments}
-                  aria-label="Copy all comments"
+                  aria-label={copied ? "Comments copied" : "Copy all comments"}
+                  aria-live="polite"
                   className={toolbarBtnClass}
-                  onClick={() => void copyComments()}
+                  onClick={() => void handleCopyClick()}
                 >
-                  <Copy className="size-3.5 stroke-[1.5]" aria-hidden />
+                  <span className="relative inline-flex size-3.5 items-center justify-center">
+                    <Copy
+                      className={cn(
+                        "absolute inset-0 size-3.5 stroke-[1.5] transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                        copied ? "scale-75 opacity-0" : "scale-100 opacity-100",
+                      )}
+                      aria-hidden
+                    />
+                    <CircleCheck
+                      className={cn(
+                        "absolute inset-0 size-3.5 stroke-[1.75] text-emerald-500 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] dark:text-emerald-400",
+                        copied ? "scale-100 opacity-100" : "scale-75 opacity-0",
+                      )}
+                      aria-hidden
+                    />
+                  </span>
                 </Button>
               }
             />

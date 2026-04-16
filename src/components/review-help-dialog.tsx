@@ -7,9 +7,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Kbd } from "@/components/ui/kbd"
+import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import {
+  addCommentShortcutDisplay,
   modAltKey,
-  modAltKeyCompact,
   modShiftAltKey,
   modShiftKeyCompact,
 } from "@/lib/format-shortcut"
@@ -19,6 +20,8 @@ const REDLINE_REPO_URL = "https://github.com/btn0s/redline"
 interface ReviewHelpDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Opens Settings (parent should close help). */
+  onOpenSettings?: () => void
 }
 
 function Row({ label, keys }: { label: string; keys: ReactNode }) {
@@ -30,7 +33,15 @@ function Row({ label, keys }: { label: string; keys: ReactNode }) {
   )
 }
 
-export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) {
+export function ReviewHelpDialog({
+  open,
+  onOpenChange,
+  onOpenSettings,
+}: ReviewHelpDialogProps) {
+  const { scheme } = useShortcutScheme()
+  const newCommentLabel =
+    scheme === "google-docs" ? "New comment (Google Docs style)" : "New comment (Notion style)"
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -63,12 +74,10 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
           <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
           <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <Row
-              label="Comment (Docs / Word)"
-              keys={<Kbd className="text-[10px]">{modAltKeyCompact("M")}</Kbd>}
-            />
-            <Row
-              label="Comment (Notion)"
-              keys={<Kbd className="text-[10px]">{modShiftKeyCompact("M")}</Kbd>}
+              label={newCommentLabel}
+              keys={
+                <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
+              }
             />
             <Row
               label="Redlines panel"
@@ -84,6 +93,22 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
             />
             <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
+          {onOpenSettings ? (
+            <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">
+              To use the other new-comment shortcut,{" "}
+              <button
+                type="button"
+                className="text-foreground underline-offset-2 hover:underline"
+                onClick={() => {
+                  onOpenChange(false)
+                  onOpenSettings()
+                }}
+              >
+                open Settings
+              </button>
+              .
+            </p>
+          ) : null}
         </div>
 
         <div className="border-t border-border/60 px-4 py-3 pb-4">
