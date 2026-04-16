@@ -1,41 +1,46 @@
 # @btn0s/redline
 
-Local **markdown review** in the browser: open a `.md` file, leave anchored comment threads, save back to disk.
+Markdown review in the browser. Open any `.md` file, select text, leave anchored comment threads, and save everything back to disk.
 
 ```bash
 npx @btn0s/redline ./path/to/file.md
 ```
 
-## Agent skill (Cursor, Claude Code, Codex, …)
+Redline starts a local server on port `4700` and opens the review UI in your browser.
 
-This repo includes an installable **Agent Skill** so assistants know to launch Redline when you want a human to review a plan or doc:
+## Install
+
+```bash
+npm i -g @btn0s/redline
+```
+
+Or run it directly with `npx` / `pnpm dlx` — no install required.
+
+## Usage
+
+```bash
+redline <file.md>
+```
+
+- Select any passage of text to start a comment thread
+- Comments are anchored to the exact text selection
+- All comments persist to disk alongside the markdown
+
+## Agent skill
+
+Redline ships an agent skill so AI assistants (Cursor, Claude Code, Codex, etc.) can launch the review UI on your behalf when a plan or spec needs human feedback.
 
 ```bash
 npx skills add btn0s/redline --skill redline
 ```
 
-How this relates to [**skills.sh**](https://skills.sh) (directory / leaderboard) is documented in skills/README.md.
-
----
-
-## App stack
-
-This is a Vite project with React, TypeScript, and shadcn/ui.
-
-## Adding components
-
-To add components to your app, run the following command:
+## Development
 
 ```bash
-npx shadcn@latest add button
+pnpm install
+pnpm dev
 ```
 
-This will place the ui components in the `src/components` directory.
+## License
 
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button"
-```
+MIT
