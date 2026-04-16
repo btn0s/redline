@@ -158,9 +158,8 @@ export function BottomToolbar() {
                 </Button>
               }
             />
-            <TooltipContent side="top" sideOffset={8} className="max-w-[14rem]">
-              Review mode for LLM-generated plans — how it works and keyboard
-              shortcuts
+            <TooltipContent side="top" sideOffset={8} className="max-w-[12rem]">
+              What Redline is + shortcuts
             </TooltipContent>
           </Tooltip>
         </div>

@@ -52,18 +52,17 @@ export function ReviewSettingsDialog({
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
-              Review mode for LLM-generated plans — pick your new-comment shortcut and
-              see the rest of the chord reference.
+              New-comment layout (Docs vs Notion) and the full chord list.
             </DialogDescription>
           </DialogHeader>
         </div>
 
         <div className="border-t border-border/60 px-4 py-3">
           <Label className="text-[11px] font-medium text-foreground">
-            New comment (with text selected)
+            New comment (selection required)
           </Label>
           <p className="text-muted-foreground mt-1 mb-3 text-[11px] leading-snug">
-            Match Google Docs / Word, or Notion’s block-comment shortcut.
+            Docs / Word vs Notion chord for the same action.
           </p>
           <RadioGroup
             value={scheme}
@@ -81,7 +80,7 @@ export function ReviewSettingsDialog({
                 <span className="block text-[12px] font-medium">Google Docs / Word</span>
                 <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
                   <Kbd className="text-[10px]">{addCommentShortcutDisplay("google-docs")}</Kbd>
-                  <span>— same family as Docs (Ctrl+Alt+M / ⌘⌥M).</span>
+                  <span>Docs / Word family.</span>
                 </span>
               </span>
             </label>
@@ -96,7 +95,7 @@ export function ReviewSettingsDialog({
                 <span className="block text-[12px] font-medium">Notion</span>
                 <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
                   <Kbd className="text-[10px]">{addCommentShortcutDisplay("notion")}</Kbd>
-                  <span>— same as Notion’s “create comment” chord.</span>
+                  <span>Notion “create comment”.</span>
                 </span>
               </span>
             </label>
@@ -106,7 +105,7 @@ export function ReviewSettingsDialog({
         <div className="border-t border-border/60 px-4 py-3">
           <p className="text-[11px] font-medium text-foreground">Other shortcuts</p>
           <p className="text-muted-foreground mt-1 mb-2 text-[11px] leading-snug">
-            These stay the same regardless of the option above.
+            Unchanged by the option above.
           </p>
           <div className="rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <ShortcutRow

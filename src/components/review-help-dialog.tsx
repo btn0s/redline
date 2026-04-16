@@ -38,60 +38,29 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[min(90svh,40rem)] w-full max-w-md gap-0 overflow-y-auto p-0 sm:max-w-md"
+        className="max-h-[min(90svh,32rem)] w-full max-w-md gap-0 overflow-y-auto p-0 sm:max-w-md"
         data-prevent-redlines-dismiss=""
       >
         <div className="p-4 pb-3">
           <DialogHeader>
             <DialogTitle>Redline</DialogTitle>
             <DialogDescription className="sr-only">
-              Review mode for LLM-generated plans. Keyboard shortcuts and how Redline
-              works.
+              Redline: review markdown with anchored comments and keyboard shortcuts.
             </DialogDescription>
-            <div className="space-y-2.5 text-left text-xs/relaxed text-muted-foreground">
-              <p className="text-foreground/95 font-medium">
-                Review mode for LLM-generated plans.
-              </p>
-              <p>
-                LLMs write plans and specs as markdown. Reviewing them in chat is
-                imprecise — you end up quoting passages by hand, losing context, or just
-                saying &quot;looks good&quot; when it doesn&apos;t. Redline gives you a
-                Google Docs-style commenting experience on any{" "}
+            <div className="space-y-2 text-left text-xs/relaxed text-muted-foreground">
+              <p className="text-foreground/95 font-medium leading-snug">
+                Review mode for LLM-generated plans — Docs-style comments on any{" "}
                 <code className="rounded bg-muted px-1 py-px font-mono text-[0.65rem]">
                   .md
-                </code>{" "}
-                file so you can leave anchored, passage-level feedback. When you&apos;re
-                done, copy all your comments in one click and paste them back into the
-                LLM.
+                </code>
+                , then copy everything back to the LLM in one shot.
               </p>
-              <p>
-                <span className="font-medium text-foreground/90">The loop:</span> LLM
-                writes a plan → you review it in Redline → your feedback goes back to the
-                LLM.
+              <p className="leading-snug">
+                <span className="text-foreground/90">Flow:</span> select text → thread
+                replies → <span className="text-foreground/90">Copy all</span>. Comments
+                persist with the file.
               </p>
-              <div>
-                <p className="mb-1 font-medium text-foreground/90">How it works</p>
-                <ol className="list-decimal space-y-1 pl-4 marker:text-muted-foreground">
-                  <li>
-                    <span className="text-foreground/90">Select text</span> in the
-                    rendered markdown to start a comment thread
-                  </li>
-                  <li>
-                    <span className="text-foreground/90">Leave comments</span> anchored to
-                    the exact passage — replies are threaded
-                  </li>
-                  <li>
-                    <span className="text-foreground/90">Copy all</span> — one click copies
-                    every comment as structured text, ready to paste back into your LLM
-                    conversation
-                  </li>
-                </ol>
-                <p className="mt-2">
-                  Comments persist to disk alongside the markdown so you can close and
-                  come back.
-                </p>
-              </div>
-              <p className="text-[11px]">
+              <p className="text-[11px] leading-snug">
                 Inspired by{" "}
                 <a
                   href="https://agentation.dev"
@@ -108,42 +77,38 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
         </div>
 
         <div className="border-t border-border/60 px-4 py-3">
-          <p className="text-[11px] font-medium text-foreground">Keyboard shortcuts</p>
+          <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
           <p className="text-muted-foreground mt-1 mb-2 text-[11px] leading-snug">
-            In the table, <Kbd className="text-[10px]">{modLabel()}</Kbd> is Command on
-            Mac and Control on Windows / Linux. Your active new-comment chord is{" "}
-            <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd> (change
-            it in settings).
+            <Kbd className="text-[10px]">{modLabel()}</Kbd> = ⌘ on Mac, Ctrl elsewhere.
+            New comment now:{" "}
+            <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd> (
+            <span className="text-foreground/90">gear</span> to switch).
           </p>
           <div className="rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <Row
-              label="New comment (Docs / Word style)"
+              label="Comment (Docs / Word)"
               keys={<Kbd className="text-[10px]">{modAltKeyCompact("M")}</Kbd>}
             />
             <Row
-              label="New comment (Notion style)"
+              label="Comment (Notion)"
               keys={<Kbd className="text-[10px]">{modShiftKeyCompact("M")}</Kbd>}
             />
             <Row
-              label="Toggle redlines panel"
+              label="Redlines panel"
               keys={<Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>}
             />
             <Row
-              label="Copy all comments"
+              label="Copy all"
               keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
             />
             <Row
-              label="Clear all comments"
+              label="Clear all"
               keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
             />
-            <Row
-              label="Cycle theme"
-              keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>}
-            />
+            <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
           <p className="text-muted-foreground mt-2 text-[11px] leading-snug">
-            Use the <span className="text-foreground/90">gear</span> button to pick
-            which new-comment shortcut is active. Clear-all asks for confirmation.
+            Clear-all confirms before deleting threads.
           </p>
         </div>
 
