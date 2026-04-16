@@ -21,17 +21,6 @@ export function modLabel(): string {
 }
 
 /**
- * Redlines toggle (⌘⇧L): do not steal from the editor or real text fields.
- */
-export function shouldBlockRedlinesToggle(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  if (target.closest(".ProseMirror")) return true
-  return Boolean(
-    target.closest("textarea, input, select") || target.isContentEditable,
-  )
-}
-
-/**
  * Theme / destructive chords: allow in the main editor; block in side UI fields.
  */
 export function shouldBlockReviewChromeShortcut(

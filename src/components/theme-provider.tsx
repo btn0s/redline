@@ -1,8 +1,7 @@
 import * as React from "react"
 import { isModKey, shouldBlockReviewChromeShortcut } from "@/lib/mod-key"
 
-type Theme = "dark" | "light" | "system"
-type ResolvedTheme = "dark" | "light"
+type Theme = "dark" | "light"
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -14,12 +13,11 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme
   setTheme: (theme: Theme) => void
-  /** system → light → dark → system (same as the bottom bar theme control). */
+  /** Toggles between light and dark. */
   cycleTheme: () => void
 }
 
-const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
-const THEME_VALUES: Theme[] = ["dark", "light", "system"]
+const THEME_VALUES: Theme[] = ["dark", "light"]
 
 const ThemeProviderContext = React.createContext<
   ThemeProviderState | undefined
@@ -31,14 +29,6 @@ function isTheme(value: string | null): value is Theme {
   }
 
   return THEME_VALUES.includes(value as Theme)
-}
-
-function getSystemTheme(): ResolvedTheme {
-  if (window.matchMedia(COLOR_SCHEME_QUERY).matches) {
-    return "dark"
-  }
-
-  return "light"
 }
 
 function disableTransitionsTemporarily() {
@@ -62,7 +52,7 @@ function disableTransitionsTemporarily() {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "theme",
   disableTransitionOnChange = true,
   ...props
@@ -86,8 +76,7 @@ export function ThemeProvider({
 
   const cycleTheme = React.useCallback(() => {
     setThemeState((current) => {
-      const next: Theme =
-        current === "system" ? "light" : current === "light" ? "dark" : "system"
+      const next: Theme = current === "light" ? "dark" : "light"
       localStorage.setItem(storageKey, next)
       return next
     })
@@ -96,14 +85,12 @@ export function ThemeProvider({
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
       const root = document.documentElement
-      const resolvedTheme =
-        nextTheme === "system" ? getSystemTheme() : nextTheme
       const restoreTransitions = disableTransitionOnChange
         ? disableTransitionsTemporarily()
         : null
 
       root.classList.remove("light", "dark")
-      root.classList.add(resolvedTheme)
+      root.classList.add(nextTheme)
 
       if (restoreTransitions) {
         restoreTransitions()
@@ -114,21 +101,6 @@ export function ThemeProvider({
 
   React.useEffect(() => {
     applyTheme(theme)
-
-    if (theme !== "system") {
-      return undefined
-    }
-
-    const mediaQuery = window.matchMedia(COLOR_SCHEME_QUERY)
-    const handleChange = () => {
-      applyTheme("system")
-    }
-
-    mediaQuery.addEventListener("change", handleChange)
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange)
-    }
   }, [theme, applyTheme])
 
   React.useEffect(() => {

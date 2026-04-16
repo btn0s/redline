@@ -75,9 +75,7 @@ export function ReviewSettingsDialog({
           </div>
           <Select
             value={theme}
-            onValueChange={(v) =>
-              setTheme(v as "system" | "light" | "dark")
-            }
+            onValueChange={(v) => setTheme(v as "light" | "dark")}
           >
             <SelectTrigger
               id="settings-appearance"
@@ -87,7 +85,6 @@ export function ReviewSettingsDialog({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="system">System</SelectItem>
               <SelectItem value="light">Light</SelectItem>
               <SelectItem value="dark">Dark</SelectItem>
             </SelectContent>
@@ -141,10 +138,6 @@ export function ReviewSettingsDialog({
         <div className="px-4 py-3 pb-4">
           <p className="text-[11px] font-medium text-foreground">Other shortcuts</p>
           <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
-            <ShortcutRow
-              label="Toggle redlines"
-              keys={<Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>}
-            />
             <ShortcutRow
               label="Copy all comments"
               keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}

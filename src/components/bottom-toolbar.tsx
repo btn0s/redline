@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { CircleCheck, CircleHelp, Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
+import { CircleCheck, CircleHelp, Copy, Settings, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useCommentContext } from "@/contexts/comment-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
@@ -12,15 +12,14 @@ import { modShiftAltKey, modShiftKeyCompact } from "@/lib/format-shortcut"
 import { REVIEW_MD_CLEAR_ALL_COMMENTS } from "@/lib/review-md-events"
 
 const toolbarBtnClass =
-  "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
+  "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-out active:scale-[0.97] dark:text-zinc-400"
 
 export function BottomToolbar() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const copyResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { commentsPanelOpen, togglePanel, hasComments, copyComments } =
-    useCommentContext()
+  const { hasComments, copyComments } = useCommentContext()
 
   const requestClearAll = () => {
     window.dispatchEvent(new CustomEvent(REVIEW_MD_CLEAR_ALL_COMMENTS))
@@ -54,32 +53,12 @@ export function BottomToolbar() {
         data-prevent-redlines-dismiss=""
       >
         <div
-          className="pointer-events-auto flex items-center gap-0 rounded-full border border-[color:var(--paper-edge)] bg-[color:var(--paper)]/95 px-0.5 py-0.5 text-foreground/70 shadow-[0_2px_4px_rgba(0,0,0,0.08),0_10px_24px_-8px_rgba(0,0,0,0.2),0_22px_40px_-16px_rgba(0,0,0,0.18)] ring-1 ring-black/5 backdrop-blur-md supports-backdrop-filter:bg-[color:var(--paper)]/85 dark:border-white/10 dark:text-zinc-400 dark:shadow-[0_10px_30px_rgba(0,0,0,0.45),0_24px_50px_-16px_rgba(0,0,0,0.55)] dark:ring-black/30"
+          className={cn(
+            "pointer-events-auto flex items-center gap-0 rounded-full border bg-popover px-0.5 py-0.5 text-popover-foreground shadow-lg",
+          )}
           role="toolbar"
           data-prevent-redlines-dismiss=""
         >
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Toggle comment threads panel"
-                  aria-pressed={commentsPanelOpen}
-                  className={toolbarBtnClass}
-                  onClick={togglePanel}
-                >
-                  <MessagesSquare className="size-3.5 stroke-[1.5]" aria-hidden />
-                </Button>
-              }
-            />
-            <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
-              <span>Toggle comments sidebar</span>
-              <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>
-            </TooltipContent>
-          </Tooltip>
-
           <Tooltip>
             <TooltipTrigger
               render={
@@ -144,7 +123,7 @@ export function BottomToolbar() {
             role="separator"
             aria-orientation="vertical"
             aria-hidden="true"
-            className="mx-1.5 h-5 w-px shrink-0 bg-border/80"
+            className="mx-1.5 h-5 w-px shrink-0 bg-border"
           />
 
           <ThemeCycleButton />

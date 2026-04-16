@@ -160,36 +160,44 @@
 }
 
 .dark {
-    /* Desk surface — dark leather / cork */
-    --desk: oklch(0.2 0.012 60);
-    --desk-grain: oklch(0.1 0.01 50 / 0.4);
+    /* Lights-off mode: desk sinks into shadow, paper is still paper, a
+       warm lamp pool in the top-left lights the workspace. */
 
-    --paper: oklch(0.23 0.012 70);
-    --paper-foreground: oklch(0.92 0.01 85);
-    --paper-edge: oklch(0.14 0.01 60);
+    /* Desk surface — deep, near-black, with a very faint warm shift */
+    --desk: oklch(0.14 0.008 60);
+    --desk-grain: oklch(0.08 0.006 50 / 0.5);
+    /* Lamp — warm tungsten pool */
+    --lamp-core: oklch(0.9 0.16 78 / 0.55);
+    --lamp-mid: oklch(0.62 0.12 72 / 0.25);
+    --lamp-falloff: oklch(0.3 0.05 70 / 0.08);
 
-    --sticky: oklch(0.68 0.12 95);
-    --sticky-edge: oklch(0.56 0.11 92);
-    --sticky-shadow: oklch(0 0 0 / 0.55);
-    --sticky-foreground: oklch(0.18 0.015 80);
+    /* Paper — STILL a white sheet; lamp does the work */
+    --paper: oklch(0.97 0.02 82);
+    --paper-foreground: oklch(0.22 0.015 270);
+    --paper-edge: oklch(0.78 0.03 75);
+
+    --sticky: oklch(0.9 0.1 95);
+    --sticky-edge: oklch(0.8 0.11 92);
+    --sticky-shadow: oklch(0 0 0 / 0.6);
+    --sticky-foreground: oklch(0.24 0.02 80);
 
     --background: var(--desk);
-    --foreground: oklch(0.92 0.01 85);
+    --foreground: oklch(0.88 0.015 85);
     --card: var(--paper);
-    --card-foreground: oklch(0.92 0.01 85);
-    --popover: oklch(0.25 0.012 70);
+    --card-foreground: var(--paper-foreground);
+    --popover: oklch(0.18 0.01 70);
     --popover-foreground: oklch(0.92 0.01 85);
     --primary: oklch(0.9 0.01 85);
     --primary-foreground: oklch(0.2 0.012 70);
-    --secondary: oklch(0.28 0.015 70);
-    --secondary-foreground: oklch(0.92 0.01 85);
-    --muted: oklch(0.28 0.015 70);
-    --muted-foreground: oklch(0.7 0.015 85);
-    --accent: oklch(0.3 0.018 70);
+    --secondary: oklch(0.22 0.012 70);
+    --secondary-foreground: oklch(0.9 0.01 85);
+    --muted: oklch(0.22 0.012 70);
+    --muted-foreground: oklch(0.62 0.02 80);
+    --accent: oklch(0.24 0.015 70);
     --accent-foreground: oklch(0.92 0.01 85);
     --destructive: oklch(0.68 0.19 22);
-    --border: oklch(1 0 0 / 0.1);
-    --input: oklch(1 0 0 / 0.15);
+    --border: oklch(1 0 0 / 0.08);
+    --input: oklch(1 0 0 / 0.12);
     --ring: oklch(0.55 0.03 80);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
@@ -197,36 +205,37 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --sidebar: var(--desk);
-    --sidebar-foreground: oklch(0.92 0.01 85);
+    --sidebar-foreground: oklch(0.88 0.015 85);
     --sidebar-primary: oklch(0.488 0.243 264.376);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.3 0.018 70);
+    --sidebar-accent: oklch(0.24 0.015 70);
     --sidebar-accent-foreground: oklch(0.92 0.01 85);
-    --sidebar-border: oklch(1 0 0 / 0.1);
+    --sidebar-border: oklch(1 0 0 / 0.08);
     --sidebar-ring: oklch(0.55 0.03 80);
-    --highlight: oklch(0.55 0.12 99);
-    --annotation-pill-bg: oklch(0.62 0.19 22);
-    --annotation-pill-fg: oklch(0.99 0.01 22);
-    --annotation-pill-border: oklch(0.72 0.14 22 / 0.55);
-    --annotation-pill-shadow: oklch(0 0 0 / 0.5);
-    --annotation-pill-dim: 0.42;
+    --highlight: oklch(0.9 0.12 99);
+    --annotation-pill-bg: oklch(0.58 0.2 25);
+    --annotation-pill-fg: oklch(0.99 0.01 25);
+    --annotation-pill-border: oklch(0.48 0.18 25);
+    --annotation-pill-shadow: oklch(0 0 0 / 0.6);
+    --annotation-pill-dim: 0.38;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 
+    /* Paper still casts a soft shadow onto the dark desk */
     --paper-shadow:
-        0 1px 0 oklch(1 0 0 / 0.03),
-        0 2px 4px oklch(0 0 0 / 0.4),
-        0 22px 40px -14px oklch(0 0 0 / 0.55),
-        0 56px 90px -30px oklch(0 0 0 / 0.65);
+        0 1px 0 oklch(0 0 0 / 0.1),
+        0 2px 6px oklch(0 0 0 / 0.55),
+        0 22px 44px -14px oklch(0 0 0 / 0.7),
+        0 60px 100px -30px oklch(0 0 0 / 0.8);
     --sticky-shadow-lift:
-        0 1px 1px oklch(0 0 0 / 0.45),
-        2px 4px 8px -1px oklch(0 0 0 / 0.5),
-        8px 14px 22px -8px oklch(0 0 0 / 0.55);
+        0 1px 1px oklch(0 0 0 / 0.4),
+        2px 3px 6px -1px oklch(0 0 0 / 0.45),
+        6px 10px 18px -6px oklch(0 0 0 / 0.5);
     --sticky-shadow-press:
         0 1px 1px oklch(0 0 0 / 0.4),
         1px 1px 3px -1px oklch(0 0 0 / 0.45);
 
-    --tape-bg: oklch(0.4 0.08 95 / 0.55);
-    --tape-border: oklch(0.55 0.1 90 / 0.35);
+    --tape-bg: oklch(0.88 0.1 95 / 0.7);
+    --tape-border: oklch(0.75 0.12 92 / 0.45);
 }
 
 @layer base {
@@ -254,6 +263,9 @@
         transparent 60%
       );
     background-attachment: fixed;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
     }
   html {
     @apply font-sans;
@@ -289,6 +301,10 @@
   box-shadow: var(--paper-shadow);
   pointer-events: none;
   z-index: -1;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
 }
 
 /* First sheet behind: nudged down-right, slight rotation */
@@ -323,6 +339,37 @@
   color: var(--paper-foreground);
   padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 5vw, 3.5rem);
   isolation: isolate;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+/* Warm lamp hotspot on the page — fades in with dark mode */
+.paper-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      900px 500px at 0% 0%,
+      oklch(0.98 0.12 82 / 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 600px at 100% 100%,
+      oklch(0.18 0.02 270 / 0.22),
+      transparent 55%
+    );
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.dark .paper-page::before {
+  opacity: 1;
 }
 
 .paper-page::after {
@@ -340,19 +387,6 @@
   z-index: 1;
 }
 
-.dark .paper-page {
-  background-image:
-    radial-gradient(
-      1000px 500px at 18% 0%,
-      oklch(1 0 0 / 0.04),
-      transparent 60%
-    ),
-    repeating-linear-gradient(
-      0deg,
-      oklch(1 0 0 / 0.015) 0 1px,
-      transparent 1px 3px
-    );
-}
 
 /* Dossier-style metadata stamp strip at the top of a paper page */
 .paper-stamp {
@@ -539,6 +573,10 @@
     0 4px 10px -4px oklch(0 0 0 / 0.12);
   color: var(--foreground);
   transform: rotate(-0.35deg);
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
 }
 
 .tape-strip::before,
@@ -712,11 +750,6 @@
   border: 1px solid oklch(0 0 0 / 0.08);
 }
 
-.dark .tiptap :not(pre) > code {
-  background-color: oklch(1 0 0 / 0.08);
-  border-color: oklch(1 0 0 / 0.12);
-}
-
 .tiptap :not(pre) > code::before,
 .tiptap :not(pre) > code::after {
   content: none !important;
@@ -730,11 +763,6 @@
   border: 1px solid oklch(0 0 0 / 0.08);
   border-radius: var(--radius-md);
   color: var(--paper-foreground);
-}
-
-.dark .tiptap pre {
-  background-color: oklch(1 0 0 / 0.06);
-  border-color: oklch(1 0 0 / 0.1);
 }
 
 .tiptap pre code {

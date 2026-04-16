@@ -96,10 +96,6 @@ export function ReviewHelpDialog({
               }
             />
             <Row
-              label="Redlines panel"
-              keys={<Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>}
-            />
-            <Row
               label="Copy all"
               keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
             />

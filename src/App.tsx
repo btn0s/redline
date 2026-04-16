@@ -10,18 +10,17 @@ import { BottomToolbar } from "@/components/bottom-toolbar"
 import { ClearCommentsDialog } from "@/components/clear-comments-dialog"
 import { OutdatedReloadDialog } from "@/components/outdated-reload-dialog"
 import { ReviewHeader } from "@/components/review-header"
+import { DeskLamp } from "@/components/desk-lamp"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import {
   isModKey,
-  shouldBlockRedlinesToggle,
   shouldBlockReviewChromeShortcut,
 } from "@/lib/mod-key"
 import {
   REVIEW_MD_ADD_COMMENT,
   REVIEW_MD_CLEAR_ALL_COMMENTS,
   REVIEW_MD_COPY_COMMENTS,
-  REVIEW_MD_TOGGLE_COMMENTS_PANEL,
 } from "@/lib/review-md-events"
 
 function reviewStampDate(d: Date = new Date()): string {
@@ -32,23 +31,11 @@ function reviewStampDate(d: Date = new Date()): string {
 }
 
 function AppKeyboardShortcuts() {
-  const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel, togglePanel } = useCommentContext()
+  const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel } = useCommentContext()
   const handlerRef = useRef({ showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel })
   useEffect(() => {
     handlerRef.current = { showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel }
   })
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!isModKey(e) || !e.shiftKey || e.altKey) return
-      if (e.key.toLowerCase() !== "l") return
-      if (shouldBlockRedlinesToggle(e.target)) return
-      e.preventDefault()
-      togglePanel()
-    }
-    window.addEventListener("keydown", onKey, true)
-    return () => window.removeEventListener("keydown", onKey, true)
-  }, [togglePanel])
 
   useEffect(() => {
     if (!showCommentSidebar) return
@@ -114,7 +101,7 @@ function AppCommandListeners({
 }: {
   onRequestClearAll: () => void
 }) {
-  const { handleAddCommentClick, copyComments, hasComments, togglePanel } =
+  const { handleAddCommentClick, copyComments, hasComments } =
     useCommentContext()
   const ref = useRef({
     handleAddCommentClick,
@@ -136,7 +123,6 @@ function AppCommandListeners({
     const onCopy = () => {
       if (ref.current.hasComments) void ref.current.copyComments()
     }
-    const onToggle = () => togglePanel()
     const onClear = () => {
       if (!ref.current.hasComments) return
       ref.current.onRequestClearAll()
@@ -144,15 +130,13 @@ function AppCommandListeners({
 
     window.addEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
     window.addEventListener(REVIEW_MD_COPY_COMMENTS, onCopy)
-    window.addEventListener(REVIEW_MD_TOGGLE_COMMENTS_PANEL, onToggle)
     window.addEventListener(REVIEW_MD_CLEAR_ALL_COMMENTS, onClear)
     return () => {
       window.removeEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
       window.removeEventListener(REVIEW_MD_COPY_COMMENTS, onCopy)
-      window.removeEventListener(REVIEW_MD_TOGGLE_COMMENTS_PANEL, onToggle)
       window.removeEventListener(REVIEW_MD_CLEAR_ALL_COMMENTS, onClear)
     }
-  }, [togglePanel])
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -347,6 +331,7 @@ function AppShell({
 
   return (
     <div className="flex min-h-svh flex-col pt-[calc(env(safe-area-inset-top)+2.75rem)] pb-[max(3.5rem,env(safe-area-inset-bottom))]">
+      <DeskLamp />
       <ReviewHeader
         filePath={pathLeft}
         rootLabel={file.root ?? null}
@@ -379,45 +364,46 @@ function AppShell({
       <div className="flex min-h-0 flex-1 flex-col">
         <main className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
           <h1 className="sr-only">Review {file.filename}</h1>
-          <div
-            className={cn(
-              "mx-auto w-full max-w-[72rem] py-6",
-              showCommentSidebar
-                ? "px-3 sm:px-4 lg:px-5 xl:px-6"
-                : "px-6",
-            )}
-          >
-            <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-3 xl:gap-5 2xl:gap-6">
-              <div
-                className={cn(
-                  "paper-stack",
-                  showCommentSidebar
-                    ? "min-w-0 w-full max-w-3xl"
-                    : "mx-auto min-w-0 w-full max-w-3xl",
-                )}
-              >
-                <div className="paper-page">
-                  <div className="paper-stamp">
-                    <span>REV // {reviewStampDate()}</span>
-                    <span aria-hidden className="paper-stamp-sep" />
-                    <span>{file.filename}</span>
+          <div className="mx-auto w-full max-w-[72rem] px-6 py-6">
+            <div
+              className={cn(
+                "relative mx-auto w-full",
+                "transition-[max-width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                showCommentSidebar
+                  ? "max-w-3xl lg:max-w-[min(100%,calc(48rem+clamp(13.5rem,22vw,16.5rem)))]"
+                  : "max-w-3xl",
+              )}
+            >
+              <div className="w-full max-w-3xl">
+                <div className="editor-surface-light paper-stack w-full">
+                  <div className="paper-page">
+                    <div className="paper-stamp">
+                      <span>REV // {reviewStampDate()}</span>
+                      <span aria-hidden className="paper-stamp-sep" />
+                      <span>{file.filename}</span>
+                    </div>
+                    <Editor
+                      content={file.content}
+                      onUpdate={handleMarkdownUpdate}
+                      contentReloadNonce={contentReloadNonce}
+                      onEditorReady={setEditor}
+                      bubbleMenuSuppressed={showNewComment || activeCommentId !== null}
+                      onAddComment={handleAddCommentClick}
+                    />
                   </div>
-                  <Editor
-                    content={file.content}
-                    onUpdate={handleMarkdownUpdate}
-                    contentReloadNonce={contentReloadNonce}
-                    onEditorReady={setEditor}
-                    bubbleMenuSuppressed={showNewComment || activeCommentId !== null}
-                    onAddComment={handleAddCommentClick}
-                  />
                 </div>
               </div>
 
               <aside
                 className={cn(
+                  "min-h-0 min-w-0 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
                   showCommentSidebar
-                    ? "mx-auto w-full min-w-0 max-w-md sm:max-w-lg lg:mx-0 lg:block lg:min-h-0 lg:w-[clamp(13.5rem,22vw,16.5rem)] lg:max-w-none lg:shrink-0 lg:flex-none xl:w-[clamp(14rem,19vw,17rem)]"
-                    : "hidden min-h-0 w-0 min-w-0 shrink-0 flex-none scale-[0.98] overflow-hidden opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none lg:block",
+                    ? "opacity-100"
+                    : "pointer-events-none opacity-0 max-lg:hidden max-lg:max-h-0 max-lg:overflow-hidden lg:translate-x-1",
+                  "mt-4 w-full max-lg:mx-auto max-lg:max-w-md sm:max-lg:max-w-lg",
+                  "lg:mt-0 lg:mx-0 lg:w-[clamp(13.5rem,22vw,16.5rem)] lg:max-w-none",
+                  "lg:absolute lg:top-0 lg:z-10 lg:pl-3 lg:translate-x-0 xl:pl-5",
+                  "lg:left-[48rem]",
                 )}
                 aria-hidden={!showCommentSidebar}
               >

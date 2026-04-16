@@ -42,7 +42,6 @@ interface CommentContextValue {
   handleSubmitNewComment: (body: string) => void
 
   commentsPanelOpen: boolean
-  togglePanel: () => void
   closePanel: () => void
   openPanel: () => void
 
@@ -91,24 +90,16 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
   }, [clearAllCommentsBase])
 
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(() =>
-    loadCommentsPanelOpen(persistenceKey) ?? true,
+    loadCommentsPanelOpen(persistenceKey) ?? false,
   )
 
   const prevPersistenceKeyRef = useRef<string | null | undefined>(undefined)
   useEffect(() => {
     if (prevPersistenceKeyRef.current === persistenceKey) return
     prevPersistenceKeyRef.current = persistenceKey
-    const next = loadCommentsPanelOpen(persistenceKey) ?? true
+    const next = loadCommentsPanelOpen(persistenceKey) ?? false
     queueMicrotask(() => {
       setCommentsPanelOpen(next)
-    })
-  }, [persistenceKey])
-
-  const togglePanel = useCallback(() => {
-    setCommentsPanelOpen((p) => {
-      const next = !p
-      saveCommentsPanelOpen(persistenceKey, next)
-      return next
     })
   }, [persistenceKey])
 
@@ -170,7 +161,6 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     handleCloseNewComment,
     handleSubmitNewComment,
     commentsPanelOpen,
-    togglePanel,
     closePanel,
     openPanel,
     hoveredCommentId,

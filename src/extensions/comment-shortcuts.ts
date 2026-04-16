@@ -2,7 +2,6 @@ import { Extension } from "@tiptap/core"
 import {
   REVIEW_MD_ADD_COMMENT,
   REVIEW_MD_COPY_COMMENTS,
-  REVIEW_MD_TOGGLE_COMMENTS_PANEL,
 } from "@/lib/review-md-events"
 import { shortcutSchemeRef } from "@/lib/shortcut-scheme-ref"
 
@@ -26,12 +25,6 @@ export const CommentShortcuts = Extension.create({
       },
       "Mod-Shift-c": () => {
         window.dispatchEvent(new CustomEvent(REVIEW_MD_COPY_COMMENTS))
-        return true
-      },
-      "Mod-Shift-l": () => {
-        window.dispatchEvent(
-          new CustomEvent(REVIEW_MD_TOGGLE_COMMENTS_PANEL),
-        )
         return true
       },
     }
