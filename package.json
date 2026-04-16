@@ -1,6 +1,6 @@
 {
   "name": "@btn0s/redline",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "bin": {
     "redline": "./dist/cli/index.js"
