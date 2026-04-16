@@ -43,6 +43,10 @@ export function useDraftComment({
       removeCommentMarkFromEditor(editor, pendingDraftCommentId)
       setPendingDraftCommentId(null)
     }
+    if (editor) {
+      const { to } = editor.state.selection
+      editor.commands.setTextSelection(to)
+    }
     setShowNewComment(false)
   }, [editor, pendingDraftCommentId])
 

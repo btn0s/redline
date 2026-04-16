@@ -76,20 +76,29 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     addReplyToComment,
     deleteComment,
     copyComments,
-    clearAllComments,
+    clearAllComments: clearAllCommentsBase,
     hasComments,
     syncCommentAnchorsFromEditor,
   } = useComments(persistenceKey)
 
+  const editorRef = useRef<Editor | null>(editor)
+  useEffect(() => {
+    editorRef.current = editor
+  }, [editor])
+
+  const clearAllComments = useCallback(() => {
+    clearAllCommentsBase(editorRef.current)
+  }, [clearAllCommentsBase])
+
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(() =>
-    loadCommentsPanelOpen(persistenceKey) ?? false,
+    loadCommentsPanelOpen(persistenceKey) ?? true,
   )
 
   const prevPersistenceKeyRef = useRef<string | null | undefined>(undefined)
   useEffect(() => {
     if (prevPersistenceKeyRef.current === persistenceKey) return
     prevPersistenceKeyRef.current = persistenceKey
-    const next = loadCommentsPanelOpen(persistenceKey) ?? false
+    const next = loadCommentsPanelOpen(persistenceKey) ?? true
     queueMicrotask(() => {
       setCommentsPanelOpen(next)
     })

@@ -6,7 +6,7 @@ function storageKey(fileKey: string) {
   return `${STORAGE_PREFIX}${encodeURIComponent(fileKey)}`
 }
 
-/** `null` = no saved preference (use default closed). */
+/** `null` = no saved preference (caller picks the default). */
 export function loadCommentsPanelOpen(fileKey: string | null): boolean | null {
   if (!fileKey || typeof localStorage === "undefined") return null
   try {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { modShiftAltKey, modShiftKeyCompact } from "@/lib/format-shortcut"
+import { REVIEW_MD_CLEAR_ALL_COMMENTS } from "@/lib/review-md-events"
 
 const toolbarBtnClass =
   "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
@@ -18,8 +19,12 @@ export function BottomToolbar() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const copyResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments } =
+  const { commentsPanelOpen, togglePanel, hasComments, copyComments } =
     useCommentContext()
+
+  const requestClearAll = () => {
+    window.dispatchEvent(new CustomEvent(REVIEW_MD_CLEAR_ALL_COMMENTS))
+  }
 
   useEffect(() => {
     return () => {
@@ -70,7 +75,7 @@ export function BottomToolbar() {
               }
             />
             <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
-              <span>Open comment threads</span>
+              <span>Toggle comments sidebar</span>
               <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>
             </TooltipContent>
           </Tooltip>
@@ -123,7 +128,7 @@ export function BottomToolbar() {
                   disabled={!hasComments}
                   aria-label="Delete all threads"
                   className={toolbarBtnClass}
-                  onClick={clearAllComments}
+                  onClick={requestClearAll}
                 >
                   <Trash2 className="size-3.5 stroke-[1.5]" aria-hidden />
                 </Button>

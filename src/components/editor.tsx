@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import StarterKit from "@tiptap/starter-kit"
 import { Markdown } from "tiptap-markdown"
 import type { Editor as TiptapEditor } from "@tiptap/core"
-import { MessageSquarePlus } from "lucide-react"
 import { CommentMark } from "@/extensions/comment-mark"
 import { CommentShortcuts } from "@/extensions/comment-shortcuts"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+const WARP_DURATION_MS = 220
+const WARP_COMMIT_AT_MS = 180
 
 interface EditorProps {
   content: string
@@ -30,10 +32,23 @@ export function Editor({
 }: EditorProps) {
   const lastMarkdownRef = useRef(content)
   const lastReloadNonceRef = useRef(0)
+  const [warping, setWarping] = useState(false)
+  const warpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   useEffect(() => {
     lastMarkdownRef.current = content
   }, [content])
+
+  useEffect(() => {
+    return () => {
+      for (const t of warpTimersRef.current) clearTimeout(t)
+      warpTimersRef.current = []
+    }
+  }, [])
+
+  useEffect(() => {
+    if (bubbleMenuSuppressed && warping) setWarping(false)
+  }, [bubbleMenuSuppressed, warping])
 
   const extensions = useMemo(
     () => [
@@ -124,26 +139,50 @@ export function Editor({
           }}
           options={{
             placement: "bottom",
-            offset: 8,
+            offset: 0,
             flip: true,
             shift: { padding: 8 },
           }}
-          className="bubble-menu z-[100] pointer-events-auto flex items-center gap-0 rounded-full border border-border bg-card/95 p-0.5 text-muted-foreground shadow-lg ring-1 ring-black/5 backdrop-blur-md supports-backdrop-filter:bg-card/85 dark:border-white/10 dark:bg-[#141414]/95 dark:text-zinc-400 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:ring-black/20 dark:supports-backdrop-filter:bg-[#141414]/85"
+          className="bubble-menu pointer-events-auto z-[100]"
         >
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             title="Add comment"
             aria-label="Add comment"
-            className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
+            className={cn(
+              "inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[10px] font-medium leading-none tracking-tight shadow-[0_2px_8px_var(--annotation-pill-shadow)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]",
+              warping && "warp-to-squiggle",
+            )}
+            style={{
+              backgroundColor: "var(--annotation-pill-bg)",
+              color: "var(--annotation-pill-fg)",
+              borderColor: "var(--annotation-pill-border)",
+            }}
             onMouseDown={(e) => {
               e.preventDefault()
-              onAddComment()
+              if (warping) return
+              const reduce =
+                typeof window !== "undefined" &&
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches
+              if (reduce) {
+                onAddComment()
+                return
+              }
+              setWarping(true)
+              warpTimersRef.current.push(
+                setTimeout(() => {
+                  onAddComment()
+                }, WARP_COMMIT_AT_MS),
+              )
+              warpTimersRef.current.push(
+                setTimeout(() => {
+                  setWarping(false)
+                }, WARP_DURATION_MS),
+              )
             }}
           >
-            <MessageSquarePlus className="size-3.5 stroke-[1.5]" aria-hidden />
-          </Button>
+            + Comment
+          </button>
         </BubbleMenu>
       ) : null}
     </>

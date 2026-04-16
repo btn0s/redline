@@ -38,3 +38,13 @@ export function removeCommentMarkFromEditor(
     }
   }
 }
+
+export function removeAllCommentMarksFromEditor(editor: Editor): void {
+  const markType = editor.state.schema.marks.commentMark
+  if (!markType) return
+  const { doc } = editor.state
+  const tr = editor.state.tr.removeMark(0, doc.content.size, markType)
+  if (tr.docChanged || tr.steps.length > 0) {
+    editor.view.dispatch(tr)
+  }
+}

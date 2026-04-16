@@ -3,8 +3,11 @@ import type { Editor } from "@tiptap/core"
 import { toast } from "sonner"
 import type { Comment } from "@/types/comment"
 import { isComment } from "@/types/comment"
-import { removeCommentMarkFromEditor } from "@/lib/editor-utils"
-import { forEachCommentMark } from "@/lib/editor-utils"
+import {
+  forEachCommentMark,
+  removeAllCommentMarksFromEditor,
+  removeCommentMarkFromEditor,
+} from "@/lib/editor-utils"
 
 export type { Comment, CommentMessage } from "@/types/comment"
 
@@ -213,7 +216,8 @@ export function useComments(persistenceKey: string | null) {
     }
   }, [formatComments])
 
-  const clearAllComments = useCallback(() => {
+  const clearAllComments = useCallback((editor?: Editor | null) => {
+    if (editor) removeAllCommentMarksFromEditor(editor)
     setComments([])
     setActiveCommentId(null)
     toast.success("All comments cleared")

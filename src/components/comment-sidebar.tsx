@@ -10,20 +10,13 @@ import { MessageSquare, Trash2 } from "lucide-react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 import { useCommentContext } from "@/contexts/comment-context"
-import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import { resolveCommentLinkHighlightId } from "@/extensions/comment-mark"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
-import {
-  addCommentShortcutDisplay,
-  modShiftKeyCompact,
-} from "@/lib/format-shortcut"
 import { useCommentSidebarLayout } from "@/hooks/use-comment-sidebar-layout"
 
 export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
-  const { scheme } = useShortcutScheme()
   const {
     comments,
     showNewComment,
@@ -73,6 +66,21 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
     el?.scrollIntoView({ block: "nearest", behavior: "smooth" })
   }, [activeCommentId])
 
+  // When the draft appears, suppress wrapper Y transition for the first paint so
+  // the wrapper snaps to the anchored position. After that, re-enable the
+  // transition so subsequent layout shifts (other comments moving) animate.
+  const [draftYSettled, setDraftYSettled] = useState(false)
+  useEffect(() => {
+    if (!showNewComment) {
+      setDraftYSettled(false)
+      return
+    }
+    if (draftTop !== null) {
+      const id = requestAnimationFrame(() => setDraftYSettled(true))
+      return () => cancelAnimationFrame(id)
+    }
+  }, [showNewComment, draftTop])
+
   return (
     <div
       ref={containerRef}
@@ -86,13 +94,14 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
       aria-label="Redlines"
     >
       {ordered.length === 0 && !showNewComment && (
-        <p className="text-caption text-muted-foreground relative py-2 leading-snug tracking-tight">
-          Select text, then add a comment (
-          <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
-          ). Open redlines with the toolbar or{" "}
-          <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd> (also
-          works when the editor is not focused).
-        </p>
+        <div className="relative pt-12">
+          <p className="text-xs font-medium tracking-tight text-foreground">
+            No comments yet
+          </p>
+          <p className="text-caption text-muted-foreground mt-1 leading-snug">
+            Select text in the document to start a thread.
+          </p>
+        </div>
       )}
 
       {ordered.map((comment) => {
@@ -132,10 +141,12 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
       {showNewComment && (
         <div
           ref={draftWrapperRef}
+          data-comment-draft=""
           className={cn(
             "absolute left-0 right-0 top-0 will-change-transform",
             layoutReady &&
               !reduceMotion &&
+              draftYSettled &&
               "transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
           )}
           style={{ transform: `translate3d(0, ${draftTop ?? 0}px, 0)` }}
@@ -179,7 +190,7 @@ function NewCommentDraft({
   }
 
   return (
-    <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 shadow-sm">
+    <div className="comment-draft-enter rounded-lg border border-border/60 bg-muted/30 p-2.5 shadow-sm">
       {quotedText ? (
         <blockquote className="text-caption mb-2 border-l-2 border-border/70 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2">
           {quotedText}

@@ -7,6 +7,7 @@ import { ShortcutSchemeProvider } from "@/contexts/shortcut-scheme-context"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { BottomToolbar } from "@/components/bottom-toolbar"
+import { ClearCommentsDialog } from "@/components/clear-comments-dialog"
 import { OutdatedReloadDialog } from "@/components/outdated-reload-dialog"
 import { ReviewHeader } from "@/components/review-header"
 import { Spinner } from "@/components/ui/spinner"
@@ -65,14 +66,12 @@ function AppDismissHandler() {
   })
 
   useEffect(() => {
-    if (!showCommentSidebar) return
     if (activeCommentId === null && !showNewComment) return
 
     const onPointerDown = (e: PointerEvent) => {
       const t = e.target
       if (!(t instanceof Element)) return
       if (
-        t.closest("[data-redlines-sidebar]") ||
         t.closest(".bubble-menu") ||
         t.closest("[data-prevent-redlines-dismiss]") ||
         t.closest('[data-slot="dropdown-menu-content"]') ||
@@ -86,8 +85,15 @@ function AppDismissHandler() {
         return
       }
       const h = handlerRef.current
-      if (h.showNewComment) h.handleCloseNewComment()
-      if (h.activeCommentId !== null) h.setActiveCommentId(null)
+      if (h.showNewComment && !t.closest("[data-comment-draft]")) {
+        h.handleCloseNewComment()
+      }
+      if (h.activeCommentId !== null) {
+        const selector = `[data-comment-thread-id="${CSS.escape(h.activeCommentId)}"]`
+        if (!t.closest(selector)) {
+          h.setActiveCommentId(null)
+        }
+      }
     }
     document.addEventListener("pointerdown", onPointerDown, true)
     return () => document.removeEventListener("pointerdown", onPointerDown, true)
@@ -96,12 +102,26 @@ function AppDismissHandler() {
   return null
 }
 
-function AppCommandListeners() {
-  const { handleAddCommentClick, copyComments, hasComments, clearAllComments, togglePanel } =
+function AppCommandListeners({
+  onRequestClearAll,
+}: {
+  onRequestClearAll: () => void
+}) {
+  const { handleAddCommentClick, copyComments, hasComments, togglePanel } =
     useCommentContext()
-  const ref = useRef({ handleAddCommentClick, copyComments, hasComments, clearAllComments })
+  const ref = useRef({
+    handleAddCommentClick,
+    copyComments,
+    hasComments,
+    onRequestClearAll,
+  })
   useEffect(() => {
-    ref.current = { handleAddCommentClick, copyComments, hasComments, clearAllComments }
+    ref.current = {
+      handleAddCommentClick,
+      copyComments,
+      hasComments,
+      onRequestClearAll,
+    }
   })
 
   useEffect(() => {
@@ -112,14 +132,7 @@ function AppCommandListeners() {
     const onToggle = () => togglePanel()
     const onClear = () => {
       if (!ref.current.hasComments) return
-      if (
-        !window.confirm(
-          "Remove all comment threads from this document? This cannot be undone.",
-        )
-      ) {
-        return
-      }
-      ref.current.clearAllComments()
+      ref.current.onRequestClearAll()
     }
 
     window.addEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
@@ -297,6 +310,8 @@ function AppShell({
     clearHover,
   } = useCommentContext()
 
+  const [clearCommentsOpen, setClearCommentsOpen] = useState(false)
+
   const confirmOutdatedReload = useCallback(async () => {
     setOutdatedReloadPending(true)
     try {
@@ -341,9 +356,17 @@ function AppShell({
         onConfirm={confirmOutdatedReload}
       />
 
+      <ClearCommentsDialog
+        open={clearCommentsOpen}
+        onOpenChange={setClearCommentsOpen}
+        onConfirm={clearAllComments}
+      />
+
       <AppKeyboardShortcuts />
       <AppDismissHandler />
-      <AppCommandListeners />
+      <AppCommandListeners
+        onRequestClearAll={() => setClearCommentsOpen(true)}
+      />
       {editor && <EditorCommentSyncBridge editor={editor} />}
 
       <div className="flex min-h-0 flex-1 flex-col">
