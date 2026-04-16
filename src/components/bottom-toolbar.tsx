@@ -2,18 +2,13 @@ import { useEffect, useRef, useState } from "react"
 import { CircleCheck, CircleHelp, Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useCommentContext } from "@/contexts/comment-context"
-import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
 import { ReviewHelpDialog } from "@/components/review-help-dialog"
 import { ReviewSettingsDialog } from "@/components/review-settings-dialog"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import {
-  addCommentShortcutDisplay,
-  modShiftAltKey,
-  modShiftKeyCompact,
-} from "@/lib/format-shortcut"
+import { modShiftAltKey, modShiftKeyCompact } from "@/lib/format-shortcut"
 
 const toolbarBtnClass =
   "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
@@ -23,7 +18,6 @@ export function BottomToolbar() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const copyResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { scheme } = useShortcutScheme()
   const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments } =
     useCommentContext()
 
@@ -173,8 +167,7 @@ export function BottomToolbar() {
               }
             />
             <TooltipContent side="top" sideOffset={8}>
-              Shortcuts, keyboard layout (
-              <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd> new comment)
+              Shortcuts and keyboard layout
             </TooltipContent>
           </Tooltip>
 
