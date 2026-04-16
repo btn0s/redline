@@ -57,13 +57,30 @@ export function ReviewSettingsDialog({
         className="max-h-[min(90svh,36rem)] w-full max-w-md gap-0 overflow-y-auto p-0 sm:max-w-md"
         data-prevent-redlines-dismiss=""
       >
-        <div className="p-4 pb-3">
+        <div className="border-b border-border/60 p-4 pb-3">
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
               Appearance, new-comment shortcut, and the rest of the chord list.
             </DialogDescription>
           </DialogHeader>
+        </div>
+
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <Label
+              htmlFor="settings-spellcheck"
+              className="text-[11px] font-medium text-foreground"
+            >
+              Browser spellcheck
+            </Label>
+            <Switch
+              id="settings-spellcheck"
+              checked={spellcheckEnabled}
+              onCheckedChange={setSpellcheckEnabled}
+              aria-label="Toggle browser spellcheck"
+            />
+          </div>
         </div>
 
         <div className="px-4 py-3">
@@ -95,23 +112,6 @@ export function ReviewSettingsDialog({
               <SelectItem value="dark">Dark</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <Label
-              htmlFor="settings-spellcheck"
-              className="text-[11px] font-medium text-foreground"
-            >
-              Browser spellcheck
-            </Label>
-            <Switch
-              id="settings-spellcheck"
-              checked={spellcheckEnabled}
-              onCheckedChange={setSpellcheckEnabled}
-              aria-label="Toggle browser spellcheck"
-            />
-          </div>
         </div>
 
         <div className="px-4 py-3 pb-4">
