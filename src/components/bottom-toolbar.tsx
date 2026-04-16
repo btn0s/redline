@@ -4,6 +4,10 @@ import { ThemeCycleButton } from "@/components/theme-cycle-button"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  modShiftAltKey,
+  modShiftKeyCompact,
+} from "@/lib/format-shortcut"
 
 const toolbarBtnClass =
   "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
@@ -42,9 +46,7 @@ export function BottomToolbar() {
           <TooltipContent side="top" sideOffset={8} className="max-w-[17rem] flex-col gap-1.5">
             <span>Redlines — browse all comment threads in the side panel.</span>
             <span className="flex flex-wrap items-center gap-1">
-              <Kbd className="text-[10px]">⌘⇧L</Kbd>
-              <span className="opacity-80">/</span>
-              <Kbd className="text-[10px]">Ctrl+Shift+L</Kbd>
+              <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>
             </span>
           </TooltipContent>
         </Tooltip>
@@ -65,8 +67,14 @@ export function BottomToolbar() {
               </Button>
             }
           />
-          <TooltipContent side="top" sideOffset={8}>
-            Copy every thread as plain text to the clipboard.
+          <TooltipContent side="top" sideOffset={8} className="max-w-[16rem] flex-col gap-1.5">
+            <span>Copy every thread as plain text to the clipboard.</span>
+            <span className="flex flex-wrap items-center gap-1">
+              <Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>
+              <span className="text-[10px] opacity-80">
+                (from the editor, or anywhere outside a text field)
+              </span>
+            </span>
           </TooltipContent>
         </Tooltip>
 
@@ -86,8 +94,11 @@ export function BottomToolbar() {
               </Button>
             }
           />
-          <TooltipContent side="top" sideOffset={8}>
-            Remove all comment threads from this document.
+          <TooltipContent side="top" sideOffset={8} className="max-w-[17rem] flex-col gap-1.5">
+            <span>Remove all comment threads from this document (asks for confirmation).</span>
+            <span className="flex flex-wrap items-center gap-1">
+              <Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>
+            </span>
           </TooltipContent>
         </Tooltip>
 

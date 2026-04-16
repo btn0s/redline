@@ -1,4 +1,5 @@
 import * as React from "react"
+import { isModKey, shouldBlockReviewChromeShortcut } from "@/lib/mod-key"
 
 type Theme = "dark" | "light" | "system"
 type ResolvedTheme = "dark" | "light"
@@ -13,6 +14,8 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme
   setTheme: (theme: Theme) => void
+  /** system → light → dark → system (same as the bottom bar theme control). */
+  cycleTheme: () => void
 }
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)"
@@ -57,25 +60,6 @@ function disableTransitionsTemporarily() {
   }
 }
 
-function isEditableTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
-
-  if (target.isContentEditable) {
-    return true
-  }
-
-  const editableParent = target.closest(
-    "input, textarea, select, [contenteditable='true']"
-  )
-  if (editableParent) {
-    return true
-  }
-
-  return false
-}
-
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -99,6 +83,15 @@ export function ThemeProvider({
     },
     [storageKey]
   )
+
+  const cycleTheme = React.useCallback(() => {
+    setThemeState((current) => {
+      const next: Theme =
+        current === "system" ? "light" : current === "light" ? "dark" : "system"
+      localStorage.setItem(storageKey, next)
+      return next
+    })
+  }, [storageKey])
 
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
@@ -140,43 +133,17 @@ export function ThemeProvider({
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat) {
-        return
-      }
-
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (isEditableTarget(event.target)) {
-        return
-      }
-
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      setThemeState((currentTheme) => {
-        const nextTheme =
-          currentTheme === "dark"
-            ? "light"
-            : currentTheme === "light"
-              ? "dark"
-              : getSystemTheme() === "dark"
-                ? "light"
-                : "dark"
-
-        localStorage.setItem(storageKey, nextTheme)
-        return nextTheme
-      })
+      if (event.repeat) return
+      if (!isModKey(event) || !event.altKey || event.shiftKey) return
+      if (event.key.toLowerCase() !== "t") return
+      if (shouldBlockReviewChromeShortcut(event.target)) return
+      event.preventDefault()
+      cycleTheme()
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [storageKey])
+    window.addEventListener("keydown", handleKeyDown, true)
+    return () => window.removeEventListener("keydown", handleKeyDown, true)
+  }, [cycleTheme])
 
   React.useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
@@ -207,8 +174,9 @@ export function ThemeProvider({
     () => ({
       theme,
       setTheme,
+      cycleTheme,
     }),
-    [theme, setTheme]
+    [theme, setTheme, cycleTheme]
   )
 
   return (

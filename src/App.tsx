@@ -10,6 +10,17 @@ import { OutdatedReloadDialog } from "@/components/outdated-reload-dialog"
 import { ReviewHeader } from "@/components/review-header"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
+import {
+  isModKey,
+  shouldBlockRedlinesToggle,
+  shouldBlockReviewChromeShortcut,
+} from "@/lib/mod-key"
+import {
+  REVIEW_MD_ADD_COMMENT,
+  REVIEW_MD_CLEAR_ALL_COMMENTS,
+  REVIEW_MD_COPY_COMMENTS,
+  REVIEW_MD_TOGGLE_COMMENTS_PANEL,
+} from "@/lib/review-md-events"
 
 function AppKeyboardShortcuts() {
   const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel, togglePanel } = useCommentContext()
@@ -20,18 +31,9 @@ function AppKeyboardShortcuts() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || !e.shiftKey) return
+      if (!isModKey(e) || !e.shiftKey || e.altKey) return
       if (e.key.toLowerCase() !== "l") return
-      const t = e.target
-      if (
-        t instanceof HTMLElement &&
-        (t.closest("textarea, input") ||
-          t.closest('[contenteditable="true"]') ||
-          t.isContentEditable)
-      ) {
-        return
-      }
-      if (t instanceof Element && t.closest(".ProseMirror")) return
+      if (shouldBlockRedlinesToggle(e.target)) return
       e.preventDefault()
       togglePanel()
     }
@@ -92,26 +94,67 @@ function AppDismissHandler() {
 }
 
 function AppCommandListeners() {
-  const { handleAddCommentClick, copyComments, hasComments, togglePanel } = useCommentContext()
-  const ref = useRef({ handleAddCommentClick, copyComments, hasComments })
+  const { handleAddCommentClick, copyComments, hasComments, clearAllComments, togglePanel } =
+    useCommentContext()
+  const ref = useRef({ handleAddCommentClick, copyComments, hasComments, clearAllComments })
   useEffect(() => {
-    ref.current = { handleAddCommentClick, copyComments, hasComments }
+    ref.current = { handleAddCommentClick, copyComments, hasComments, clearAllComments }
   })
 
   useEffect(() => {
     const onAdd = () => ref.current.handleAddCommentClick()
-    const onCopy = () => { if (ref.current.hasComments) void ref.current.copyComments() }
+    const onCopy = () => {
+      if (ref.current.hasComments) void ref.current.copyComments()
+    }
     const onToggle = () => togglePanel()
+    const onClear = () => {
+      if (!ref.current.hasComments) return
+      if (
+        !window.confirm(
+          "Remove all comment threads from this document? This cannot be undone.",
+        )
+      ) {
+        return
+      }
+      ref.current.clearAllComments()
+    }
 
-    window.addEventListener("review-md:add-comment", onAdd)
-    window.addEventListener("review-md:copy-comments", onCopy)
-    window.addEventListener("review-md:toggle-comments-panel", onToggle)
+    window.addEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
+    window.addEventListener(REVIEW_MD_COPY_COMMENTS, onCopy)
+    window.addEventListener(REVIEW_MD_TOGGLE_COMMENTS_PANEL, onToggle)
+    window.addEventListener(REVIEW_MD_CLEAR_ALL_COMMENTS, onClear)
     return () => {
-      window.removeEventListener("review-md:add-comment", onAdd)
-      window.removeEventListener("review-md:copy-comments", onCopy)
-      window.removeEventListener("review-md:toggle-comments-panel", onToggle)
+      window.removeEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
+      window.removeEventListener(REVIEW_MD_COPY_COMMENTS, onCopy)
+      window.removeEventListener(REVIEW_MD_TOGGLE_COMMENTS_PANEL, onToggle)
+      window.removeEventListener(REVIEW_MD_CLEAR_ALL_COMMENTS, onClear)
     }
   }, [togglePanel])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!isModKey(e) || !e.shiftKey || !e.altKey) return
+      if (e.key.toLowerCase() !== "c") return
+      if (shouldBlockReviewChromeShortcut(e.target)) return
+      e.preventDefault()
+      window.dispatchEvent(new CustomEvent(REVIEW_MD_CLEAR_ALL_COMMENTS))
+    }
+    window.addEventListener("keydown", onKey, true)
+    return () => window.removeEventListener("keydown", onKey, true)
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!isModKey(e) || !e.shiftKey || e.altKey) return
+      if (e.key.toLowerCase() !== "c") return
+      if (e.target instanceof Element && e.target.closest(".ProseMirror")) return
+      if (shouldBlockReviewChromeShortcut(e.target)) return
+      e.preventDefault()
+      window.dispatchEvent(new CustomEvent(REVIEW_MD_COPY_COMMENTS))
+    }
+    window.addEventListener("keydown", onKey, true)
+    return () => window.removeEventListener("keydown", onKey, true)
+  }, [])
 
   return null
 }

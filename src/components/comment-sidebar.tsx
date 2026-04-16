@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
+import { modShiftKeyCompact } from "@/lib/format-shortcut"
 
 export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
   const {
@@ -66,9 +67,11 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
 
         {ordered.length === 0 && !showNewComment && (
           <p className="text-muted-foreground py-2 text-[12px] leading-snug">
-            Select text, then add a comment or{" "}
-            <Kbd className="text-[10px]">⌘⇧M</Kbd>. Open redlines with the
-            toolbar or <Kbd className="text-[10px]">⌘⇧L</Kbd> to browse threads.
+            Select text, then add a comment (
+            <Kbd className="text-[10px]">{modShiftKeyCompact("M")}</Kbd>
+            ). Open redlines with the toolbar or{" "}
+            <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd> (also
+            works when the editor is not focused).
           </p>
         )}
 
