@@ -1,9 +1,17 @@
-# @btn0s/redline
+# Redline
 
-Markdown review in the browser. Open any `.md` file, select text, leave anchored comment threads, and save everything back to disk.
+Review mode for LLM-generated plans.
+
+LLMs write plans and specs as markdown. Reviewing them in chat is imprecise — you end up quoting passages by hand, losing context, or just saying "looks good" when it doesn't. Redline gives you a Google Docs-style commenting experience on any `.md` file so you can leave anchored, passage-level feedback. When you're done, copy all your comments in one click and paste them back into the LLM.
+
+**The loop:** LLM writes a plan → you review it in Redline → your feedback goes back to the LLM.
+
+Inspired by [Agentation](https://agentation.dev).
+
+## Quickstart
 
 ```bash
-npx @btn0s/redline ./path/to/file.md
+npx @btn0s/redline ./plan.md
 ```
 
 Redline starts a local server on port `4700` and opens the review UI in your browser.
@@ -14,25 +22,25 @@ Redline starts a local server on port `4700` and opens the review UI in your bro
 npm i -g @btn0s/redline
 ```
 
-Or run it directly with `npx` / `pnpm dlx` — no install required.
+Or run directly with `npx` / `pnpm dlx` — no install required.
 
-## Usage
+## How it works
 
-```bash
-redline <file.md>
-```
+1. **Select text** in the rendered markdown to start a comment thread
+2. **Leave comments** anchored to the exact passage — replies are threaded
+3. **Copy all** — one click copies every comment as structured text, ready to paste back into your LLM conversation
 
-- Select any passage of text to start a comment thread
-- Comments are anchored to the exact text selection
-- All comments persist to disk alongside the markdown
+Comments persist to disk alongside the markdown so you can close and come back.
 
 ## Agent skill
 
-Redline ships an agent skill so AI assistants (Cursor, Claude Code, Codex, etc.) can launch the review UI on your behalf when a plan or spec needs human feedback.
+Redline ships an agent skill so AI coding assistants (Cursor, Claude Code, Codex, etc.) can open the review UI on your behalf when a plan or spec needs your sign-off.
 
 ```bash
 npx skills add btn0s/redline --skill redline
 ```
+
+The agent writes a plan, launches Redline, and waits for your feedback — no copy-pasting commands.
 
 ## Development
 
