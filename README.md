@@ -1,6 +1,26 @@
-# React + TypeScript + Vite + shadcn/ui
+# @btn0s/redline
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+Local **markdown review** in the browser: open a `.md` file, leave anchored comment threads, save back to disk.
+
+```bash
+npx @btn0s/redline ./path/to/file.md
+```
+
+## Agent skill (Cursor, Claude Code, Codex, …)
+
+This repo includes an installable **Agent Skill** so assistants know to launch Redline when you want a human to review a plan or doc:
+
+```bash
+npx skills add btn0s/redline --skill redline
+```
+
+How this relates to [**skills.sh**](https://skills.sh) (directory / leaderboard) is documented in skills/README.md.
+
+---
+
+## App stack
+
+This is a Vite project with React, TypeScript, and shadcn/ui.
 
 ## Adding components
 

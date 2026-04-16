@@ -2,6 +2,10 @@
   "name": "@btn0s/redline",
   "version": "0.0.2",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/btn0s/redline.git"
+  },
   "bin": {
     "redline": "./dist/cli/index.js"
   },

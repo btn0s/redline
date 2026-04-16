@@ -1,6 +1,8 @@
 ---
 name: redline
 description: Use when a markdown plan, spec, or doc should be opened in the Redline review UI for the user. The agent launches the CLI; do not only paste instructions for the user to run manually.
+metadata:
+  repository: https://github.com/btn0s/redline
 ---
 
 # Redline — launch the review UI
