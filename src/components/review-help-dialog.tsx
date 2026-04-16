@@ -72,6 +72,22 @@ export function ReviewHelpDialog({
 
         <div className="border-t border-border/60 px-4 py-3">
           <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
+          {onOpenSettings ? (
+            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+              To customize these,{" "}
+              <button
+                type="button"
+                className="text-foreground underline-offset-2 hover:underline"
+                onClick={() => {
+                  onOpenChange(false)
+                  onOpenSettings()
+                }}
+              >
+                open Settings
+              </button>
+              .
+            </p>
+          ) : null}
           <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <Row
               label={newCommentLabel}
@@ -93,22 +109,6 @@ export function ReviewHelpDialog({
             />
             <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
-          {onOpenSettings ? (
-            <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">
-              To use the other new-comment shortcut,{" "}
-              <button
-                type="button"
-                className="text-foreground underline-offset-2 hover:underline"
-                onClick={() => {
-                  onOpenChange(false)
-                  onOpenSettings()
-                }}
-              >
-                open Settings
-              </button>
-              .
-            </p>
-          ) : null}
         </div>
 
         <div className="border-t border-border/60 px-4 py-3 pb-4">
