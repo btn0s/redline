@@ -32,13 +32,9 @@ export function ThemeCycleButton() {
           </Button>
         }
       />
-      <TooltipContent side="top" sideOffset={8} className="max-w-[15rem] flex-col gap-1.5">
-        <span>
-          Cycle appearance: system → light → dark. Now: {label}.
-        </span>
-        <span className="flex flex-wrap items-center gap-1">
-          Shortcut: <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
-        </span>
+      <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
+        <span>Cycle theme</span>
+        <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
       </TooltipContent>
     </Tooltip>
   )
