@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import { Plus } from "lucide-react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import StarterKit from "@tiptap/starter-kit"
 import { Markdown } from "tiptap-markdown"
 import type { Editor as TiptapEditor } from "@tiptap/core"
+import { Button } from "@/components/ui/button"
 import { CommentMark } from "@/extensions/comment-mark"
 import { CommentShortcuts } from "@/extensions/comment-shortcuts"
+import { cn } from "@/lib/utils"
 
 interface EditorProps {
   content: string
@@ -144,19 +147,17 @@ export function Editor({
           }}
           className="bubble-menu pointer-events-auto z-[100]"
         >
-          <button
+          <Button
             type="button"
-            title="Leave a sticky"
-            aria-label="Leave a sticky"
-            className="inline-flex h-6 shrink-0 items-center gap-1.5 border px-2.5 font-mono text-[10px] uppercase tracking-[0.16em] leading-none shadow-[0_1px_0_rgba(255,255,255,0.45)_inset,0_2px_4px_rgba(0,0,0,0.12),0_8px_18px_-6px_rgba(0,0,0,0.22)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-            style={{
-              backgroundColor: "var(--sticky)",
-              color: "var(--sticky-foreground)",
-              borderColor: "var(--sticky-edge)",
-              borderRadius: "2px 4px 3px 5px",
-              transform: "rotate(-1.5deg)",
-              visibility: spent ? "hidden" : undefined,
-            }}
+            variant="secondary"
+            size="xs"
+            title="Add note"
+            aria-label="Add note"
+            className={cn(
+              "sticky-skeuo-btn sticky-skeuo-btn--neutral",
+              "active:!translate-y-0",
+            )}
+            style={{ visibility: spent ? "hidden" : undefined }}
             onMouseDown={(e) => {
               e.preventDefault()
               if (spent) return
@@ -164,9 +165,9 @@ export function Editor({
               onAddComment()
             }}
           >
-            <span aria-hidden>[+]</span>
-            <span>Sticky</span>
-          </button>
+            <Plus data-icon="inline-start" className="size-2.5" aria-hidden />
+            Add note
+          </Button>
         </BubbleMenu>
       ) : null}
     </>
