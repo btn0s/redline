@@ -130,6 +130,21 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
 
   const { hoveredCommentId, clearHover } = useCommentHover(editor)
 
+  useEffect(() => {
+    if (comments.length > 0 || showNewComment) return
+    if (!commentsPanelOpen) return
+    queueMicrotask(() => {
+      setActiveCommentId(null)
+      closePanel()
+    })
+  }, [
+    comments.length,
+    showNewComment,
+    commentsPanelOpen,
+    closePanel,
+    setActiveCommentId,
+  ])
+
   const linkHighlightId = resolveCommentLinkHighlightId(
     activeCommentId,
     hoveredCommentId,

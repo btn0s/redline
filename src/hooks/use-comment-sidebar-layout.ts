@@ -10,7 +10,8 @@ import {
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 
-const GAP_PX = 8
+/** Min vertical gap between stacked cards (layout is axis-aligned; extra room for tilt + action bars). */
+const GAP_PX = 18
 const CONTAINER_BOTTOM_PAD_PX = 8
 
 function markSelector(commentId: string): string {
