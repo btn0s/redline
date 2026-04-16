@@ -55,32 +55,11 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
                 Select text → thread replies →{" "}
                 <span className="text-foreground/90">Copy all</span>.
               </p>
-              <p className="text-[11px] leading-snug">
-                Inspired by{" "}
-                <a
-                  href="https://agentation.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground underline-offset-2 hover:underline"
-                >
-                  Agentation
-                </a>
-                . Learn more on{" "}
-                <a
-                  href={REDLINE_REPO_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground underline-offset-2 hover:underline"
-                >
-                  GitHub
-                </a>
-                .
-              </p>
             </div>
           </DialogHeader>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3 pb-4">
+        <div className="border-t border-border/60 px-4 py-3">
           <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
           <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <Row
@@ -105,6 +84,30 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
             />
             <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
+        </div>
+
+        <div className="border-t border-border/60 px-4 py-3 pb-4">
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            Inspired by{" "}
+            <a
+              href="https://agentation.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground underline-offset-2 hover:underline"
+            >
+              Agentation
+            </a>
+            . Learn more on{" "}
+            <a
+              href={REDLINE_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground underline-offset-2 hover:underline"
+            >
+              GitHub
+            </a>
+            .
+          </p>
         </div>
       </DialogContent>
     </Dialog>
