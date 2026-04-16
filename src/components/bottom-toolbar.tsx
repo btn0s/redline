@@ -128,7 +128,7 @@ export function BottomToolbar() {
                   variant="ghost"
                   size="icon-sm"
                   disabled={!hasComments}
-                  aria-label="Clear all comments"
+                  aria-label="Delete all threads"
                   className={toolbarBtnClass}
                   onClick={clearAllComments}
                 >
@@ -136,11 +136,9 @@ export function BottomToolbar() {
                 </Button>
               }
             />
-            <TooltipContent side="top" sideOffset={8} className="max-w-[17rem] flex-col gap-1.5">
-              <span>Remove all comment threads from this document (asks for confirmation).</span>
-              <span className="flex flex-wrap items-center gap-1">
-                <Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>
-              </span>
+            <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
+              <span>Delete all threads</span>
+              <Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>
             </TooltipContent>
           </Tooltip>
 
