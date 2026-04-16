@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
-import { useFile } from "@/hooks/use-file"
+import { useFile, type FileData } from "@/hooks/use-file"
 import { useEditorCommentSync } from "@/hooks/use-editor-comment-sync"
 import { CommentProvider, useCommentContext } from "@/contexts/comment-context"
 import { ShortcutSchemeProvider } from "@/contexts/shortcut-scheme-context"
@@ -256,7 +256,7 @@ export function App() {
 }
 
 interface AppShellProps {
-  file: { content: string; filename: string; path?: string }
+  file: FileData
   editor: TiptapEditor | null
   setEditor: (e: TiptapEditor) => void
   saving: boolean
