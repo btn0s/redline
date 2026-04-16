@@ -1,5 +1,6 @@
 {
   "name": "@btn0s/redline",
+  "packageManager": "pnpm@10.29.3",
   "version": "0.0.3",
   "type": "module",
   "repository": {
