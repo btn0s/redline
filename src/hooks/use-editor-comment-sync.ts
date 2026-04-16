@@ -107,9 +107,9 @@ export function useEditorCommentSync({
       open()
     }
     // eslint-disable-next-line react-hooks/immutability -- writing to ProseMirror storage, not React props
-    ;(editor.storage.commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = pillClickHandler
+    ;((editor.storage as unknown as Record<string, unknown>).commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = pillClickHandler
     return () => {
-      ;(editor.storage.commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = null
+      ;((editor.storage as unknown as Record<string, unknown>).commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = null
     }
   }, [editor])
 }

@@ -1,4 +1,4 @@
-import { Mark, mergeAttributes } from "@tiptap/core"
+import { Mark, mergeAttributes, type Editor } from "@tiptap/core"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { Decoration, DecorationSet } from "@tiptap/pm/view"
 import { forEachCommentMark } from "@/lib/editor-utils"
@@ -12,7 +12,7 @@ export const commentHoverPluginKey = new PluginKey<string | null>(
 )
 
 export function setHoveredComment(
-  editor: { view: { dispatch: (tr: unknown) => void }; state: { tr: { setMeta: (key: PluginKey, value: unknown) => unknown } } },
+  editor: Editor,
   commentId: string | null,
 ): void {
   const tr = editor.state.tr.setMeta(commentHoverPluginKey, commentId)
@@ -91,7 +91,7 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
   },
 
   addProseMirrorPlugins() {
-    const storage = this.editor.storage.commentMark as {
+    const storage = (this.editor.storage as unknown as Record<string, unknown>).commentMark as {
       onPillClick: ((commentId: string) => void) | null
     }
 
