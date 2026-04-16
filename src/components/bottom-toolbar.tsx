@@ -180,7 +180,7 @@ export function BottomToolbar() {
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Help and keyboard shortcuts"
+                  aria-label="What is redline?"
                   className={toolbarBtnClass}
                   onClick={() => setHelpOpen(true)}
                 >
@@ -188,8 +188,8 @@ export function BottomToolbar() {
                 </Button>
               }
             />
-            <TooltipContent side="top" sideOffset={8} className="max-w-[12rem]">
-              What Redline is + shortcuts
+            <TooltipContent side="top" sideOffset={8}>
+              What is redline?
             </TooltipContent>
           </Tooltip>
         </div>
