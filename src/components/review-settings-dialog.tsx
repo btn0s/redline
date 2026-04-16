@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { useCommentContext } from "@/contexts/comment-context"
+import { useTheme } from "@/components/theme-provider.tsx"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import {
   Dialog,
@@ -39,7 +39,7 @@ export function ReviewSettingsDialog({
   onOpenChange,
 }: ReviewSettingsDialogProps) {
   const { scheme, setScheme } = useShortcutScheme()
-  const { comments } = useCommentContext()
+  const { theme, setTheme } = useTheme()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,7 +51,7 @@ export function ReviewSettingsDialog({
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
-              New-comment layout (Docs vs Notion) and the full chord list.
+              New-comment layout, appearance, and the rest of the chord list.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -102,11 +102,60 @@ export function ReviewSettingsDialog({
         </div>
 
         <div className="border-t border-border/60 px-4 py-3">
-          <p className="text-[11px] font-medium text-foreground">Other shortcuts</p>
-          <p className="text-muted-foreground mt-1 mb-2 text-[11px] leading-snug">
-            Unchanged by the option above.
+          <Label className="text-[11px] font-medium text-foreground">Appearance</Label>
+          <p className="text-muted-foreground mt-1 mb-3 text-[11px] leading-snug">
+            Or press <Kbd className="text-[10px]">{modAltKey("T")}</Kbd> when not in a
+            text field.
           </p>
-          <div className="rounded-lg border border-border/50 bg-muted/20 px-2.5">
+          <RadioGroup
+            value={theme}
+            onValueChange={(v) =>
+              setTheme(v as "system" | "light" | "dark")
+            }
+            className="gap-2"
+          >
+            <label
+              className={cn(
+                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
+                theme === "system" && "border-primary/50 bg-muted/40",
+              )}
+            >
+              <RadioGroupItem value="system" className="mt-0.5" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-medium">System</span>
+                <span className="text-muted-foreground mt-0.5 block text-[11px]">
+                  Match the OS light/dark setting.
+                </span>
+              </span>
+            </label>
+            <label
+              className={cn(
+                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
+                theme === "light" && "border-primary/50 bg-muted/40",
+              )}
+            >
+              <RadioGroupItem value="light" className="mt-0.5" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-medium">Light</span>
+              </span>
+            </label>
+            <label
+              className={cn(
+                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
+                theme === "dark" && "border-primary/50 bg-muted/40",
+              )}
+            >
+              <RadioGroupItem value="dark" className="mt-0.5" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-medium">Dark</span>
+              </span>
+            </label>
+          </RadioGroup>
+        </div>
+
+        <div className="border-t border-border/60 px-4 py-3 pb-4">
+          <p className="text-[11px] font-medium text-foreground">Other shortcuts</p>
+          <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <ShortcutRow
               label="Toggle redlines"
               keys={<Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>}
@@ -124,13 +173,6 @@ export function ReviewSettingsDialog({
               keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>}
             />
           </div>
-        </div>
-
-        <div className="border-t border-border/60 px-4 py-3 pb-4">
-          <p className="text-muted-foreground text-[11px]">
-            Threads in this document:{" "}
-            <span className="font-mono text-foreground">{comments.length}</span>
-          </p>
         </div>
       </DialogContent>
     </Dialog>
