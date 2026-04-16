@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react"
 import type { Editor } from "@tiptap/core"
+import { toast } from "sonner"
 import type { Comment } from "@/types/comment"
 import { isComment } from "@/types/comment"
 import { removeCommentMarkFromEditor } from "@/lib/editor-utils"
@@ -203,9 +204,11 @@ export function useComments(persistenceKey: string | null) {
     const text = formatComments()
     try {
       await navigator.clipboard.writeText(text)
+      toast.success("Comments copied to clipboard")
       return true
     } catch (e) {
       console.error("Failed to copy comments:", e)
+      toast.error("Failed to copy comments")
       return false
     }
   }, [formatComments])
@@ -213,6 +216,7 @@ export function useComments(persistenceKey: string | null) {
   const clearAllComments = useCallback(() => {
     setComments([])
     setActiveCommentId(null)
+    toast.success("All comments cleared")
   }, [])
 
   return {
