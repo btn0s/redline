@@ -5,6 +5,7 @@ import { fileURLToPath } from "url"
 import {
   computeRevFromStats,
   getDisplayPath,
+  getRootLabel,
   isResolvedPathInsideDirectory,
   parseFilePutBody,
 } from "../shared/api-handlers.js"
@@ -58,7 +59,8 @@ export function startServer(filePath: string, port: number): Promise<string> {
       })
       const filename = basename(filePath)
       const displayPath = getDisplayPath(filePath)
-      res.end(JSON.stringify({ content, filename, path: displayPath }))
+      const root = getRootLabel(filePath)
+      res.end(JSON.stringify({ content, filename, path: displayPath, root }))
       return
     }
 

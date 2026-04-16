@@ -4,6 +4,7 @@ import type { Plugin } from "vite"
 import {
   computeRevFromStats,
   getDisplayPath,
+  getRootLabel,
   parseFilePutBody,
 } from "../shared/api-handlers.js"
 
@@ -85,6 +86,7 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
             const content = fs.readFileSync(resolved, "utf-8")
             const filename = path.basename(resolved)
             const displayPath = getDisplayPath(resolved)
+            const root = getRootLabel(resolved)
             res.setHeader("Content-Type", "application/json")
             res.statusCode = 200
             res.end(
@@ -92,6 +94,7 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
                 content,
                 filename,
                 path: displayPath,
+                root,
               }),
             )
           } catch (e) {

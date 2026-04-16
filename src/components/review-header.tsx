@@ -1,8 +1,10 @@
+import { Fragment } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface ReviewHeaderProps {
   filePath: string
+  rootLabel?: string | null
   isOutdated: boolean
   saving: boolean
   onOutdatedClick: () => void
@@ -10,12 +12,27 @@ interface ReviewHeaderProps {
 
 const REPO_URL = "https://github.com/btn0s/redline"
 
+function buildPathSegments(
+  filePath: string,
+  rootLabel: string | null | undefined,
+): string[] {
+  const pathSegments = filePath.split("/").filter(Boolean)
+  if (!rootLabel) return pathSegments
+  if (pathSegments[0] === rootLabel) return pathSegments
+  return [rootLabel, ...pathSegments]
+}
+
 export function ReviewHeader({
   filePath,
+  rootLabel,
   isOutdated,
   saving,
   onOutdatedClick,
 }: ReviewHeaderProps) {
+  const segments = buildPathSegments(filePath, rootLabel)
+  const fullDisplay = segments.join("/")
+  const lastIndex = segments.length - 1
+
   return (
     <header
       className="fixed inset-x-0 top-0 z-40 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md supports-backdrop-filter:bg-background/70"
@@ -25,10 +42,33 @@ export function ReviewHeader({
       <div className="flex h-9 min-h-9 items-center justify-between gap-3 px-4 text-[0.75rem] leading-none">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span
-            className="truncate font-mono text-muted-foreground"
-            title={filePath}
+            className="flex min-w-0 items-center font-mono text-muted-foreground"
+            title={fullDisplay}
           >
-            {filePath}
+            {segments.map((segment, index) => {
+              const isLast = index === lastIndex
+              return (
+                <Fragment key={`${segment}-${index}`}>
+                  {index > 0 ? (
+                    <span
+                      aria-hidden
+                      className="mx-1 shrink-0 text-muted-foreground/50"
+                    >
+                      /
+                    </span>
+                  ) : null}
+                  <span
+                    className={
+                      isLast
+                        ? "min-w-0 truncate text-foreground"
+                        : "shrink-0 text-muted-foreground"
+                    }
+                  >
+                    {segment}
+                  </span>
+                </Fragment>
+              )
+            })}
           </span>
           {isOutdated ? (
             <Button

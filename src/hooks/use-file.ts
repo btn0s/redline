@@ -5,6 +5,11 @@ interface FileData {
   filename: string
   /** Relative path for display (POSIX-style), e.g. docs/README.md */
   path?: string
+  /**
+   * Display label for the file's enclosing context — basename of the nearest
+   * git repo root, or basename of the file's parent dir if not in a repo.
+   */
+  root?: string
 }
 
 export interface FileMeta {
