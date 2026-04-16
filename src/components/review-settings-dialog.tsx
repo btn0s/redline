@@ -52,7 +52,8 @@ export function ReviewSettingsDialog({
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
-              Keyboard layout and reference for this session.
+              Review mode for LLM-generated plans — pick your new-comment shortcut and
+              see the rest of the chord reference.
             </DialogDescription>
           </DialogHeader>
         </div>

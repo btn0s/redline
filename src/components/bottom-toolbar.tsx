@@ -158,8 +158,9 @@ export function BottomToolbar() {
                 </Button>
               }
             />
-            <TooltipContent side="top" sideOffset={8}>
-              What Redline is and how shortcuts work
+            <TooltipContent side="top" sideOffset={8} className="max-w-[14rem]">
+              Review mode for LLM-generated plans — how it works and keyboard
+              shortcuts
             </TooltipContent>
           </Tooltip>
         </div>
