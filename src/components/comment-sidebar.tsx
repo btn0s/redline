@@ -70,15 +70,15 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
   // the wrapper snaps to the anchored position. After that, re-enable the
   // transition so subsequent layout shifts (other comments moving) animate.
   const [draftYSettled, setDraftYSettled] = useState(false)
+  const [prevShowNewComment, setPrevShowNewComment] = useState(showNewComment)
+  if (prevShowNewComment !== showNewComment) {
+    setPrevShowNewComment(showNewComment)
+    setDraftYSettled(false)
+  }
   useEffect(() => {
-    if (!showNewComment) {
-      setDraftYSettled(false)
-      return
-    }
-    if (draftTop !== null) {
-      const id = requestAnimationFrame(() => setDraftYSettled(true))
-      return () => cancelAnimationFrame(id)
-    }
+    if (!showNewComment || draftTop === null) return
+    const id = requestAnimationFrame(() => setDraftYSettled(true))
+    return () => cancelAnimationFrame(id)
   }, [showNewComment, draftTop])
 
   return (

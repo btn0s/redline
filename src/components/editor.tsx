@@ -6,10 +6,6 @@ import { Markdown } from "tiptap-markdown"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import { CommentMark } from "@/extensions/comment-mark"
 import { CommentShortcuts } from "@/extensions/comment-shortcuts"
-import { cn } from "@/lib/utils"
-
-const WARP_DURATION_MS = 220
-const WARP_COMMIT_AT_MS = 180
 
 interface EditorProps {
   content: string
@@ -32,23 +28,11 @@ export function Editor({
 }: EditorProps) {
   const lastMarkdownRef = useRef(content)
   const lastReloadNonceRef = useRef(0)
-  const [warping, setWarping] = useState(false)
-  const warpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const [spent, setSpent] = useState(false)
 
   useEffect(() => {
     lastMarkdownRef.current = content
   }, [content])
-
-  useEffect(() => {
-    return () => {
-      for (const t of warpTimersRef.current) clearTimeout(t)
-      warpTimersRef.current = []
-    }
-  }, [])
-
-  useEffect(() => {
-    if (bubbleMenuSuppressed && warping) setWarping(false)
-  }, [bubbleMenuSuppressed, warping])
 
   const extensions = useMemo(
     () => [
@@ -105,6 +89,21 @@ export function Editor({
     if (editor) onEditorReady(editor)
   }, [editor, onEditorReady])
 
+  // Only a fresh expanded selection revives the pill. Skipping collapsed
+  // selections here is what prevents the pill flashing back inside tippy's
+  // fade-out when the draft closes.
+  useEffect(() => {
+    if (!editor) return
+    const onSelection = () => {
+      const { from, to } = editor.state.selection
+      if (from !== to) setSpent(false)
+    }
+    editor.on("selectionUpdate", onSelection)
+    return () => {
+      editor.off("selectionUpdate", onSelection)
+    }
+  }, [editor])
+
   useEffect(() => {
     if (!editor) return
     if (contentReloadNonce === 0) {
@@ -149,36 +148,18 @@ export function Editor({
             type="button"
             title="Add comment"
             aria-label="Add comment"
-            className={cn(
-              "inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[10px] font-medium leading-none tracking-tight shadow-[0_2px_8px_var(--annotation-pill-shadow)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]",
-              warping && "warp-to-squiggle",
-            )}
+            className="inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[10px] font-medium leading-none tracking-tight shadow-[0_2px_8px_var(--annotation-pill-shadow)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
             style={{
               backgroundColor: "var(--annotation-pill-bg)",
               color: "var(--annotation-pill-fg)",
               borderColor: "var(--annotation-pill-border)",
+              visibility: spent ? "hidden" : undefined,
             }}
             onMouseDown={(e) => {
               e.preventDefault()
-              if (warping) return
-              const reduce =
-                typeof window !== "undefined" &&
-                window.matchMedia("(prefers-reduced-motion: reduce)").matches
-              if (reduce) {
-                onAddComment()
-                return
-              }
-              setWarping(true)
-              warpTimersRef.current.push(
-                setTimeout(() => {
-                  onAddComment()
-                }, WARP_COMMIT_AT_MS),
-              )
-              warpTimersRef.current.push(
-                setTimeout(() => {
-                  setWarping(false)
-                }, WARP_DURATION_MS),
-              )
+              if (spent) return
+              setSpent(true)
+              onAddComment()
             }}
           >
             + Comment
