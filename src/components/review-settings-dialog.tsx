@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { useTheme } from "@/components/theme-provider.tsx"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
-import { useEditorSettings } from "@/contexts/editor-settings-context"
 import {
   Dialog,
   DialogContent,
@@ -12,7 +11,6 @@ import {
 import { Kbd } from "@/components/ui/kbd"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -49,7 +47,6 @@ export function ReviewSettingsDialog({
 }: ReviewSettingsDialogProps) {
   const { scheme, setScheme } = useShortcutScheme()
   const { theme, setTheme } = useTheme()
-  const { spellcheckEnabled, setSpellcheckEnabled } = useEditorSettings()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,23 +61,6 @@ export function ReviewSettingsDialog({
               Appearance, new-comment shortcut, and the rest of the chord list.
             </DialogDescription>
           </DialogHeader>
-        </div>
-
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <Label
-              htmlFor="settings-spellcheck"
-              className="text-[11px] font-medium text-foreground"
-            >
-              Browser spellcheck
-            </Label>
-            <Switch
-              id="settings-spellcheck"
-              checked={spellcheckEnabled}
-              onCheckedChange={setSpellcheckEnabled}
-              aria-label="Toggle browser spellcheck"
-            />
-          </div>
         </div>
 
         <div className="px-4 py-3">

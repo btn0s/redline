@@ -8,7 +8,6 @@ import { MessageSquarePlus } from "lucide-react"
 import { CommentMark } from "@/extensions/comment-mark"
 import { CommentShortcuts } from "@/extensions/comment-shortcuts"
 import { Button } from "@/components/ui/button"
-import { useEditorSettings } from "@/contexts/editor-settings-context"
 
 interface EditorProps {
   content: string
@@ -29,7 +28,6 @@ export function Editor({
   bubbleMenuSuppressed = false,
   onAddComment,
 }: EditorProps) {
-  const { spellcheckEnabled } = useEditorSettings()
   const lastMarkdownRef = useRef(content)
   const lastReloadNonceRef = useRef(0)
 
@@ -83,23 +81,10 @@ export function Editor({
       attributes: {
         class:
           "prose prose-sm max-w-none min-h-[min(100vh,32rem)] py-12 outline-none focus-visible:outline-none",
-        spellcheck: spellcheckEnabled ? "true" : "false",
+        spellcheck: "false",
       },
     },
   })
-
-  useEffect(() => {
-    if (!editor) return
-    editor.setOptions({
-      editorProps: {
-        attributes: {
-          class:
-            "prose prose-sm max-w-none min-h-[min(100vh,32rem)] py-12 outline-none focus-visible:outline-none",
-          spellcheck: spellcheckEnabled ? "true" : "false",
-        },
-      },
-    })
-  }, [editor, spellcheckEnabled])
 
   useEffect(() => {
     if (editor) onEditorReady(editor)
