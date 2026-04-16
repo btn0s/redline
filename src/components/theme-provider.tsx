@@ -54,7 +54,7 @@ export function ThemeProvider({
   children,
   defaultTheme = "light",
   storageKey = "theme",
-  disableTransitionOnChange = true,
+  disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(() => {
@@ -82,32 +82,25 @@ export function ThemeProvider({
     })
   }, [storageKey])
 
-  const applyTheme = React.useCallback(
-    (nextTheme: Theme) => {
-      const root = document.documentElement
-      const restoreTransitions = disableTransitionOnChange
-        ? disableTransitionsTemporarily()
-        : null
-
-      root.classList.remove("light", "dark")
-      root.classList.add(nextTheme)
-
-      if (restoreTransitions) {
-        restoreTransitions()
-      }
-    },
-    [disableTransitionOnChange]
-  )
-
   React.useEffect(() => {
-    applyTheme(theme)
-  }, [theme, applyTheme])
+    const root = document.documentElement
+    const restoreTransitions = disableTransitionOnChange
+      ? disableTransitionsTemporarily()
+      : null
+
+    root.classList.remove("light", "dark")
+    root.classList.add(theme)
+
+    if (restoreTransitions) {
+      restoreTransitions()
+    }
+  }, [theme, disableTransitionOnChange])
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.repeat) return
       if (!isModKey(event) || !event.altKey || event.shiftKey) return
-      if (event.key.toLowerCase() !== "t") return
+      if (event.code !== "KeyT") return
       if (shouldBlockReviewChromeShortcut(event.target)) return
       event.preventDefault()
       cycleTheme()

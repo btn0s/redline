@@ -10,7 +10,6 @@ import { BottomToolbar } from "@/components/bottom-toolbar"
 import { ClearCommentsDialog } from "@/components/clear-comments-dialog"
 import { OutdatedReloadDialog } from "@/components/outdated-reload-dialog"
 import { ReviewHeader } from "@/components/review-header"
-import { DeskLamp } from "@/components/desk-lamp"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import {
@@ -152,7 +151,7 @@ function AppCommandListeners({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!isModKey(e) || !e.shiftKey || !e.altKey) return
-      if (e.key.toLowerCase() !== "c") return
+      if (e.code !== "KeyC") return
       if (shouldBlockReviewChromeShortcut(e.target)) return
       e.preventDefault()
       window.dispatchEvent(new CustomEvent(REVIEW_MD_CLEAR_ALL_COMMENTS))
@@ -340,7 +339,6 @@ function AppShell({
 
   return (
     <div className="flex min-h-svh flex-col pt-[calc(env(safe-area-inset-top)+2.75rem)] pb-[max(3.5rem,env(safe-area-inset-bottom))]">
-      <DeskLamp />
       <ReviewHeader
         isOutdated={isOutdated}
         saving={saving}

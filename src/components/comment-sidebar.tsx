@@ -359,7 +359,7 @@ const ThreadRow = memo(function ThreadRow({
       handleReply()
       return
     }
-    if (e.key === "Delete" && isModKey(e)) {
+    if ((e.key === "Delete" || e.key === "Backspace") && isModKey(e)) {
       e.preventDefault()
       if (comment.messages.length <= 1) {
         setDeleteThreadOpen(true)
@@ -402,7 +402,7 @@ const ThreadRow = memo(function ThreadRow({
       cancelEditing()
       return
     }
-    if (e.key === "Delete" && isModKey(e)) {
+    if ((e.key === "Delete" || e.key === "Backspace") && isModKey(e)) {
       e.preventDefault()
       if (!editingMessageId) return
       const idx = comment.messages.findIndex((m) => m.id === editingMessageId)
@@ -592,6 +592,16 @@ const ThreadRow = memo(function ThreadRow({
               the thread. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <StickyPreview
+            quotedText={comment.quotedText}
+            entries={comment.messages.map((m, i) => ({
+              message: m,
+              isReply: i > 0,
+            }))}
+            colorClass={colorClass}
+            rotateStyle={rotateStyle}
+            ariaLabel="Thread to be deleted"
+          />
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <Button
@@ -621,6 +631,21 @@ const ThreadRow = memo(function ThreadRow({
               This reply will be removed from the thread. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {(() => {
+            const pendingMessage = pendingReplyDeleteId
+              ? comment.messages.find((m) => m.id === pendingReplyDeleteId)
+              : null
+            if (!pendingMessage) return null
+            return (
+              <StickyPreview
+                quotedText={comment.quotedText}
+                entries={[{ message: pendingMessage, isReply: true }]}
+                colorClass={colorClass}
+                rotateStyle={rotateStyle}
+                ariaLabel="Reply to be deleted"
+              />
+            )
+          })()}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <Button
@@ -685,3 +710,54 @@ const ThreadRow = memo(function ThreadRow({
     </div>
   )
 })
+
+function StickyPreview({
+  quotedText,
+  entries,
+  colorClass,
+  rotateStyle,
+  ariaLabel,
+}: {
+  quotedText: string
+  entries: Array<{ message: CommentMessage; isReply: boolean }>
+  colorClass: string
+  rotateStyle: CSSProperties
+  ariaLabel: string
+}) {
+  return (
+    <div className="px-2 py-1">
+      <article
+        className={cn("sticky-note", colorClass)}
+        style={rotateStyle}
+        aria-label={ariaLabel}
+      >
+        <blockquote className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
+          {"\u201C"}
+          {quotedText}
+          {"\u201D"}
+        </blockquote>
+        <hr className="sticky-dashed" aria-hidden />
+        <div className="max-h-44 space-y-1.5 overflow-y-auto">
+          {entries.map(({ message, isReply }) => (
+            <div
+              key={message.id}
+              className={cn("flex gap-1.5", isReply && "items-start")}
+            >
+              {isReply ? (
+                <span
+                  className="mt-0.5 shrink-0 font-mono text-[10px] leading-none text-[color:var(--sticky-foreground)]/45 select-none"
+                  aria-hidden
+                >
+                  +
+                </span>
+              ) : null}
+              <p className="sticky-handwritten min-w-0 flex-1 whitespace-pre-wrap text-[color:var(--sticky-foreground)] line-clamp-4">
+                {message.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </article>
+    </div>
+  )
+}

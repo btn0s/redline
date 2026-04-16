@@ -8,7 +8,7 @@ export function modAltKeyCompact(letter: string): string {
   return `${m}+Alt+${letter}`
 }
 
-/** e.g. ⌘⇧M */
+/** e.g. ⌘⇧M — UI shows `⌘+Shift+M` on Apple (see `shortcut-glyph-chords`) */
 export function modShiftKeyCompact(letter: string): string {
   const m = modLabel()
   if (m === "⌘") return `⌘⇧${letter}`

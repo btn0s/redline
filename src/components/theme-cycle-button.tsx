@@ -3,7 +3,7 @@ import { useTheme } from "@/components/theme-provider.tsx"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { modAltKey } from "@/lib/format-shortcut"
+import { ChordModAltCompact } from "@/components/shortcut-glyph-chords"
 
 export function ThemeCycleButton() {
   const { theme, cycleTheme } = useTheme()
@@ -29,7 +29,9 @@ export function ThemeCycleButton() {
       />
       <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
         <span>Toggle theme</span>
-        <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
+        <Kbd variant="skeuo">
+          <ChordModAltCompact letter="T" />
+        </Kbd>
       </TooltipContent>
     </Tooltip>
   )

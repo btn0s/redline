@@ -9,11 +9,11 @@ import {
 import { Kbd } from "@/components/ui/kbd"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import {
-  addCommentShortcutDisplay,
-  modAltKey,
-  modShiftAltKey,
-  modShiftKeyCompact,
-} from "@/lib/format-shortcut"
+  ChordModAltCompact,
+  ChordModShiftAlt,
+  ChordModShiftCompact,
+  ChordNewCommentShortcut,
+} from "@/components/shortcut-glyph-chords"
 import { cn } from "@/lib/utils"
 import {
   dialogBody,
@@ -25,6 +25,7 @@ import {
   dialogSectionTitle,
   dialogScrollableSurface,
   dialogShortcutList,
+  dialogShortcutRow,
 } from "@/components/review-dialog-styles"
 
 const REDLINE_REPO_URL = "https://github.com/btn0s/redline"
@@ -40,9 +41,9 @@ interface ReviewHelpDialogProps {
 
 function Row({ label, keys }: { label: string; keys: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border/50 py-2 last:border-0">
-      <span className={cn(dialogBody, "shrink-0 pt-px")}>{label}</span>
-      <div className="flex flex-wrap items-center justify-end gap-1">{keys}</div>
+    <div className={dialogShortcutRow}>
+      <span className={cn(dialogBody, "min-w-0 flex-1")}>{label}</span>
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">{keys}</div>
     </div>
   )
 }
@@ -63,7 +64,7 @@ export function ReviewHelpDialog({
         data-prevent-redlines-dismiss=""
       >
         <div className={dialogHeaderBlock}>
-          <DialogHeader className="gap-3 text-left">
+          <DialogHeader className="text-left">
             <DialogTitle>Redline</DialogTitle>
             <DialogDescription className="sr-only">
               Redline: review markdown with anchored comments and keyboard shortcuts.
@@ -71,9 +72,7 @@ export function ReviewHelpDialog({
             <div className="space-y-2">
               <p className={dialogLead}>
                 Review mode for LLM-generated plans — Docs-style comments on any{" "}
-                <code className="rounded bg-muted px-1 py-px font-mono text-[0.65rem]">
-                  .md
-                </code>
+                <code className="desk-skeuo-pill desk-skeuo-pill--mono">.md</code>
                 , then copy everything back to the LLM in one shot.
               </p>
               <p>
@@ -123,18 +122,35 @@ export function ReviewHelpDialog({
               <Row
                 label={newCommentLabel}
                 keys={
-                  <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
+                  <Kbd variant="skeuo">
+                    <ChordNewCommentShortcut scheme={scheme} />
+                  </Kbd>
                 }
               />
               <Row
                 label="Copy all"
-                keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
+                keys={
+                  <Kbd variant="skeuo">
+                    <ChordModShiftCompact letter="C" />
+                  </Kbd>
+                }
               />
               <Row
                 label="Clear all"
-                keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
+                keys={
+                  <Kbd variant="skeuo">
+                    <ChordModShiftAlt letter="C" />
+                  </Kbd>
+                }
               />
-              <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
+              <Row
+                label="Theme"
+                keys={
+                  <Kbd variant="skeuo">
+                    <ChordModAltCompact letter="T" />
+                  </Kbd>
+                }
+              />
             </div>
           </div>
         </div>

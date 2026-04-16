@@ -19,11 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  addCommentShortcutDisplay,
-  modAltKey,
-  modShiftAltKey,
-  modShiftKeyCompact,
-} from "@/lib/format-shortcut"
+  ChordModAltCompact,
+  ChordModShiftAlt,
+  ChordModShiftCompact,
+} from "@/components/shortcut-glyph-chords"
 import type { ShortcutScheme } from "@/lib/shortcut-scheme"
 import { cn } from "@/lib/utils"
 import {
@@ -33,7 +32,9 @@ import {
   dialogSectionLast,
   dialogSectionTitle,
   dialogScrollableSurface,
+  dialogSettingsInputTrigger,
   dialogShortcutList,
+  dialogShortcutRow,
 } from "@/components/review-dialog-styles"
 
 interface ReviewSettingsDialogProps {
@@ -43,9 +44,9 @@ interface ReviewSettingsDialogProps {
 
 function ShortcutRow({ label, keys }: { label: string; keys: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border/50 py-2 last:border-0">
-      <span className={cn(dialogBody, "shrink-0 pt-px")}>{label}</span>
-      <div className="flex flex-wrap items-center justify-end gap-1">{keys}</div>
+    <div className={dialogShortcutRow}>
+      <span className={cn(dialogBody, "min-w-0 flex-1")}>{label}</span>
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">{keys}</div>
     </div>
   )
 }
@@ -64,7 +65,7 @@ export function ReviewSettingsDialog({
         data-prevent-redlines-dismiss=""
       >
         <div className={dialogHeaderBlock}>
-          <DialogHeader className="gap-2 text-left">
+          <DialogHeader className="text-left">
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
               Appearance, new-comment shortcut, and the rest of the chord list.
@@ -81,7 +82,9 @@ export function ReviewSettingsDialog({
               >
                 Appearance
               </Label>
-              <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
+              <Kbd variant="skeuo">
+                <ChordModAltCompact letter="T" />
+              </Kbd>
             </div>
             <Select
               value={theme}
@@ -90,7 +93,10 @@ export function ReviewSettingsDialog({
               <SelectTrigger
                 id="settings-appearance"
                 size="sm"
-                className="w-full min-w-0 max-w-none"
+                className={cn(
+                  "w-full min-w-0 max-w-none",
+                  dialogSettingsInputTrigger,
+                )}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -105,40 +111,57 @@ export function ReviewSettingsDialog({
         <div className={dialogSection}>
           <div className="space-y-2">
             <p className={dialogSectionTitle}>New comment shortcut</p>
-            <RadioGroup
-              value={scheme}
-              onValueChange={(v) => setScheme(v as ShortcutScheme)}
-              className="gap-1.5"
-            >
-              <label
-                className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-md border border-border/70 px-2.5 py-1.5 transition-colors duration-150 ease-out",
-                  scheme === "google-docs" && "border-primary/50 bg-muted/40",
-                )}
+            <div className={dialogShortcutList}>
+              <RadioGroup
+                value={scheme}
+                onValueChange={(v) => setScheme(v as ShortcutScheme)}
+                className="grid w-full gap-0"
               >
-                <RadioGroupItem value="google-docs" className="mt-0" />
-                <span className="min-w-0 flex-1 text-xs font-medium leading-snug text-foreground">
-                  Google Docs style
-                </span>
-                <Kbd className="shrink-0 text-[10px]">
-                  {addCommentShortcutDisplay("google-docs")}
-                </Kbd>
-              </label>
-              <label
-                className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-md border border-border/70 px-2.5 py-1.5 transition-colors duration-150 ease-out",
-                  scheme === "notion" && "border-primary/50 bg-muted/40",
-                )}
-              >
-                <RadioGroupItem value="notion" className="mt-0" />
-                <span className="min-w-0 flex-1 text-xs font-medium leading-snug text-foreground">
-                  Notion style
-                </span>
-                <Kbd className="shrink-0 text-[10px]">
-                  {addCommentShortcutDisplay("notion")}
-                </Kbd>
-              </label>
-            </RadioGroup>
+                <label
+                  className={cn(
+                    dialogShortcutRow,
+                    "cursor-pointer rounded-sm transition-colors duration-150 ease-out",
+                    scheme === "google-docs" &&
+                      "bg-muted/30 dark:bg-muted/40",
+                  )}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <RadioGroupItem
+                      value="google-docs"
+                      id="settings-scheme-google-docs"
+                      className="mt-0 shrink-0"
+                    />
+                    <span className="min-w-0 truncate text-xs font-medium leading-snug text-foreground">
+                      Google Docs style
+                    </span>
+                  </div>
+                  <Kbd variant="skeuo" className="shrink-0">
+                    <ChordModAltCompact letter="M" />
+                  </Kbd>
+                </label>
+                <label
+                  className={cn(
+                    dialogShortcutRow,
+                    "cursor-pointer rounded-sm transition-colors duration-150 ease-out",
+                    scheme === "notion" && "bg-muted/30 dark:bg-muted/40",
+                  )}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <RadioGroupItem
+                      value="notion"
+                      id="settings-scheme-notion"
+                      className="mt-0 shrink-0"
+                    />
+                    <span className="min-w-0 truncate text-xs font-medium leading-snug text-foreground">
+                      Notion style
+                    </span>
+                  </div>
+                  <Kbd variant="skeuo" className="shrink-0">
+                    <ChordModShiftCompact letter="M" />
+                  </Kbd>
+                </label>
+              </RadioGroup>
+            </div>
           </div>
         </div>
 
@@ -148,11 +171,19 @@ export function ReviewSettingsDialog({
             <div className={dialogShortcutList}>
               <ShortcutRow
                 label="Copy all comments"
-                keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
+                keys={
+                  <Kbd variant="skeuo">
+                    <ChordModShiftCompact letter="C" />
+                  </Kbd>
+                }
               />
               <ShortcutRow
                 label="Clear all comments"
-                keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
+                keys={
+                  <Kbd variant="skeuo">
+                    <ChordModShiftAlt letter="C" />
+                  </Kbd>
+                }
               />
             </div>
           </div>

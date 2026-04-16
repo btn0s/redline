@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { modShiftAltKey, modShiftKeyCompact } from "@/lib/format-shortcut"
+import {
+  ChordModShiftAlt,
+  ChordModShiftCompact,
+} from "@/components/shortcut-glyph-chords"
 import { REVIEW_MD_CLEAR_ALL_COMMENTS } from "@/lib/review-md-events"
 
 const toolbarBtnClass =
@@ -94,7 +97,9 @@ export function BottomToolbar() {
             />
             <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
               <span>Copy review as prompt</span>
-              <Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>
+              <Kbd variant="skeuo">
+                <ChordModShiftCompact letter="C" />
+              </Kbd>
             </TooltipContent>
           </Tooltip>
 
@@ -116,14 +121,16 @@ export function BottomToolbar() {
             />
             <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
               <span>Delete all threads</span>
-              <Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>
+              <Kbd variant="skeuo">
+                <ChordModShiftAlt letter="C" />
+              </Kbd>
             </TooltipContent>
           </Tooltip>
 
           <Separator
             orientation="vertical"
             variant="engraved"
-            className="mx-1 h-[1.1rem]"
+            className="mx-1"
           />
 
           <ThemeCycleButton />
