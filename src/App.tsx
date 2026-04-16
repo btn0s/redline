@@ -356,7 +356,7 @@ function AppShell({
                 : "px-6",
             )}
           >
-            <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-3 xl:gap-5 2xl:gap-6">
+            <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-3 xl:gap-5 2xl:gap-6">
               <div
                 className={
                   showCommentSidebar
@@ -377,8 +377,8 @@ function AppShell({
               <aside
                 className={cn(
                   showCommentSidebar
-                    ? "mx-auto w-full min-w-0 max-w-md sm:max-w-lg lg:sticky lg:top-6 lg:mx-0 lg:block lg:min-h-0 lg:w-[clamp(13.5rem,22vw,16.5rem)] lg:max-w-none lg:shrink-0 lg:flex-none xl:w-[clamp(14rem,19vw,17rem)]"
-                    : "hidden min-h-0 w-0 min-w-0 shrink-0 flex-none scale-[0.98] overflow-hidden opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none lg:sticky lg:top-6 lg:block",
+                    ? "mx-auto w-full min-w-0 max-w-md sm:max-w-lg lg:mx-0 lg:block lg:min-h-0 lg:w-[clamp(13.5rem,22vw,16.5rem)] lg:max-w-none lg:shrink-0 lg:flex-none xl:w-[clamp(14rem,19vw,17rem)]"
+                    : "hidden min-h-0 w-0 min-w-0 shrink-0 flex-none scale-[0.98] overflow-hidden opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none lg:block",
                 )}
                 aria-hidden={!showCommentSidebar}
               >

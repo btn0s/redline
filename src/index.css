@@ -95,6 +95,8 @@
     --annotation-pill-shadow: oklch(0.35 0.12 25 / 0.35);
     --annotation-pill-dim: 0.34;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
+    /* Redline underline: tiled squiggle mask (asset is white-filled path, 53×6) */
+    --annotation-squiggle-mask: url("./assets/annotation-squiggle.svg");
     /* Editor heading scale (tighter than default prose-sm) */
     --editor-h1-size: 1.75rem;
     --editor-h1-leading: 1.15;
@@ -388,14 +390,20 @@
   position: absolute;
   left: 4%;
   right: 4%;
-  bottom: -3px;
-  height: 4px;
-  border-radius: 9999px;
+  bottom: -4px;
+  height: 7px;
+  border-radius: 0;
   background-color: var(--annotation-pill-bg);
-  border: 1px solid var(--annotation-pill-border);
-  box-shadow:
-    0 1px 2px var(--annotation-pill-shadow),
-    inset 0 1px 0 oklch(1 0 0 / 0.12);
+  border: none;
+  box-shadow: none;
+  -webkit-mask-image: var(--annotation-squiggle-mask);
+  mask-image: var(--annotation-squiggle-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-position: left bottom;
+  mask-position: left bottom;
   pointer-events: none;
   z-index: 5;
   opacity: var(--annotation-pill-dim);
