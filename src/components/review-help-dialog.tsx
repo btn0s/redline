@@ -27,9 +27,8 @@ import {
   dialogShortcutList,
   dialogShortcutRow,
 } from "@/components/review-dialog-styles"
+import { BTN0S_TWITTER_URL, REDLINE_REPO_URL } from "@/components/review-header"
 
-const REDLINE_REPO_URL = "https://github.com/btn0s/redline"
-const BTN0S_URL = "https://twitter.com/btn0s"
 const CURSOR_URL = "https://cursor.com"
 
 interface ReviewHelpDialogProps {
@@ -159,7 +158,7 @@ export function ReviewHelpDialog({
           <p className={cn(dialogBody, "text-center")}>
             <span className="font-sans">Handcrafted by </span>
             <a
-              href={BTN0S_URL}
+              href={BTN0S_TWITTER_URL}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
