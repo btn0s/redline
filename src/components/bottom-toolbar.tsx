@@ -7,12 +7,13 @@ import { ReviewHelpDialog } from "@/components/review-help-dialog"
 import { ReviewSettingsDialog } from "@/components/review-settings-dialog"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
+import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { modShiftAltKey, modShiftKeyCompact } from "@/lib/format-shortcut"
 import { REVIEW_MD_CLEAR_ALL_COMMENTS } from "@/lib/review-md-events"
 
 const toolbarBtnClass =
-  "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-out active:scale-[0.97] dark:text-zinc-400"
+  "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full active:scale-[0.97]"
 
 export function BottomToolbar() {
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -54,7 +55,7 @@ export function BottomToolbar() {
       >
         <div
           className={cn(
-            "pointer-events-auto flex items-center gap-0 rounded-full border bg-popover px-0.5 py-0.5 text-popover-foreground shadow-lg",
+            "desk-toolbar pointer-events-auto flex items-center gap-1 px-1.5 py-1 text-popover-foreground",
           )}
           role="toolbar"
           data-prevent-redlines-dismiss=""
@@ -64,7 +65,7 @@ export function BottomToolbar() {
               render={
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   size="icon-sm"
                   disabled={!hasComments}
                   aria-label={copied ? "Copied" : "Copy review as prompt"}
@@ -102,7 +103,7 @@ export function BottomToolbar() {
               render={
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   size="icon-sm"
                   disabled={!hasComments}
                   aria-label="Delete all threads"
@@ -119,11 +120,10 @@ export function BottomToolbar() {
             </TooltipContent>
           </Tooltip>
 
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            aria-hidden="true"
-            className="mx-1.5 h-5 w-px shrink-0 bg-border"
+          <Separator
+            orientation="vertical"
+            variant="engraved"
+            className="mx-1 h-[1.1rem]"
           />
 
           <ThemeCycleButton />
@@ -133,7 +133,7 @@ export function BottomToolbar() {
               render={
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   size="icon-sm"
                   aria-label="Settings"
                   className={toolbarBtnClass}
@@ -153,7 +153,7 @@ export function BottomToolbar() {
               render={
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   size="icon-sm"
                   aria-label="What is redline?"
                   className={toolbarBtnClass}

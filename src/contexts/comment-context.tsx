@@ -27,7 +27,13 @@ interface CommentContextValue {
   setActiveCommentId: (id: string | null) => void
   addComment: (editor: Editor, body: string, existingCommentId?: string) => Comment | null
   addReplyToComment: (commentId: string, body: string) => void
+  editCommentMessage: (commentId: string, messageId: string, body: string) => void
   deleteComment: (editor: Editor, commentId: string) => void
+  deleteCommentMessage: (
+    editor: Editor,
+    commentId: string,
+    messageId: string,
+  ) => void
   copyComments: () => Promise<boolean>
   clearAllComments: () => void
   hasComments: boolean
@@ -73,7 +79,9 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     setActiveCommentId,
     addComment,
     addReplyToComment,
+    editCommentMessage,
     deleteComment,
+    deleteCommentMessage,
     copyComments,
     clearAllComments: clearAllCommentsBase,
     hasComments,
@@ -163,7 +171,9 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     setActiveCommentId,
     addComment,
     addReplyToComment,
+    editCommentMessage,
     deleteComment,
+    deleteCommentMessage,
     copyComments,
     clearAllComments,
     hasComments,

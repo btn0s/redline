@@ -35,6 +35,7 @@ export function ClearCommentsDialog({
           <Button
             type="button"
             variant="destructive"
+            data-alert-dialog-primary=""
             onClick={() => {
               onConfirm()
               onOpenChange(false)

@@ -17,11 +17,11 @@ export function ThemeCycleButton() {
         render={
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             size="icon-sm"
             onClick={cycleTheme}
             aria-label={`Toggle color theme. Current: ${label}.`}
-            className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
+            className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full active:scale-[0.97]"
           >
             <Icon className="size-3.5 stroke-[1.5]" aria-hidden />
           </Button>

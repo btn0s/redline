@@ -4,6 +4,7 @@ import * as React from "react"
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog"
 
 import { cn } from "@/lib/utils"
+import { isModKey } from "@/lib/mod-key"
 import { Button } from "@/components/ui/button"
 
 function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
@@ -41,10 +42,36 @@ function AlertDialogOverlay({
 function AlertDialogContent({
   className,
   size = "default",
+  onKeyDown,
   ...props
 }: AlertDialogPrimitive.Popup.Props & {
   size?: "default" | "sm"
 }) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(e)
+    if (e.defaultPrevented) return
+    const root = e.currentTarget
+    if (e.key === "Enter" && isModKey(e)) {
+      const primary = root.querySelector<HTMLButtonElement>(
+        "[data-alert-dialog-primary]:not(:disabled)",
+      )
+      if (primary) {
+        e.preventDefault()
+        primary.click()
+      }
+      return
+    }
+    if (e.key === "Escape") {
+      const cancel = root.querySelector<HTMLButtonElement>(
+        '[data-slot="alert-dialog-cancel"]:not(:disabled)',
+      )
+      if (cancel) {
+        e.preventDefault()
+        cancel.click()
+      }
+    }
+  }
+
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -52,9 +79,10 @@ function AlertDialogContent({
         data-slot="alert-dialog-content"
         data-size={size}
         className={cn(
-          "group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-3 rounded-xl bg-popover p-4 text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-64 data-[size=default]:sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "desk-panel group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-3 rounded-xl p-4 text-popover-foreground duration-100 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-64 data-[size=default]:sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
+        onKeyDown={handleKeyDown}
         {...props}
       />
     </AlertDialogPortal>
@@ -85,7 +113,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end",
+        "desk-sep-top -mx-4 flex flex-col-reverse gap-2 px-4 pt-3 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end",
         className
       )}
       {...props}

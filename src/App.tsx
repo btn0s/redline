@@ -85,7 +85,18 @@ function AppDismissHandler() {
       if (h.activeCommentId !== null) {
         const selector = `[data-comment-thread-id="${CSS.escape(h.activeCommentId)}"]`
         if (!t.closest(selector)) {
-          h.setActiveCommentId(null)
+          const otherRow = t.closest("[data-comment-thread-id]")
+          const otherId = otherRow?.getAttribute("data-comment-thread-id")
+          if (otherId != null && otherId !== h.activeCommentId) {
+            try {
+              otherRow.setPointerCapture(e.pointerId)
+            } catch {
+              /* element may not accept capture in edge cases */
+            }
+            h.setActiveCommentId(otherId)
+          } else {
+            h.setActiveCommentId(null)
+          }
         }
       }
     }
@@ -373,9 +384,13 @@ function AppShell({
                 <div className="editor-surface-light paper-stack w-full">
                   <div className="paper-page">
                     <div className="paper-stamp">
-                      <span>REV // {reviewStampDate()}</span>
+                      <span>
+                        {file.root
+                          ? `${file.root}/${file.path ?? file.filename}`
+                          : (file.path ?? file.filename)}
+                      </span>
                       <span aria-hidden className="paper-stamp-sep" />
-                      <span>{file.filename}</span>
+                      <span>REV {reviewStampDate()}</span>
                     </div>
                     <Editor
                       content={file.content}

@@ -10,11 +10,40 @@ export function computeRevFromStats(st: Pick<Stats, "mtimeMs" | "size">): string
     .slice(0, 16)
 }
 
+/**
+ * Walk up from the file's directory looking for a `.git` entry. Returns the
+ * absolute path of the nearest repo root, or null if the file isn't inside a
+ * git repo.
+ */
+function findRepoRoot(filePath: string): string | null {
+  const resolved = resolve(filePath)
+  let dir = dirname(resolved)
+  while (true) {
+    const gitPath = `${dir}${sep}.git`
+    if (existsSync(gitPath)) {
+      try {
+        const st = statSync(gitPath)
+        if (st.isDirectory() || st.isFile()) return dir
+      } catch {
+        // fall through to parent
+      }
+    }
+    const parent = dirname(dir)
+    if (parent === dir) return null
+    dir = parent
+  }
+}
+
+/**
+ * Path shown next to the REV stamp. Relative to the nearest git repo root when
+ * one exists (so the location reads the same no matter where the CLI was
+ * launched from); falls back to cwd-relative otherwise.
+ */
 export function getDisplayPath(filePath: string): string {
   const filename = basename(filePath)
-  return (
-    relative(process.cwd(), filePath).split(/[/\\]/).join("/") || filename
-  )
+  const repoRoot = findRepoRoot(filePath)
+  const base = repoRoot ?? process.cwd()
+  return relative(base, filePath).split(/[/\\]/).join("/") || filename
 }
 
 /**
@@ -26,28 +55,10 @@ export function getDisplayPath(filePath: string): string {
  * which in practice means we got passed an unusable path.
  */
 export function getRootLabel(filePath: string): string | null {
+  const repoRoot = findRepoRoot(filePath)
+  if (repoRoot) return basename(repoRoot) || null
   const resolved = resolve(filePath)
-  const startDir = dirname(resolved)
-
-  let dir = startDir
-  while (true) {
-    const gitPath = `${dir}${sep}.git`
-    if (existsSync(gitPath)) {
-      try {
-        const st = statSync(gitPath)
-        if (st.isDirectory() || st.isFile()) {
-          return basename(dir) || null
-        }
-      } catch {
-        // fall through to parent
-      }
-    }
-    const parent = dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-
-  return basename(startDir) || null
+  return basename(dirname(resolved)) || null
 }
 
 export type ParsePutBodyResult =

@@ -125,6 +125,33 @@ export function useComments(persistenceKey: string | null) {
     setActiveCommentId(null)
   }, [])
 
+  const deleteCommentMessage = useCallback(
+    (editor: Editor, commentId: string, messageId: string) => {
+      setComments((prev) => {
+        const c = prev.find((x) => x.id === commentId)
+        if (!c) return prev
+        const willRemoveThread =
+          c.messages.length === 1 && c.messages[0].id === messageId
+        if (willRemoveThread) {
+          removeCommentMarkFromEditor(editor, commentId)
+          queueMicrotask(() => {
+            setActiveCommentId(null)
+          })
+          return prev.filter((x) => x.id !== commentId)
+        }
+        return prev.map((x) =>
+          x.id !== commentId
+            ? x
+            : {
+                ...x,
+                messages: x.messages.filter((m) => m.id !== messageId),
+              },
+        )
+      })
+    },
+    [],
+  )
+
   const formatComments = useCallback(() => {
     const fileLabel = persistenceKey?.trim() || "this file"
     const header = [
@@ -166,6 +193,30 @@ export function useComments(persistenceKey: string | null) {
       ),
     )
   }, [])
+
+  const editCommentMessage = useCallback(
+    (commentId: string, messageId: string, body: string) => {
+      const trimmed = body.trim()
+      if (!trimmed) {
+        toast.error("Message cannot be empty")
+        return
+      }
+      setComments((prev) =>
+        prev.map((c) => {
+          if (c.id !== commentId) return c
+          const has = c.messages.some((m) => m.id === messageId)
+          if (!has) return c
+          return {
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === messageId ? { ...m, body: trimmed } : m,
+            ),
+          }
+        }),
+      )
+    },
+    [],
+  )
 
   const syncCommentAnchorsFromEditor = useCallback((editor: Editor) => {
     const nextAnchors = new Map<string, { anchorFrom: number; anchorTo: number }>()
@@ -229,8 +280,10 @@ export function useComments(persistenceKey: string | null) {
     setActiveCommentId,
     addComment,
     addReplyToComment,
+    editCommentMessage,
     syncCommentAnchorsFromEditor,
     deleteComment,
+    deleteCommentMessage,
     copyComments,
     clearAllComments,
     hasComments: comments.length > 0,

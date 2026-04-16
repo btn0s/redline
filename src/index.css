@@ -138,21 +138,34 @@
     --editor-h6-size: 0.875rem;
     --editor-h6-leading: 1.45;
 
-    /* Paper shadow — soft, layered, as if sitting on the desk */
+    /* Paper shadow — soft, layered, as if sitting on the desk.
+       NOTE: .paper-page / .paper-stack::before/::after use clip-path, which
+       clips away box-shadow. Real depth is carried by --paper-stack-lift
+       (drop-shadow filter) below; this token is kept for unclipped surfaces. */
     --paper-shadow:
-        0 1px 0 oklch(0 0 0 / 0.04),
-        0 2px 4px oklch(0 0 0 / 0.06),
+        0 0.5px 0 oklch(0 0 0 / 0.06),
+        0 1px 1.5px oklch(0 0 0 / 0.09),
+        0 2px 4px -1px oklch(0 0 0 / 0.08),
         0 18px 36px -12px oklch(0 0 0 / 0.18),
         0 48px 80px -28px oklch(0 0 0 / 0.22);
+    /* Per-sheet tight shadow — applied individually to each sheet so shadows
+       land between sheets, not just under the whole stack. */
+    --paper-sheet-lift:
+        drop-shadow(0 1px 0.5px oklch(0 0 0 / 0.22))
+        drop-shadow(0 2px 3px oklch(0 0 0 / 0.18))
+        drop-shadow(0 4px 6px oklch(0 0 0 / 0.1));
+    /* Soft desk pool under the whole stack silhouette. */
+    --paper-stack-lift:
+        drop-shadow(0 12px 24px oklch(0 0 0 / 0.1));
 
-    /* Sticky note shadow — shorter, closer to the surface, with curl hint */
+    /* Sticky note — tight contact shadow (reads stuck flat, not hovering) */
     --sticky-shadow-lift:
-        0 1px 1px oklch(0 0 0 / 0.08),
-        2px 3px 6px -1px oklch(0 0 0 / 0.14),
-        6px 10px 18px -6px oklch(0 0 0 / 0.18);
+        0 0.5px 0 oklch(0 0 0 / 0.05),
+        0 1px 2px oklch(0 0 0 / 0.07),
+        1px 2px 4px -1.5px oklch(0 0 0 / 0.09);
     --sticky-shadow-press:
-        0 1px 1px oklch(0 0 0 / 0.08),
-        1px 1px 3px -1px oklch(0 0 0 / 0.14);
+        0 0.5px 0.5px oklch(0 0 0 / 0.06),
+        0 1px 2px oklch(0 0 0 / 0.08);
 
     /* Tape — washi-style semi-transparent yellow */
     --tape-bg: oklch(0.94 0.1 95 / 0.72);
@@ -221,19 +234,29 @@
     --annotation-pill-dim: 0.38;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 
-    /* Paper shadow — softer in dim light (diffuse, not harsh black) */
+    /* Paper shadow — softer in dim light (diffuse, not harsh black).
+       See note in :root — clip-path eats box-shadow; depth lives in
+       --paper-stack-lift. */
     --paper-shadow:
-        0 1px 0 oklch(0 0 0 / 0.06),
+        0 0.5px 0 oklch(0 0 0 / 0.1),
+        0 1px 2px oklch(0.08 0.02 270 / 0.32),
+        0 2px 4px -1px oklch(0.08 0.02 270 / 0.28),
         0 4px 12px oklch(0.12 0.02 270 / 0.28),
         0 24px 48px -16px oklch(0.08 0.02 270 / 0.38),
         0 56px 90px -36px oklch(0.06 0.015 270 / 0.35);
+    --paper-sheet-lift:
+        drop-shadow(0 1px 0.5px oklch(0.08 0.02 270 / 0.55))
+        drop-shadow(0 2px 3px oklch(0.1 0.02 270 / 0.4))
+        drop-shadow(0 4px 6px oklch(0.1 0.02 270 / 0.3));
+    --paper-stack-lift:
+        drop-shadow(0 14px 28px oklch(0.08 0.02 270 / 0.28));
     --sticky-shadow-lift:
-        0 1px 1px oklch(0.12 0.02 270 / 0.2),
-        2px 4px 10px -2px oklch(0.1 0.02 270 / 0.28),
-        6px 14px 22px -8px oklch(0.08 0.015 270 / 0.32);
+        0 0.5px 0 oklch(0.12 0.02 270 / 0.12),
+        0 1px 3px oklch(0.1 0.02 270 / 0.12),
+        1px 2px 5px -1.5px oklch(0.08 0.015 270 / 0.14);
     --sticky-shadow-press:
-        0 1px 1px oklch(0.12 0.02 270 / 0.2),
-        1px 2px 5px -1px oklch(0.1 0.02 270 / 0.26);
+        0 0.5px 0.5px oklch(0.12 0.02 270 / 0.12),
+        0 1px 2px oklch(0.1 0.02 270 / 0.14);
 
     --tape-bg: oklch(0.88 0.1 95 / 0.7);
     --tape-border: oklch(0.75 0.12 92 / 0.45);
@@ -300,12 +323,16 @@
   border: 1px solid var(--paper-edge);
   clip-path: var(--paper-clip);
   box-shadow: var(--paper-shadow);
+  /* clip-path clips box-shadow; drop-shadow filter renders against the
+     clipped silhouette so the sheet behind gets a real edge shadow. */
+  filter: var(--paper-sheet-lift);
   pointer-events: none;
   z-index: -1;
   transition:
     background-color 200ms ease,
     border-color 200ms ease,
-    box-shadow 200ms ease;
+    box-shadow 200ms ease,
+    filter 200ms ease;
 }
 
 /* First sheet behind: nudged down-right, slight rotation */
@@ -313,10 +340,12 @@
   transform: translate(10px, 14px) rotate(0.7deg);
 }
 
-/* Second sheet behind: nudged the other way */
+/* Second sheet behind (bottom-most): carries the soft desk pool so the whole
+   stack reads as resting on the desk, plus its own tight edge shadow. */
 .paper-stack::after {
   transform: translate(-12px, 22px) rotate(-0.9deg);
   z-index: -2;
+  filter: var(--paper-sheet-lift) var(--paper-stack-lift);
 }
 
 .paper-page {
@@ -336,6 +365,9 @@
     );
   clip-path: var(--paper-clip);
   box-shadow: var(--paper-shadow);
+  /* clip-path clips box-shadow; drop-shadow filter renders the tight edge
+     shadow against the clipped silhouette so it lands on the sheet below. */
+  filter: var(--paper-sheet-lift);
   border: 1px solid var(--paper-edge);
   color: var(--paper-foreground);
   padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 5vw, 3.5rem);
@@ -344,6 +376,7 @@
     background-color 200ms ease,
     border-color 200ms ease,
     box-shadow 200ms ease,
+    filter 200ms ease,
     color 200ms ease;
 }
 
@@ -515,9 +548,9 @@
 .sticky-note--active {
   transform: rotate(0deg) translateY(-1px);
   box-shadow:
-    0 1px 1px oklch(0 0 0 / 0.08),
-    3px 6px 14px -2px oklch(0 0 0 / 0.22),
-    10px 18px 34px -10px oklch(0 0 0 / 0.28);
+    0 0.5px 0 oklch(0 0 0 / 0.06),
+    0 1px 3px oklch(0 0 0 / 0.1),
+    2px 4px 10px -3px oklch(0 0 0 / 0.12);
   z-index: 2;
 }
 
@@ -528,9 +561,23 @@
 .sticky-note--pressable:hover {
   transform: rotate(calc(var(--sticky-rotate, -0.6deg) * 0.4)) translateY(-1px);
   box-shadow:
-    0 1px 1px oklch(0 0 0 / 0.08),
-    3px 5px 10px -2px oklch(0 0 0 / 0.18),
-    8px 14px 26px -8px oklch(0 0 0 / 0.22);
+    0 0.5px 0 oklch(0 0 0 / 0.055),
+    0 1px 3px oklch(0 0 0 / 0.09),
+    1px 3px 8px -2px oklch(0 0 0 / 0.12);
+}
+
+.dark .sticky-note--active {
+  box-shadow:
+    0 0.5px 0 oklch(0.12 0.02 270 / 0.14),
+    0 1px 4px oklch(0.1 0.02 270 / 0.14),
+    2px 4px 12px -3px oklch(0.08 0.015 270 / 0.16);
+}
+
+.dark .sticky-note--pressable:hover {
+  box-shadow:
+    0 0.5px 0 oklch(0.12 0.02 270 / 0.12),
+    0 1px 3px oklch(0.1 0.02 270 / 0.12),
+    1px 3px 8px -2px oklch(0.08 0.015 270 / 0.14);
 }
 
 .sticky-note--pressable:active {
@@ -596,6 +643,9 @@
 
 /* Same tilt as the sticky: --sticky-rotate is set on .sticky-with-actions */
 .sticky-with-actions .sticky-action-bar {
+  position: relative;
+  /* Above .sticky-note--active (z-index: 2) so the card shadow does not paint over the toolbar */
+  z-index: 3;
   transform-origin: 50% 0;
   transform: rotate(var(--sticky-rotate, 0deg));
 }
@@ -659,12 +709,13 @@
 /* Chord hints: JetBrains Mono, slightly larger than base glyph row */
 .sticky-skeuo-shortcut--chord {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.22em;
   font-family: var(--font-mono);
   font-size: 0.53rem;
   font-weight: 450;
   letter-spacing: 0.03em;
+  line-height: 1;
   font-feature-settings:
     "liga" 0,
     "calt" 0;
@@ -685,6 +736,9 @@
 
 /* Nested chord segments inherit deboss from parent (text-shadow is not inherited by default) */
 .sticky-skeuo-shortcut--chord > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
   color: inherit;
   text-shadow: inherit;
 }
@@ -836,6 +890,360 @@
 
   .sticky-skeuo-btn:active {
     transform: none;
+  }
+}
+
+/* ---------- Desk toolbar (bottom quick-actions bar) ---------- */
+
+/* Raised plastic tool tray — same lighting math as .sticky-skeuo-btn
+   (background/foreground/muted mix, not popover) so keys and tray look
+   like they came from the same factory. Tray is slightly less lit than
+   the keys so the keys pop. */
+.desk-toolbar {
+  position: relative;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, var(--background) 82%);
+  background-color: var(--background);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 10%, var(--background) 90%) 0%,
+    color-mix(in oklch, var(--muted) 65%, var(--background) 35%) 100%
+  );
+  background-clip: padding-box;
+  box-shadow:
+    /* edge lips — top highlight + bottom lip (top-lit plastic) */
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 -1px 0 oklch(0 0 0 / 0.06) inset,
+    /* hairline contact */
+    0 1px 0 oklch(0 0 0 / 0.04),
+    /* close soft shadow — primary depth cue */
+    0 4px 10px -2px oklch(0 0 0 / 0.1),
+    /* atmospheric falloff */
+    0 14px 28px -10px oklch(0 0 0 / 0.14);
+  transition:
+    background-color 200ms var(--annotation-ease),
+    border-color 200ms var(--annotation-ease),
+    box-shadow 200ms var(--annotation-ease);
+}
+
+.dark .desk-toolbar {
+  border-color: color-mix(in oklch, var(--foreground) 26%, var(--background) 74%);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--foreground) 14%, var(--background) 86%) 0%,
+    color-mix(in oklch, var(--muted) 50%, var(--background) 50%) 100%
+  );
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.09) inset,
+    0 -1px 0 oklch(0 0 0 / 0.28) inset,
+    0 1px 0 oklch(0 0 0 / 0.22),
+    0 4px 10px -2px oklch(0 0 0 / 0.28),
+    0 16px 32px -10px oklch(0 0 0 / 0.34);
+}
+
+/* Raised plastic panel — scaled-up sibling of .desk-toolbar. Same lighting
+   math (top highlight, bottom lip, contact, atmospheric falloff) but with
+   larger shadow radii so it reads as a floating panel, not a pill. Note:
+   does NOT set `position`; leave that to the consumer so utilities like
+   `fixed` on dialog content keep their centering behavior. */
+.desk-panel {
+  border: 1px solid color-mix(in oklch, var(--foreground) 18%, var(--background) 82%);
+  background-color: var(--background);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 10%, var(--background) 90%) 0%,
+    color-mix(in oklch, var(--muted) 55%, var(--background) 45%) 100%
+  );
+  background-clip: padding-box;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.55) inset,
+    0 -1px 0 oklch(0 0 0 / 0.05) inset,
+    0 1px 0 oklch(0 0 0 / 0.05),
+    0 8px 20px -4px oklch(0 0 0 / 0.14),
+    0 30px 60px -18px oklch(0 0 0 / 0.22);
+}
+
+.dark .desk-panel {
+  border-color: color-mix(in oklch, var(--foreground) 28%, var(--background) 72%);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--foreground) 16%, var(--background) 84%) 0%,
+    color-mix(in oklch, var(--muted) 48%, var(--background) 52%) 100%
+  );
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.09) inset,
+    0 -1px 0 oklch(0 0 0 / 0.28) inset,
+    0 1px 0 oklch(0 0 0 / 0.24),
+    0 10px 24px -4px oklch(0 0 0 / 0.34),
+    0 32px 60px -18px oklch(0 0 0 / 0.42);
+}
+
+/* Engraved groove separator — dark notch + bright lip catching light on the
+   "below" side. Works for both orientations via data-orientation (set by the
+   Base UI Separator primitive). Use via <Separator variant="engraved" /> or
+   directly as the class on any element (e.g. toolbar separator divs). */
+.desk-sep {
+  background-color: color-mix(in oklch, var(--foreground) 22%, transparent);
+  border-radius: 1px;
+}
+
+.desk-sep[data-orientation="horizontal"] {
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.5);
+}
+
+.desk-sep[data-orientation="vertical"] {
+  box-shadow: 1px 0 0 oklch(1 0 0 / 0.5);
+}
+
+.dark .desk-sep {
+  background-color: oklch(0 0 0 / 0.32);
+}
+
+.dark .desk-sep[data-orientation="horizontal"] {
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.08);
+}
+
+.dark .desk-sep[data-orientation="vertical"] {
+  box-shadow: 1px 0 0 oklch(1 0 0 / 0.08);
+}
+
+/* Engraved groove as a top edge — used on dialog footers and section blocks
+   to create the "section divider above an action tray" feel without needing
+   a dedicated separator element. The border draws the dark notch; the inset
+   box-shadow draws the 1px bright lip just below it. */
+.desk-sep-top {
+  border-top: 1px solid color-mix(in oklch, var(--foreground) 22%, transparent);
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.5) inset;
+}
+
+.dark .desk-sep-top {
+  border-top-color: oklch(0 0 0 / 0.32);
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.08) inset;
+}
+
+/* Plastic-key button — applied via the `skeuo` variant on <Button>.
+   Gradient + shadow lifted directly from .sticky-skeuo-btn (neutral variant)
+   so keys across the app read as siblings from the same factory. */
+.btn-skeuo {
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, var(--background) 84%);
+  background-color: var(--background);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 14%, var(--background) 86%) 0%,
+    color-mix(in oklch, var(--muted) 55%, var(--background) 45%) 100%
+  );
+  background-clip: padding-box;
+  color: color-mix(in oklch, var(--foreground) 62%, var(--background) 38%);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.55) inset,
+    0 -1px 0 oklch(0 0 0 / 0.08) inset,
+    0 1px 1px oklch(0 0 0 / 0.12),
+    0 2px 4px -1px oklch(0 0 0 / 0.18);
+  transition:
+    transform 160ms var(--annotation-ease),
+    box-shadow 160ms var(--annotation-ease),
+    border-color 160ms var(--annotation-ease),
+    color 160ms var(--annotation-ease);
+}
+
+.dark .btn-skeuo {
+  border-color: color-mix(in oklch, var(--foreground) 22%, var(--background) 78%);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--foreground) 18%, var(--background) 82%) 0%,
+    color-mix(in oklch, var(--muted) 40%, var(--background) 60%) 100%
+  );
+  color: color-mix(in oklch, var(--foreground) 68%, var(--background) 32%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-skeuo:hover {
+    color: color-mix(in oklch, var(--foreground) 92%, var(--background) 8%);
+    border-color: color-mix(in oklch, var(--foreground) 24%, var(--background) 76%);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.65) inset,
+      0 -1px 0 oklch(0 0 0 / 0.06) inset,
+      0 1px 2px oklch(0 0 0 / 0.14),
+      0 3px 6px -1px oklch(0 0 0 / 0.22);
+  }
+
+  .dark .btn-skeuo:hover {
+    color: color-mix(in oklch, var(--foreground) 94%, var(--background) 6%);
+    border-color: color-mix(in oklch, var(--foreground) 30%, var(--background) 70%);
+  }
+}
+
+/* Pressed — key bottoms out. Same inset shadow as .sticky-skeuo-btn:active. */
+.btn-skeuo:active {
+  box-shadow:
+    0 2px 4px oklch(0 0 0 / 0.18) inset,
+    0 1px 0 oklch(1 0 0 / 0.2) inset;
+  transition-duration: 120ms;
+}
+
+.dark .btn-skeuo:active {
+  box-shadow:
+    0 2px 4px oklch(0 0 0 / 0.38) inset,
+    0 1px 0 oklch(1 0 0 / 0.05) inset;
+}
+
+/* Disabled — matches .sticky-skeuo-btn--icon:disabled */
+/* Disabled — key sits slightly recessed into the plastic. Face darkens
+   beyond a normal neutral key (more muted, less background) and a soft
+   top-inset shadow simulates the upper wall casting a shadow down onto
+   the pushed-in key. A thin bottom-inner highlight catches light on the
+   inside lip of the recess. No outer drop shadow — it's not floating. */
+.btn-skeuo:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  background-image: none;
+  background-color: color-mix(in oklch, var(--muted) 80%, var(--background) 20%);
+  border-color: color-mix(in oklch, var(--foreground) 18%, var(--background) 82%);
+  color: color-mix(in oklch, var(--muted-foreground) 70%, var(--background) 30%);
+  box-shadow: 0 0 2px oklch(0 0 0 / 0.09) inset;
+  filter: brightness(0.97);
+}
+
+.dark .btn-skeuo:disabled {
+  background-color: color-mix(in oklch, var(--muted) 70%, var(--background) 30%);
+  border-color: color-mix(in oklch, var(--foreground) 24%, var(--background) 76%);
+  color: color-mix(in oklch, var(--muted-foreground) 65%, var(--background) 35%);
+  box-shadow: 0 0 2px oklch(0 0 0 / 0.22) inset;
+  filter: brightness(0.9);
+}
+
+/* === Palette modifiers — stacked on top of .btn-skeuo ===
+   Each swaps border/bg/color for its role. Shape, shadow stack, press
+   feedback, and disabled state are inherited from .btn-skeuo. */
+
+/* Primary — dark ink key using --primary as the face color.
+   In dark mode --primary flips to a light tone; the gradient auto-adapts. */
+.btn-skeuo-primary {
+  border-color: color-mix(in oklch, black 38%, var(--primary) 62%);
+  background-color: var(--primary);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 12%, var(--primary) 88%) 0%,
+    var(--primary) 55%,
+    color-mix(in oklch, black 8%, var(--primary) 92%) 100%
+  );
+  color: var(--primary-foreground);
+}
+
+.dark .btn-skeuo-primary {
+  border-color: color-mix(in oklch, black 55%, var(--primary) 45%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-skeuo-primary:hover {
+    border-color: color-mix(in oklch, black 48%, var(--primary) 52%);
+    color: var(--primary-foreground);
+  }
+}
+
+/* Destructive — red alarm key. Warm near-white text reads on the red face
+   in both modes without needing a theme-specific foreground token. */
+.btn-skeuo-destructive {
+  border-color: color-mix(in oklch, black 38%, var(--destructive) 62%);
+  background-color: var(--destructive);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 14%, var(--destructive) 86%) 0%,
+    var(--destructive) 55%,
+    color-mix(in oklch, black 10%, var(--destructive) 90%) 100%
+  );
+  color: oklch(0.99 0.01 25);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-skeuo-destructive:hover {
+    border-color: color-mix(in oklch, black 48%, var(--destructive) 52%);
+    color: oklch(0.99 0.01 25);
+  }
+}
+
+/* Outline — pale plastic face with a stronger border. Lower presence than
+   neutral; used for tertiary actions like "Cancel" or header dismisses. */
+.btn-skeuo-outline {
+  border-color: color-mix(in oklch, var(--foreground) 28%, var(--background) 72%);
+  background-color: var(--background);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, white 8%, var(--background) 92%) 0%,
+    var(--background) 100%
+  );
+  color: color-mix(in oklch, var(--foreground) 85%, var(--background) 15%);
+}
+
+.dark .btn-skeuo-outline {
+  border-color: color-mix(in oklch, var(--foreground) 34%, var(--background) 66%);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--foreground) 10%, var(--background) 90%) 0%,
+    var(--background) 100%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-skeuo-outline:hover {
+    border-color: color-mix(in oklch, var(--foreground) 38%, var(--background) 62%);
+    color: color-mix(in oklch, var(--foreground) 95%, var(--background) 5%);
+  }
+}
+
+/* Ghost — flat and chromeless at rest, rises into a subtle skeuo key on hover.
+   Preserves the "invisible until interacted" semantic of the original ghost
+   variant while still giving physical press feedback. */
+.btn-skeuo-ghost {
+  border-color: transparent;
+  background-color: transparent;
+  background-image: none;
+  color: color-mix(in oklch, var(--foreground) 62%, var(--background) 38%);
+  box-shadow: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-skeuo-ghost:hover {
+    border-color: color-mix(in oklch, var(--foreground) 14%, var(--background) 86%);
+    background-color: var(--background);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklch, white 12%, var(--background) 88%) 0%,
+      color-mix(in oklch, var(--muted) 50%, var(--background) 50%) 100%
+    );
+    color: color-mix(in oklch, var(--foreground) 92%, var(--background) 8%);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.5) inset,
+      0 -1px 0 oklch(0 0 0 / 0.06) inset,
+      0 1px 1px oklch(0 0 0 / 0.1),
+      0 2px 3px -1px oklch(0 0 0 / 0.14);
+  }
+
+  .dark .btn-skeuo-ghost:hover {
+    border-color: color-mix(in oklch, var(--foreground) 22%, var(--background) 78%);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--foreground) 14%, var(--background) 86%) 0%,
+      color-mix(in oklch, var(--muted) 40%, var(--background) 60%) 100%
+    );
+  }
+}
+
+/* Ghost press — start from flat, not from raised, so the inset is gentler. */
+.btn-skeuo-ghost:active {
+  background-color: color-mix(in oklch, var(--muted) 55%, var(--background) 45%);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.1) inset;
+}
+
+.dark .btn-skeuo-ghost:active {
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.28) inset;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-toolbar,
+  .btn-skeuo,
+  .btn-skeuo:active {
+    transition-duration: 0ms;
   }
 }
 

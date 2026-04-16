@@ -4,7 +4,7 @@ export const dialogScrollableSurface =
   "max-h-[90svh] w-full max-w-md gap-0 overflow-y-auto p-0 sm:max-w-md"
 
 export const dialogHeaderBlock = "px-5 pt-4 pb-3"
-const dialogSectionBase = "border-t border-border/50 px-5 py-3"
+const dialogSectionBase = "desk-sep-top px-5 py-3"
 export const dialogSection = dialogSectionBase
 export const dialogSectionLast = dialogSectionBase
 export const dialogSectionTitle = "text-xs font-medium text-foreground"

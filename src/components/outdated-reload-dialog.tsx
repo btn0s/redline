@@ -50,6 +50,7 @@ export function OutdatedReloadDialog({
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <Button
             type="button"
+            data-alert-dialog-primary=""
             disabled={pending}
             onClick={() => void onConfirm()}
           >
