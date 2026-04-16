@@ -26,6 +26,19 @@ function parseFileMeta(data: unknown): FileMeta | null {
   return { mtimeMs: o.mtimeMs, size: o.size, rev: o.rev }
 }
 
+async function fetchFileMeta(): Promise<FileMeta | null> {
+  const res = await fetch("/api/file/meta")
+  if (!res.ok) return null
+  const text = await res.text()
+  let data: unknown
+  try {
+    data = text.trim() === "" ? null : JSON.parse(text)
+  } catch {
+    return null
+  }
+  return parseFileMeta(data)
+}
+
 export function useFile() {
   const [file, setFile] = useState<FileData | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -83,17 +96,7 @@ export function useFile() {
       })
       .then(async (loaded) => {
         setFile(loaded)
-        const metaRes = await fetch("/api/file/meta")
-        if (!metaRes.ok) return
-        const metaText = await metaRes.text()
-        let metaJson: unknown
-        try {
-          metaJson =
-            metaText.trim() === "" ? null : JSON.parse(metaText)
-        } catch {
-          return
-        }
-        const meta = parseFileMeta(metaJson)
+        const meta = await fetchFileMeta()
         if (meta) {
           setBaseMeta(meta)
           setLatestMeta(meta)
@@ -112,16 +115,7 @@ export function useFile() {
 
     const poll = async () => {
       try {
-        const r = await fetch("/api/file/meta")
-        if (!r.ok) return
-        const text = await r.text()
-        let data: unknown
-        try {
-          data = text.trim() === "" ? null : JSON.parse(text)
-        } catch {
-          return
-        }
-        const meta = parseFileMeta(data)
+        const meta = await fetchFileMeta()
         if (meta) setLatestMeta(meta)
       } catch {
         // ignore network errors during poll
@@ -146,21 +140,10 @@ export function useFile() {
         if (res.ok) {
           setFile((f) => (f ? { ...f, content } : f))
           setWorkingMarkdown(content)
-          const metaRes = await fetch("/api/file/meta")
-          if (metaRes.ok) {
-            const metaText = await metaRes.text()
-            let metaJson: unknown
-            try {
-              metaJson =
-                metaText.trim() === "" ? null : JSON.parse(metaText)
-            } catch {
-              return
-            }
-            const meta = parseFileMeta(metaJson)
-            if (meta) {
-              setBaseMeta(meta)
-              setLatestMeta(meta)
-            }
+          const meta = await fetchFileMeta()
+          if (meta) {
+            setBaseMeta(meta)
+            setLatestMeta(meta)
           }
         }
       } finally {
@@ -186,20 +169,14 @@ export function useFile() {
       throw new Error("Failed to reload file")
     }
     setFile(data as FileData)
-    const metaRes = await fetch("/api/file/meta")
-    if (metaRes.ok) {
-      const metaText = await metaRes.text()
-      try {
-        const metaJson =
-          metaText.trim() === "" ? null : JSON.parse(metaText)
-        const meta = parseFileMeta(metaJson)
-        if (meta) {
-          setBaseMeta(meta)
-          setLatestMeta(meta)
-        }
-      } catch {
-        // ignore meta parse errors; file content still reloaded below
+    try {
+      const meta = await fetchFileMeta()
+      if (meta) {
+        setBaseMeta(meta)
+        setLatestMeta(meta)
       }
+    } catch {
+      // ignore meta fetch errors; file content still reloaded above
     }
     setContentReloadNonce((n) => n + 1)
   }, [])

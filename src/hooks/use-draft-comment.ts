@@ -1,0 +1,68 @@
+import { useCallback, useState } from "react"
+import type { Editor as TiptapEditor } from "@tiptap/core"
+import { removeCommentMarkFromEditor } from "@/hooks/use-comments"
+
+interface UseDraftCommentOptions {
+  editor: TiptapEditor | null
+  addComment: (
+    editor: TiptapEditor,
+    body: string,
+    existingCommentId?: string,
+  ) => unknown
+  setActiveCommentId: (id: string | null) => void
+  onDraftStarted: () => void
+}
+
+export function useDraftComment({
+  editor,
+  addComment,
+  setActiveCommentId,
+  onDraftStarted,
+}: UseDraftCommentOptions) {
+  const [showNewComment, setShowNewComment] = useState(false)
+  const [draftQuotedText, setDraftQuotedText] = useState("")
+  const [pendingDraftCommentId, setPendingDraftCommentId] = useState<string | null>(
+    null,
+  )
+
+  const handleAddCommentClick = useCallback(() => {
+    if (!editor) return
+    const { from, to } = editor.state.selection
+    if (from === to) return
+    const draftId = `draft-${crypto.randomUUID()}`
+    editor.chain().focus().setCommentMark(draftId).run()
+    setPendingDraftCommentId(draftId)
+    setDraftQuotedText(editor.state.doc.textBetween(from, to, " "))
+    setShowNewComment(true)
+    setActiveCommentId(null)
+    onDraftStarted()
+  }, [editor, setActiveCommentId, onDraftStarted])
+
+  const handleCloseNewComment = useCallback(() => {
+    if (pendingDraftCommentId && editor) {
+      removeCommentMarkFromEditor(editor, pendingDraftCommentId)
+      setPendingDraftCommentId(null)
+    }
+    setShowNewComment(false)
+  }, [editor, pendingDraftCommentId])
+
+  const handleSubmitNewComment = useCallback(
+    (body: string) => {
+      if (!editor) return
+      addComment(editor, body, pendingDraftCommentId ?? undefined)
+      setPendingDraftCommentId(null)
+      setShowNewComment(false)
+    },
+    [editor, addComment, pendingDraftCommentId],
+  )
+
+  return {
+    showNewComment,
+    setShowNewComment,
+    draftQuotedText,
+    pendingDraftCommentId,
+    handleAddCommentClick,
+    handleCloseNewComment,
+    handleSubmitNewComment,
+  }
+}

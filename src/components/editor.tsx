@@ -76,10 +76,11 @@ export function Editor({
     extensions,
     content,
     onUpdate: ({ editor }) => {
-      const md = (
-        editor.storage as unknown as { markdown: { getMarkdown: () => string } }
-      ).markdown.getMarkdown()
-      if (md === lastMarkdownRef.current) {
+      const markdownStorage = (
+        editor.storage as { markdown?: { getMarkdown?: () => string } }
+      ).markdown
+      const md = markdownStorage?.getMarkdown?.()
+      if (md == null || md === lastMarkdownRef.current) {
         return
       }
       lastMarkdownRef.current = md

@@ -66,6 +66,34 @@ function savePersisted(
   }
 }
 
+/** Remove every `commentMark` with the given id from the document. */
+export function removeCommentMarkFromEditor(editor: Editor, commentId: string): void {
+  const { doc } = editor.state
+  let markFrom: number | null = null
+  let markTo: number | null = null
+
+  doc.descendants((node, pos) => {
+    node.marks.forEach((mark) => {
+      if (
+        mark.type.name === "commentMark" &&
+        mark.attrs.commentId === commentId
+      ) {
+        if (markFrom === null) markFrom = pos
+        markTo = pos + node.nodeSize
+      }
+    })
+  })
+
+  if (markFrom !== null && markTo !== null) {
+    editor
+      .chain()
+      .focus()
+      .setTextSelection({ from: markFrom, to: markTo })
+      .unsetCommentMark()
+      .run()
+  }
+}
+
 export function useComments(persistenceKey: string | null) {
   const [comments, setComments] = useState<Comment[]>([])
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
@@ -73,6 +101,8 @@ export function useComments(persistenceKey: string | null) {
 
   useEffect(() => {
     if (!persistenceKey) {
+      // Reset client comment state when no file is loaded (intentional sync from key).
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- persistence key cleared
       setComments([])
       setActiveCommentId(null)
       setLoadedKey(null)
@@ -92,56 +122,34 @@ export function useComments(persistenceKey: string | null) {
 
   const addComment = useCallback(
     (editor: Editor, body: string, existingCommentId?: string) => {
-    const { from, to } = editor.state.selection
-    if (from === to) return null
+      const { from, to } = editor.state.selection
+      if (from === to) return null
 
-    const quotedText = editor.state.doc.textBetween(from, to, " ")
-    const id = existingCommentId ?? crypto.randomUUID()
-    const createdAt = new Date().toISOString()
+      const quotedText = editor.state.doc.textBetween(from, to, " ")
+      const id = existingCommentId ?? crypto.randomUUID()
+      const createdAt = new Date().toISOString()
 
-    const comment: Comment = {
-      id,
-      quotedText,
-      messages: [{ id: crypto.randomUUID(), body, createdAt }],
-      createdAt,
-      anchorFrom: from,
-      anchorTo: to,
-    }
+      const comment: Comment = {
+        id,
+        quotedText,
+        messages: [{ id: crypto.randomUUID(), body, createdAt }],
+        createdAt,
+        anchorFrom: from,
+        anchorTo: to,
+      }
 
-    if (!existingCommentId) {
-      editor.chain().focus().setCommentMark(id).run()
-    }
-    setComments((prev) => [...prev, comment])
-    setActiveCommentId(id)
-    return comment
-  },
-  [])
+      if (!existingCommentId) {
+        editor.chain().focus().setCommentMark(id).run()
+      }
+      setComments((prev) => [...prev, comment])
+      setActiveCommentId(id)
+      return comment
+    },
+    [],
+  )
 
   const deleteComment = useCallback((editor: Editor, commentId: string) => {
-    const { doc } = editor.state
-    let markFrom: number | null = null
-    let markTo: number | null = null
-
-    doc.descendants((node, pos) => {
-      node.marks.forEach((mark) => {
-        if (
-          mark.type.name === "commentMark" &&
-          mark.attrs.commentId === commentId
-        ) {
-          if (markFrom === null) markFrom = pos
-          markTo = pos + node.nodeSize
-        }
-      })
-    })
-
-    if (markFrom !== null && markTo !== null) {
-      editor
-        .chain()
-        .focus()
-        .setTextSelection({ from: markFrom, to: markTo })
-        .unsetCommentMark()
-        .run()
-    }
+    removeCommentMarkFromEditor(editor, commentId)
 
     setComments((prev) => prev.filter((c) => c.id !== commentId))
     setActiveCommentId(null)
@@ -165,22 +173,6 @@ export function useComments(persistenceKey: string | null) {
 
     return `${header}${threads}`
   }, [comments, persistenceKey])
-
-  const updateCommentBody = useCallback((commentId: string, body: string) => {
-    setComments((prev) =>
-      prev.map((c) => {
-        if (c.id !== commentId || c.messages.length === 0) {
-          return c
-        }
-
-        const [first, ...rest] = c.messages
-        return {
-          ...c,
-          messages: [{ ...first, body }, ...rest],
-        }
-      }),
-    )
-  }, [])
 
   const addReplyToComment = useCallback((commentId: string, body: string) => {
     const trimmed = body.trim()
@@ -267,7 +259,6 @@ export function useComments(persistenceKey: string | null) {
     activeCommentId,
     setActiveCommentId,
     addComment,
-    updateCommentBody,
     addReplyToComment,
     syncCommentAnchorsFromEditor,
     deleteComment,

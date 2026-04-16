@@ -1,0 +1,72 @@
+import { Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+interface OutdatedReloadDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  dirty: boolean
+  pending: boolean
+  onConfirm: () => void
+}
+
+export function OutdatedReloadDialog({
+  open,
+  onOpenChange,
+  dirty,
+  pending,
+  onConfirm,
+}: OutdatedReloadDialogProps) {
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next && pending) return
+        onOpenChange(next)
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Reload from disk?</AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2 text-balance text-left">
+            {dirty ? (
+              <span className="block">Your unsaved edits will be discarded.</span>
+            ) : null}
+            <span className="block">
+              All comments will be cleared. Anchors and quotes may no longer match
+              the file after it changes on disk.
+            </span>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <Button
+            type="button"
+            disabled={pending}
+            onClick={() => void onConfirm()}
+          >
+            {pending ? (
+              <>
+                <Loader2
+                  className="mr-1.5 size-3.5 shrink-0 animate-spin"
+                  aria-hidden
+                />
+                Reloading…
+              </>
+            ) : (
+              "Reload from disk"
+            )}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
