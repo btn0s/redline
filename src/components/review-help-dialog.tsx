@@ -1,5 +1,4 @@
 import type { ReactNode } from "react"
-import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,13 +9,11 @@ import {
 } from "@/components/ui/dialog"
 import { Kbd } from "@/components/ui/kbd"
 import {
-  addCommentShortcutDisplay,
   modAltKey,
   modAltKeyCompact,
   modShiftAltKey,
   modShiftKeyCompact,
 } from "@/lib/format-shortcut"
-import { modLabel } from "@/lib/mod-key"
 
 interface ReviewHelpDialogProps {
   open: boolean
@@ -33,8 +30,6 @@ function Row({ label, keys }: { label: string; keys: ReactNode }) {
 }
 
 export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) {
-  const { scheme } = useShortcutScheme()
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -55,11 +50,6 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
                 </code>
                 , then copy everything back to the LLM in one shot.
               </p>
-              <p className="leading-snug">
-                <span className="text-foreground/90">Flow:</span> select text → thread
-                replies → <span className="text-foreground/90">Copy all</span>. Comments
-                persist with the file.
-              </p>
               <p className="text-[11px] leading-snug">
                 Inspired by{" "}
                 <a
@@ -78,13 +68,7 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
 
         <div className="border-t border-border/60 px-4 py-3">
           <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
-          <p className="text-muted-foreground mt-1 mb-2 text-[11px] leading-snug">
-            <Kbd className="text-[10px]">{modLabel()}</Kbd> = ⌘ on Mac, Ctrl elsewhere.
-            New comment now:{" "}
-            <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd> (
-            <span className="text-foreground/90">gear</span> to switch).
-          </p>
-          <div className="rounded-lg border border-border/50 bg-muted/20 px-2.5">
+          <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <Row
               label="Comment (Docs / Word)"
               keys={<Kbd className="text-[10px]">{modAltKeyCompact("M")}</Kbd>}
@@ -107,9 +91,6 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
             />
             <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
-          <p className="text-muted-foreground mt-2 text-[11px] leading-snug">
-            Clear-all confirms before deleting threads.
-          </p>
         </div>
 
         <div className="flex justify-end border-t border-border/60 px-4 py-3">
