@@ -65,17 +65,16 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
                 >
                   Agentation
                 </a>
-                .
-              </p>
-              <p className="text-[11px] leading-snug">
+                . Learn more on{" "}
                 <a
                   href={REDLINE_REPO_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-foreground underline-offset-2 hover:underline"
                 >
-                  See more on GitHub
+                  GitHub
                 </a>
+                .
               </p>
             </div>
           </DialogHeader>
