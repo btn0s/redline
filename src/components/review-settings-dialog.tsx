@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { useCommentContext } from "@/contexts/comment-context"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -127,17 +126,11 @@ export function ReviewSettingsDialog({
           </div>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3">
+        <div className="border-t border-border/60 px-4 py-3 pb-4">
           <p className="text-muted-foreground text-[11px]">
             Threads in this document:{" "}
             <span className="font-mono text-foreground">{comments.length}</span>
           </p>
-        </div>
-
-        <div className="flex justify-end border-t border-border/60 px-4 py-3">
-          <Button type="button" size="sm" onClick={() => onOpenChange(false)}>
-            Done
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

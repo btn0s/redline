@@ -1,5 +1,4 @@
 import type { ReactNode } from "react"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -82,7 +81,7 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
           </DialogHeader>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3">
+        <div className="border-t border-border/60 px-4 py-3 pb-4">
           <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
           <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <Row
@@ -107,12 +106,6 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
             />
             <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
-        </div>
-
-        <div className="flex justify-end border-t border-border/60 px-4 py-3">
-          <Button type="button" size="sm" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
