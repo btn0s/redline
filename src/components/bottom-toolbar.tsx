@@ -142,6 +142,8 @@ export function BottomToolbar() {
             className="mx-1.5 h-5 w-px shrink-0 bg-border/80"
           />
 
+          <ThemeCycleButton />
+
           <Tooltip>
             <TooltipTrigger
               render={
@@ -161,8 +163,6 @@ export function BottomToolbar() {
               Shortcuts and keyboard layout
             </TooltipContent>
           </Tooltip>
-
-          <ThemeCycleButton />
 
           <Tooltip>
             <TooltipTrigger
