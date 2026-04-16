@@ -1,8 +1,9 @@
 import { useState } from "react"
-import { Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
+import { CircleHelp, Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
 import { useCommentContext } from "@/contexts/comment-context"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
+import { ReviewHelpDialog } from "@/components/review-help-dialog"
 import { ReviewSettingsDialog } from "@/components/review-settings-dialog"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
@@ -18,6 +19,7 @@ const toolbarBtnClass =
 
 export function BottomToolbar() {
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
   const { scheme } = useShortcutScheme()
   const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments } =
     useCommentContext()
@@ -25,6 +27,7 @@ export function BottomToolbar() {
   return (
     <>
       <ReviewSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <ReviewHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <div
         className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
         aria-label="Quick actions"
@@ -110,6 +113,13 @@ export function BottomToolbar() {
             </TooltipContent>
           </Tooltip>
 
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-hidden="true"
+            className="mx-1.5 h-5 w-px shrink-0 bg-border/80"
+          />
+
           <Tooltip>
             <TooltipTrigger
               render={
@@ -132,6 +142,26 @@ export function BottomToolbar() {
           </Tooltip>
 
           <ThemeCycleButton />
+
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Help and keyboard shortcuts"
+                  className={toolbarBtnClass}
+                  onClick={() => setHelpOpen(true)}
+                >
+                  <CircleHelp className="size-3.5 stroke-[1.5]" aria-hidden />
+                </Button>
+              }
+            />
+            <TooltipContent side="top" sideOffset={8}>
+              What Redline is and how shortcuts work
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </>
