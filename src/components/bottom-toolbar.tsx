@@ -60,7 +60,7 @@ export function BottomToolbar() {
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Toggle redlines panel"
+                  aria-label="Toggle comment threads panel"
                   aria-pressed={commentsPanelOpen}
                   className={toolbarBtnClass}
                   onClick={togglePanel}
@@ -69,11 +69,9 @@ export function BottomToolbar() {
                 </Button>
               }
             />
-            <TooltipContent side="top" sideOffset={8} className="max-w-[17rem] flex-col gap-1.5">
-              <span>Redlines — browse all comment threads in the side panel.</span>
-              <span className="flex flex-wrap items-center gap-1">
-                <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>
-              </span>
+            <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
+              <span>Open comment threads</span>
+              <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd>
             </TooltipContent>
           </Tooltip>
 
