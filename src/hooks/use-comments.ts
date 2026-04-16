@@ -24,6 +24,30 @@ function storageKey(fileKey: string) {
   return `${STORAGE_PREFIX}${encodeURIComponent(fileKey)}`
 }
 
+function isCommentMessage(x: unknown): x is CommentMessage {
+  if (typeof x !== "object" || x === null) return false
+  const m = x as Record<string, unknown>
+  return (
+    typeof m.id === "string" &&
+    typeof m.body === "string" &&
+    typeof m.createdAt === "string"
+  )
+}
+
+function isComment(x: unknown): x is Comment {
+  if (typeof x !== "object" || x === null) return false
+  const c = x as Record<string, unknown>
+  if (typeof c.id !== "string") return false
+  if (typeof c.quotedText !== "string") return false
+  if (typeof c.createdAt !== "string") return false
+  if (typeof c.anchorFrom !== "number") return false
+  if (c.anchorTo !== undefined && typeof c.anchorTo !== "number") return false
+  if (!Array.isArray(c.messages) || !c.messages.every(isCommentMessage)) {
+    return false
+  }
+  return true
+}
+
 function loadPersisted(fileKey: string): {
   comments: Comment[]
   activeCommentId: string | null
@@ -38,7 +62,9 @@ function loadPersisted(fileKey: string): {
       return { comments: [], activeCommentId: null }
     }
     const obj = data as Record<string, unknown>
-    const comments = Array.isArray(obj.comments) ? (obj.comments as Comment[]) : []
+    const comments = Array.isArray(obj.comments)
+      ? (obj.comments as unknown[]).filter(isComment)
+      : []
     const activeCommentId =
       obj.activeCommentId === null
         ? null
@@ -85,12 +111,11 @@ export function removeCommentMarkFromEditor(editor: Editor, commentId: string): 
   })
 
   if (markFrom !== null && markTo !== null) {
-    editor
-      .chain()
-      .focus()
-      .setTextSelection({ from: markFrom, to: markTo })
-      .unsetCommentMark()
-      .run()
+    const markType = editor.state.schema.marks.commentMark
+    if (markType) {
+      const tr = editor.state.tr.removeMark(markFrom, markTo, markType)
+      editor.view.dispatch(tr)
+    }
   }
 }
 
@@ -244,9 +269,15 @@ export function useComments(persistenceKey: string | null) {
     })
   }, [])
 
-  const copyComments = useCallback(async () => {
+  const copyComments = useCallback(async (): Promise<boolean> => {
     const text = formatComments()
-    await navigator.clipboard.writeText(text)
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch (e) {
+      console.error("Failed to copy comments:", e)
+      return false
+    }
   }, [formatComments])
 
   const clearAllComments = useCallback(() => {

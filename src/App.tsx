@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef } from "react"
-import { flushSync } from "react-dom"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import { useFile } from "@/hooks/use-file"
 import { useComments } from "@/hooks/use-comments"
@@ -83,14 +82,12 @@ export function App() {
     setOutdatedReloadPending(true)
     try {
       await reloadFromDisk()
-      flushSync(() => {
-        if (showNewComment || pendingDraftCommentId) {
-          handleCloseNewComment()
-        }
-        clearAllComments()
-        setCommentsPanelOpen(false)
-        clearHover()
-      })
+      if (showNewComment || pendingDraftCommentId) {
+        handleCloseNewComment()
+      }
+      clearAllComments()
+      setCommentsPanelOpen(false)
+      clearHover()
       setOutdatedReloadOpen(false)
     } catch (e) {
       console.error(e)
@@ -288,10 +285,7 @@ export function App() {
 
       <OutdatedReloadDialog
         open={outdatedReloadOpen}
-        onOpenChange={(open) => {
-          if (!open && outdatedReloadPending) return
-          setOutdatedReloadOpen(open)
-        }}
+        onOpenChange={setOutdatedReloadOpen}
         dirty={dirty}
         pending={outdatedReloadPending}
         onConfirm={confirmOutdatedReload}

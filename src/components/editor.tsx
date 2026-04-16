@@ -79,8 +79,22 @@ export function Editor({
       const markdownStorage = (
         editor.storage as { markdown?: { getMarkdown?: () => string } }
       ).markdown
-      const md = markdownStorage?.getMarkdown?.()
-      if (md == null || md === lastMarkdownRef.current) {
+      if (typeof markdownStorage?.getMarkdown !== "function") {
+        if (import.meta.env.DEV) {
+          console.warn(
+            "tiptap-markdown getMarkdown() not found on editor.storage.markdown",
+          )
+        }
+        return
+      }
+      const md = markdownStorage.getMarkdown()
+      if (md === undefined) {
+        if (import.meta.env.DEV) {
+          console.warn("tiptap-markdown getMarkdown() returned undefined")
+        }
+        return
+      }
+      if (md === lastMarkdownRef.current) {
         return
       }
       lastMarkdownRef.current = md
@@ -121,11 +135,14 @@ export function Editor({
             if (bubbleMenuSuppressed) return false
             const { from, to } = state.selection
             if (from === to) return false
-            const resolved = state.doc.resolve(from)
-            if (resolved.marks().some((m) => m.type.name === "commentMark")) {
-              return false
-            }
-            return true
+            let hasCommentMark = false
+            state.doc.nodesBetween(from, to, (node) => {
+              if (node.marks.some((m) => m.type.name === "commentMark")) {
+                hasCommentMark = true
+                return false
+              }
+            })
+            return !hasCommentMark
           }}
           options={{
             placement: "bottom",

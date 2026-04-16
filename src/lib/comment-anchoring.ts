@@ -201,6 +201,8 @@ function resolveCommentRangeNearAnchorBruteForce(
   )
   const maxOffset = Math.min(docSize, 600)
   const maxLengthJitter = 20
+  const MAX_ITERATIONS = 10_000
+  let iterations = 0
 
   for (let k = 0; k <= maxOffset; k += 1) {
     const offsets = k === 0 ? [0] : [k, -k]
@@ -210,6 +212,7 @@ function resolveCommentRangeNearAnchorBruteForce(
         const lengths =
           jitter === 0 ? [baseLength] : [baseLength + jitter, baseLength - jitter]
         for (const candidateLength of lengths) {
+          if (++iterations > MAX_ITERATIONS) return null
           if (candidateLength < 1) continue
           const candidateTo = Math.max(
             candidateFrom + 1,

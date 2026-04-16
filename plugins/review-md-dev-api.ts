@@ -1,14 +1,14 @@
-import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 import type { Plugin } from "vite"
+import {
+  computeRevFromStats,
+  getDisplayPath,
+  parseFilePutBody,
+} from "../shared/api-handlers.js"
 
 function fileMetaFromStats(st: fs.Stats) {
-  const rev = crypto
-    .createHash("sha256")
-    .update(`${st.mtimeMs}:${st.size}`)
-    .digest("hex")
-    .slice(0, 16)
+  const rev = computeRevFromStats(st)
   return { mtimeMs: st.mtimeMs, size: st.size, rev }
 }
 
@@ -84,9 +84,7 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
             }
             const content = fs.readFileSync(resolved, "utf-8")
             const filename = path.basename(resolved)
-            const rel = path.relative(process.cwd(), resolved)
-            const displayPath =
-              rel.split(path.sep).join("/") || filename
+            const displayPath = getDisplayPath(resolved)
             res.setHeader("Content-Type", "application/json")
             res.statusCode = 200
             res.end(
@@ -114,13 +112,14 @@ export function reviewMdDevApi(fileFromEnv: string): Plugin {
             body += chunk
           })
           req.on("end", () => {
+            const parsed = parseFilePutBody(body)
+            if (!parsed.ok) {
+              res.setHeader("Content-Type", "application/json")
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: parsed.error }))
+              return
+            }
             try {
-              const parsed = JSON.parse(body) as { content?: string }
-              if (typeof parsed.content !== "string") {
-                res.statusCode = 400
-                res.end(JSON.stringify({ error: "Expected { content: string }" }))
-                return
-              }
               fs.writeFileSync(resolved, parsed.content, "utf-8")
               res.setHeader("Content-Type", "application/json")
               res.statusCode = 200

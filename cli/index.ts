@@ -1,6 +1,6 @@
 import { resolve } from "path"
 import { existsSync } from "fs"
-import { execSync } from "child_process"
+import { execFileSync } from "child_process"
 import { startServer } from "./server.js"
 
 const args = process.argv.slice(2)
@@ -30,7 +30,7 @@ console.log(`  Serving ${args[0]} at ${url}\n`)
 
 // Open browser (macOS)
 try {
-  execSync(`open ${url}`)
+  execFileSync("open", [url])
 } catch {
   console.log(`  Open ${url} in your browser`)
 }

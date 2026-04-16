@@ -1,14 +1,20 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "http"
-import { createHash } from "crypto"
 import { readFileSync, writeFileSync, existsSync, statSync } from "fs"
-import { join, dirname, basename, relative } from "path"
+import { join, dirname, basename, resolve } from "path"
 import { fileURLToPath } from "url"
+import {
+  computeRevFromStats,
+  getDisplayPath,
+  isResolvedPathInsideDirectory,
+  parseFilePutBody,
+} from "../shared/api-handlers.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export function startServer(filePath: string, port: number): Promise<string> {
-  const clientDir = join(__dirname, "../client")
-  const useClientDir = existsSync(clientDir)
+  const clientDirRaw = join(__dirname, "../client")
+  const clientDirResolved = resolve(clientDirRaw)
+  const useClientDir = existsSync(clientDirResolved)
 
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url!, `http://localhost:${port}`)
@@ -17,10 +23,7 @@ export function startServer(filePath: string, port: number): Promise<string> {
     if (url.pathname === "/api/file/meta" && req.method === "GET") {
       try {
         const st = statSync(filePath)
-        const rev = createHash("sha256")
-          .update(`${st.mtimeMs}:${st.size}`)
-          .digest("hex")
-          .slice(0, 16)
+        const rev = computeRevFromStats(st)
         res.writeHead(200, {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
@@ -54,9 +57,7 @@ export function startServer(filePath: string, port: number): Promise<string> {
         "Access-Control-Allow-Origin": "*",
       })
       const filename = basename(filePath)
-      const displayPath =
-        relative(process.cwd(), filePath).split(/[/\\]/).join("/") ||
-        filename
+      const displayPath = getDisplayPath(filePath)
       res.end(JSON.stringify({ content, filename, path: displayPath }))
       return
     }
@@ -65,8 +66,16 @@ export function startServer(filePath: string, port: number): Promise<string> {
     if (url.pathname === "/api/file" && req.method === "PUT") {
       let body = ""
       for await (const chunk of req) body += chunk
-      const { content } = JSON.parse(body) as { content: string }
-      writeFileSync(filePath, content, "utf-8")
+      const parsed = parseFilePutBody(body)
+      if (!parsed.ok) {
+        res.writeHead(400, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        })
+        res.end(JSON.stringify({ error: parsed.error }))
+        return
+      }
+      writeFileSync(filePath, parsed.content, "utf-8")
       res.writeHead(200, {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -88,8 +97,22 @@ export function startServer(filePath: string, port: number): Promise<string> {
 
     // Static files (production only — in dev, Vite handles this)
     if (useClientDir) {
-      const fileParts = url.pathname === "/" ? "/index.html" : url.pathname
-      const staticPath = join(clientDir, fileParts)
+      const rawPath =
+        url.pathname === "/" || url.pathname === "" ? "index.html" : url.pathname.replace(/^\//, "")
+      let decodedPath = rawPath
+      try {
+        decodedPath = decodeURIComponent(rawPath)
+      } catch {
+        res.writeHead(400)
+        res.end("Bad request")
+        return
+      }
+      const staticPath = resolve(clientDirResolved, decodedPath)
+      if (!isResolvedPathInsideDirectory(clientDirResolved, staticPath)) {
+        res.writeHead(403)
+        res.end("Forbidden")
+        return
+      }
       if (existsSync(staticPath)) {
         const ext = staticPath.split(".").pop()
         const mimeTypes: Record<string, string> = {
@@ -107,8 +130,14 @@ export function startServer(filePath: string, port: number): Promise<string> {
         return
       }
       // SPA fallback
+      const indexPath = resolve(clientDirResolved, "index.html")
+      if (!isResolvedPathInsideDirectory(clientDirResolved, indexPath)) {
+        res.writeHead(403)
+        res.end("Forbidden")
+        return
+      }
       res.writeHead(200, { "Content-Type": "text/html" })
-      res.end(readFileSync(join(clientDir, "index.html")))
+      res.end(readFileSync(indexPath))
       return
     }
 
@@ -116,9 +145,9 @@ export function startServer(filePath: string, port: number): Promise<string> {
     res.end("Not found")
   })
 
-  return new Promise((resolve) => {
+  return new Promise((resolveListen) => {
     server.listen(port, () => {
-      resolve(`http://localhost:${port}`)
+      resolveListen(`http://localhost:${port}`)
     })
   })
 }

@@ -7,6 +7,9 @@ import {
   resolveCommentRangeNearAnchor,
 } from "@/lib/comment-anchoring"
 
+/** Bottom strip of the comment mark hit target for opening the thread (see CSS). */
+const PILL_CLICK_ZONE_PX = 8
+
 interface UseEditorCommentSyncOptions {
   editor: TiptapEditor | null
   comments: Comment[]
@@ -92,7 +95,7 @@ export function useEditorCommentSync({
       while (el && el !== dom) {
         if (el.matches("mark.comment-mark[data-comment-id]")) {
           const rect = el.getBoundingClientRect()
-          if (event.clientY >= rect.bottom - 8) {
+          if (event.clientY >= rect.bottom - PILL_CLICK_ZONE_PX) {
             const commentId = el.getAttribute("data-comment-id")
             if (!commentId) return
             const hasSavedThread = comments.some((c) => c.id === commentId)

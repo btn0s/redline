@@ -24,6 +24,13 @@ export function useCommentHover(editor: TiptapEditor | null): {
       })
     }
     syncHotMark()
+    return () => {
+      dom
+        .querySelectorAll("mark.comment-mark.comment-mark--hot")
+        .forEach((el) => {
+          el.classList.remove("comment-mark--hot")
+        })
+    }
   }, [editor, hoveredCommentId])
 
   useEffect(() => {
