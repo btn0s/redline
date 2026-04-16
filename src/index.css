@@ -263,7 +263,7 @@
       border-color 400ms ease-out;
     }
   body {
-    @apply text-foreground;
+    @apply overflow-x-hidden text-foreground;
     background-color: var(--desk);
     background-image:
       /* Subtle crosshatch / linen weave over the desk */
