@@ -22,7 +22,7 @@ export function ReviewHeader({
       aria-label="Current file and repository"
       data-prevent-redlines-dismiss=""
     >
-      <div className="flex h-9 min-h-9 items-center justify-between gap-3 px-4 text-[11px] leading-none">
+      <div className="flex h-9 min-h-9 items-center justify-between gap-3 px-4 text-[0.75rem] leading-none">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span
             className="truncate font-mono text-muted-foreground"

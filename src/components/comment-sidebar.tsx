@@ -71,7 +71,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
         )}
 
         {ordered.length === 0 && !showNewComment && (
-          <p className="text-muted-foreground py-2 text-[12px] leading-snug">
+          <p className="text-caption text-muted-foreground py-2 leading-snug tracking-tight">
             Select text, then add a comment (
             <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
             ). Open redlines with the toolbar or{" "}
@@ -142,7 +142,7 @@ function NewCommentDraft({
   return (
     <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5 shadow-sm">
       {quotedText ? (
-        <blockquote className="mb-2 text-muted-foreground border-l-2 border-border/70 pl-2.5 text-[11px] leading-snug italic line-clamp-2">
+        <blockquote className="text-caption mb-2 border-l-2 border-border/70 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2">
           {quotedText}
         </blockquote>
       ) : null}
@@ -212,7 +212,7 @@ const ThreadRow = memo(function ThreadRow({
       >
         <blockquote
           id={`comment-${comment.id}-quote`}
-          className="text-muted-foreground border-l-2 border-border/70 pl-2.5 text-[11px] leading-snug italic line-clamp-2"
+          className="text-caption border-l-2 border-border/70 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2"
         >
           {comment.quotedText}
         </blockquote>
@@ -291,7 +291,7 @@ const ThreadRow = memo(function ThreadRow({
         onSelect()
       }}
     >
-      <blockquote className="text-muted-foreground border-l-2 border-border/50 pl-2.5 text-[11px] leading-snug italic line-clamp-2">
+      <blockquote className="text-caption border-l-2 border-border/50 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2">
         {comment.quotedText}
       </blockquote>
       <p className="mt-1.5 text-[12px] leading-relaxed whitespace-pre-wrap line-clamp-3">
