@@ -15,6 +15,8 @@ import {
   modShiftKeyCompact,
 } from "@/lib/format-shortcut"
 
+const REDLINE_REPO_URL = "https://github.com/btn0s/redline"
+
 interface ReviewHelpDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -65,6 +67,16 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
                   Agentation
                 </a>
                 .
+              </p>
+              <p className="text-[11px] leading-snug">
+                <a
+                  href={REDLINE_REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground underline-offset-2 hover:underline"
+                >
+                  See more on GitHub
+                </a>
               </p>
             </div>
           </DialogHeader>
