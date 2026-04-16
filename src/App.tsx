@@ -24,6 +24,13 @@ import {
   REVIEW_MD_TOGGLE_COMMENTS_PANEL,
 } from "@/lib/review-md-events"
 
+function reviewStampDate(d: Date = new Date()): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
 function AppKeyboardShortcuts() {
   const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel, togglePanel } = useCommentContext()
   const handlerRef = useRef({ showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel })
@@ -383,20 +390,27 @@ function AppShell({
             <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-3 xl:gap-5 2xl:gap-6">
               <div
                 className={cn(
-                  "paper-page",
+                  "paper-stack",
                   showCommentSidebar
                     ? "min-w-0 w-full max-w-3xl"
                     : "mx-auto min-w-0 w-full max-w-3xl",
                 )}
               >
-                <Editor
-                  content={file.content}
-                  onUpdate={handleMarkdownUpdate}
-                  contentReloadNonce={contentReloadNonce}
-                  onEditorReady={setEditor}
-                  bubbleMenuSuppressed={showNewComment || activeCommentId !== null}
-                  onAddComment={handleAddCommentClick}
-                />
+                <div className="paper-page">
+                  <div className="paper-stamp">
+                    <span>REV // {reviewStampDate()}</span>
+                    <span aria-hidden className="paper-stamp-sep" />
+                    <span>{file.filename}</span>
+                  </div>
+                  <Editor
+                    content={file.content}
+                    onUpdate={handleMarkdownUpdate}
+                    contentReloadNonce={contentReloadNonce}
+                    onEditorReady={setEditor}
+                    bubbleMenuSuppressed={showNewComment || activeCommentId !== null}
+                    onAddComment={handleAddCommentClick}
+                  />
+                </div>
               </div>
 
               <aside

@@ -262,6 +262,46 @@
 
 /* ---------- Paper (editor page) ---------- */
 
+/* The chamfered-top-right polygon used for every sheet (dossier folder cue) */
+:root {
+  --paper-clip: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    0 100%
+  );
+}
+
+/* Wrapper that holds the active page + 2 blank copy pages behind it */
+.paper-stack {
+  position: relative;
+}
+
+.paper-stack::before,
+.paper-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--paper);
+  border: 1px solid var(--paper-edge);
+  clip-path: var(--paper-clip);
+  box-shadow: var(--paper-shadow);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* First sheet behind: nudged down-right, slight rotation */
+.paper-stack::before {
+  transform: translate(10px, 14px) rotate(0.7deg);
+}
+
+/* Second sheet behind: nudged the other way */
+.paper-stack::after {
+  transform: translate(-12px, 22px) rotate(-0.9deg);
+  z-index: -2;
+}
+
 .paper-page {
   position: relative;
   background-color: var(--paper);
@@ -277,30 +317,12 @@
       oklch(0 0 0 / 0.012) 0 1px,
       transparent 1px 3px
     );
-  border-radius: 2px;
+  clip-path: var(--paper-clip);
   box-shadow: var(--paper-shadow);
   border: 1px solid var(--paper-edge);
   color: var(--paper-foreground);
-  /* Extra air at top/bottom of the page content */
   padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 5vw, 3.5rem);
   isolation: isolate;
-}
-
-.paper-page::before {
-  /* Top edge highlight — like a freshly cut sheet */
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 10px;
-  background: linear-gradient(
-    to bottom,
-    oklch(1 0 0 / 0.35),
-    transparent
-  );
-  pointer-events: none;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  z-index: 1;
 }
 
 .paper-page::after {
@@ -315,8 +337,6 @@
     transparent
   );
   pointer-events: none;
-  border-bottom-left-radius: 2px;
-  border-bottom-right-radius: 2px;
   z-index: 1;
 }
 
@@ -332,6 +352,36 @@
       oklch(1 0 0 / 0.015) 0 1px,
       transparent 1px 3px
     );
+}
+
+/* Dossier-style metadata stamp strip at the top of a paper page */
+.paper-stamp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--paper-foreground) 50%, transparent);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed color-mix(in oklch, var(--paper-foreground) 20%, transparent);
+  margin-bottom: 1.75rem;
+}
+
+.paper-stamp-sep {
+  flex: 1;
+  border-top: 1px dashed color-mix(in oklch, var(--paper-foreground) 18%, transparent);
+}
+
+/* Generic mono uppercase pill / chip used for section stamps */
+.mono-stamp {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
 /* ---------- Sticky note (comment card) ---------- */
@@ -392,16 +442,36 @@
 }
 
 .sticky-note--pink {
-  --sticky: oklch(0.9 0.07 15);
-  --sticky-edge: oklch(0.82 0.08 15);
+  --sticky: oklch(0.9 0.045 15);
+  --sticky-edge: oklch(0.82 0.055 15);
 }
 .sticky-note--blue {
-  --sticky: oklch(0.9 0.05 225);
-  --sticky-edge: oklch(0.8 0.06 225);
+  --sticky: oklch(0.9 0.035 225);
+  --sticky-edge: oklch(0.8 0.04 225);
 }
 .sticky-note--green {
-  --sticky: oklch(0.9 0.07 145);
-  --sticky-edge: oklch(0.8 0.08 145);
+  --sticky: oklch(0.9 0.05 145);
+  --sticky-edge: oklch(0.82 0.055 145);
+}
+
+.dark .sticky-note--pink {
+  --sticky: oklch(0.66 0.08 15);
+  --sticky-edge: oklch(0.56 0.08 15);
+}
+.dark .sticky-note--blue {
+  --sticky: oklch(0.62 0.06 225);
+  --sticky-edge: oklch(0.52 0.06 225);
+}
+.dark .sticky-note--green {
+  --sticky: oklch(0.64 0.07 145);
+  --sticky-edge: oklch(0.54 0.07 145);
+}
+
+/* Dashed hairline inside a sticky — separates quote from body */
+.sticky-dashed {
+  border: 0;
+  border-top: 1px dashed color-mix(in oklch, var(--sticky-foreground) 25%, transparent);
+  margin: 0.55rem 0;
 }
 
 .sticky-note--active {

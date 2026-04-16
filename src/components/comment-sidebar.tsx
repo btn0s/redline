@@ -125,16 +125,13 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
     >
       {ordered.length === 0 && !showNewComment && (
         <div className="relative pt-12">
-          <p className="font-hand text-lg leading-tight text-foreground/80">
-            No notes yet.
-          </p>
-          <p className="text-caption text-muted-foreground mt-1 leading-snug">
-            Highlight text in the page to leave a sticky.
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] leading-snug text-muted-foreground">
+            No entries · select text to annotate
           </p>
         </div>
       )}
 
-      {ordered.map((comment) => {
+      {ordered.map((comment, index) => {
         const dimForLink =
           linkHighlightId !== null && linkHighlightId !== comment.id
         const y = positions[comment.id] ?? 0
@@ -146,7 +143,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
               itemRefs.current[comment.id] = el
             }}
             className={cn(
-              "absolute left-0 right-0 top-0 will-change-transform",
+              "absolute right-0 top-0 -left-14 will-change-transform",
               layoutReady &&
                 !reduceMotion &&
                 "transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
@@ -157,6 +154,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
           >
             <ThreadRow
               comment={comment}
+              index={index + 1}
               isActive={activeCommentId === comment.id}
               onSelect={() => setActiveCommentId(comment.id)}
               onReply={(body) => addReplyToComment(comment.id, body)}
@@ -173,7 +171,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
           ref={draftWrapperRef}
           data-comment-draft=""
           className={cn(
-            "absolute left-0 right-0 top-0 will-change-transform",
+            "absolute right-0 top-0 -left-14 will-change-transform",
             layoutReady &&
               !reduceMotion &&
               draftYSettled &&
@@ -224,10 +222,16 @@ function NewCommentDraft({
       className="sticky-note comment-draft-enter"
       style={{ ["--sticky-rotate" as string]: "-1.2deg" }}
     >
+      <div className="mono-stamp mb-1.5 text-[color:var(--sticky-foreground)]/55">
+        STICKY // NEW
+      </div>
       {quotedText ? (
-        <blockquote className="text-caption mb-2 border-l-2 border-[color:var(--sticky-edge)] pl-2 leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
-          {quotedText}
-        </blockquote>
+        <>
+          <blockquote className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
+            {quotedText}
+          </blockquote>
+          <hr className="sticky-dashed" aria-hidden />
+        </>
       ) : null}
       <Textarea
         autoFocus
@@ -262,14 +266,20 @@ function NewCommentDraft({
   )
 }
 
+function stickyStampLabel(index: number): string {
+  return `STICKY // ${String(index).padStart(3, "0")}`
+}
+
 const ThreadRow = memo(function ThreadRow({
   comment,
+  index,
   isActive,
   onSelect,
   onReply,
   onDelete,
 }: {
   comment: Comment
+  index: number
   isActive: boolean
   onSelect: () => void
   onReply: (body: string) => void
@@ -302,14 +312,18 @@ const ThreadRow = memo(function ThreadRow({
         style={rotateStyle}
         aria-labelledby={`comment-${comment.id}-quote`}
       >
+        <div className="mono-stamp mb-1.5 text-[color:var(--sticky-foreground)]/55">
+          {stickyStampLabel(index)}
+        </div>
         <blockquote
           id={`comment-${comment.id}-quote`}
-          className="text-caption border-l-2 border-[color:var(--sticky-foreground)]/25 pl-2 leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2"
+          className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2"
         >
           {comment.quotedText}
         </blockquote>
+        <hr className="sticky-dashed" aria-hidden />
 
-        <div className="mt-2 space-y-1.5">
+        <div className="space-y-1.5">
           {comment.messages.map((message, index) => (
             <div
               key={message.id}
@@ -379,10 +393,14 @@ const ThreadRow = memo(function ThreadRow({
         onSelect()
       }}
     >
-      <blockquote className="text-caption border-l-2 border-[color:var(--sticky-foreground)]/25 pl-2 leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
+      <div className="mono-stamp mb-1.5 text-[color:var(--sticky-foreground)]/55">
+        {stickyStampLabel(index)}
+      </div>
+      <blockquote className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
         {comment.quotedText}
       </blockquote>
-      <p className="sticky-handwritten mt-1.5 whitespace-pre-wrap line-clamp-3 text-[color:var(--sticky-foreground)]">
+      <hr className="sticky-dashed" aria-hidden />
+      <p className="sticky-handwritten whitespace-pre-wrap line-clamp-3 text-[color:var(--sticky-foreground)]">
         {latestMessage?.body}
       </p>
       {comment.messages.length > 1 && (

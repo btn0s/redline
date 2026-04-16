@@ -148,7 +148,7 @@ export function Editor({
             type="button"
             title="Leave a sticky"
             aria-label="Leave a sticky"
-            className="inline-flex h-6 shrink-0 items-center gap-1 border px-2.5 text-[11px] font-medium leading-none tracking-tight shadow-[0_1px_0_rgba(255,255,255,0.45)_inset,0_2px_4px_rgba(0,0,0,0.12),0_8px_18px_-6px_rgba(0,0,0,0.22)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
+            className="inline-flex h-6 shrink-0 items-center gap-1.5 border px-2.5 font-mono text-[10px] uppercase tracking-[0.16em] leading-none shadow-[0_1px_0_rgba(255,255,255,0.45)_inset,0_2px_4px_rgba(0,0,0,0.12),0_8px_18px_-6px_rgba(0,0,0,0.22)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
             style={{
               backgroundColor: "var(--sticky)",
               color: "var(--sticky-foreground)",
@@ -164,13 +164,7 @@ export function Editor({
               onAddComment()
             }}
           >
-            <span
-              aria-hidden
-              className="text-base leading-none"
-              style={{ fontFamily: "var(--font-hand)" }}
-            >
-              +
-            </span>
+            <span aria-hidden>[+]</span>
             <span>Sticky</span>
           </button>
         </BubbleMenu>
