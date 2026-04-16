@@ -86,7 +86,11 @@ function AppDismissHandler() {
         if (!t.closest(selector)) {
           const otherRow = t.closest("[data-comment-thread-id]")
           const otherId = otherRow?.getAttribute("data-comment-thread-id")
-          if (otherId != null && otherId !== h.activeCommentId) {
+          if (
+            otherRow != null &&
+            otherId != null &&
+            otherId !== h.activeCommentId
+          ) {
             try {
               otherRow.setPointerCapture(e.pointerId)
             } catch {

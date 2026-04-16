@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import type { BaseUIEvent } from "@base-ui/react"
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog"
 
 import { cn } from "@/lib/utils"
@@ -47,7 +48,9 @@ function AlertDialogContent({
 }: AlertDialogPrimitive.Popup.Props & {
   size?: "default" | "sm"
 }) {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (
+    e: BaseUIEvent<React.KeyboardEvent<HTMLDivElement>>,
+  ) => {
     onKeyDown?.(e)
     if (e.defaultPrevented) return
     const root = e.currentTarget
