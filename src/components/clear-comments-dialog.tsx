@@ -23,7 +23,7 @@ export function ClearCommentsDialog({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <AlertDialogHeader className="gap-2 sm:place-items-start sm:text-left">
           <AlertDialogTitle>Delete all threads?</AlertDialogTitle>
           <AlertDialogDescription className="text-balance text-left">
             All comment threads on this document will be removed. This cannot be

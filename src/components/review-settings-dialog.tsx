@@ -26,6 +26,15 @@ import {
 } from "@/lib/format-shortcut"
 import type { ShortcutScheme } from "@/lib/shortcut-scheme"
 import { cn } from "@/lib/utils"
+import {
+  dialogBody,
+  dialogHeaderBlock,
+  dialogSection,
+  dialogSectionLast,
+  dialogSectionTitle,
+  dialogScrollableSurface,
+  dialogShortcutList,
+} from "@/components/review-dialog-styles"
 
 interface ReviewSettingsDialogProps {
   open: boolean
@@ -34,8 +43,8 @@ interface ReviewSettingsDialogProps {
 
 function ShortcutRow({ label, keys }: { label: string; keys: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border/60 py-2 last:border-0">
-      <span className="text-muted-foreground shrink-0 pt-0.5">{label}</span>
+    <div className="flex items-start justify-between gap-3 border-b border-border/50 py-2 last:border-0">
+      <span className={cn(dialogBody, "shrink-0 pt-px")}>{label}</span>
       <div className="flex flex-wrap items-center justify-end gap-1">{keys}</div>
     </div>
   )
@@ -51,11 +60,11 @@ export function ReviewSettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[min(90svh,36rem)] w-full max-w-md gap-0 overflow-y-auto p-0 sm:max-w-md"
+        className={dialogScrollableSurface}
         data-prevent-redlines-dismiss=""
       >
-        <div className="border-b border-border/60 p-4 pb-3">
-          <DialogHeader>
+        <div className={dialogHeaderBlock}>
+          <DialogHeader className="gap-2 text-left">
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
               Appearance, new-comment shortcut, and the rest of the chord list.
@@ -63,89 +72,89 @@ export function ReviewSettingsDialog({
           </DialogHeader>
         </div>
 
-        <div className="px-4 py-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <Label
-              htmlFor="settings-appearance"
-              className="text-[11px] font-medium text-foreground"
+        <div className={dialogSection}>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <Label
+                htmlFor="settings-appearance"
+                className={cn(dialogSectionTitle, "cursor-default")}
+              >
+                Appearance
+              </Label>
+              <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
+            </div>
+            <Select
+              value={theme}
+              onValueChange={(v) => setTheme(v as "light" | "dark")}
             >
-              Appearance
-            </Label>
-            <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
+              <SelectTrigger
+                id="settings-appearance"
+                size="sm"
+                className="w-full min-w-0 max-w-none"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">Light</SelectItem>
+                <SelectItem value="dark">Dark</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select
-            value={theme}
-            onValueChange={(v) => setTheme(v as "light" | "dark")}
-          >
-            <SelectTrigger
-              id="settings-appearance"
-              size="sm"
-              className="w-full min-w-0 max-w-none"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
-        <div className="px-4 py-3 pb-4">
-          <Label className="text-[11px] font-medium text-foreground">
-            New comment shortcut
-          </Label>
-          <RadioGroup
-            value={scheme}
-            onValueChange={(v) => setScheme(v as ShortcutScheme)}
-            className="mt-2 gap-2"
-          >
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                scheme === "google-docs" && "border-primary/50 bg-muted/40",
-              )}
+        <div className={dialogSection}>
+          <div className="space-y-2">
+            <p className={dialogSectionTitle}>New comment shortcut</p>
+            <RadioGroup
+              value={scheme}
+              onValueChange={(v) => setScheme(v as ShortcutScheme)}
+              className="gap-1.5"
             >
-              <RadioGroupItem value="google-docs" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">Google Docs style</span>
-                <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
-                  <Kbd className="text-[10px]">
-                    {addCommentShortcutDisplay("google-docs")}
-                  </Kbd>
+              <label
+                className={cn(
+                  "flex cursor-pointer items-center gap-2 rounded-md border border-border/70 px-2.5 py-1.5 transition-colors duration-150 ease-out",
+                  scheme === "google-docs" && "border-primary/50 bg-muted/40",
+                )}
+              >
+                <RadioGroupItem value="google-docs" className="mt-0" />
+                <span className="min-w-0 flex-1 text-xs font-medium leading-snug text-foreground">
+                  Google Docs style
                 </span>
-              </span>
-            </label>
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                scheme === "notion" && "border-primary/50 bg-muted/40",
-              )}
-            >
-              <RadioGroupItem value="notion" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">Notion style</span>
-                <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
-                  <Kbd className="text-[10px]">
-                    {addCommentShortcutDisplay("notion")}
-                  </Kbd>
+                <Kbd className="shrink-0 text-[10px]">
+                  {addCommentShortcutDisplay("google-docs")}
+                </Kbd>
+              </label>
+              <label
+                className={cn(
+                  "flex cursor-pointer items-center gap-2 rounded-md border border-border/70 px-2.5 py-1.5 transition-colors duration-150 ease-out",
+                  scheme === "notion" && "border-primary/50 bg-muted/40",
+                )}
+              >
+                <RadioGroupItem value="notion" className="mt-0" />
+                <span className="min-w-0 flex-1 text-xs font-medium leading-snug text-foreground">
+                  Notion style
                 </span>
-              </span>
-            </label>
-          </RadioGroup>
+                <Kbd className="shrink-0 text-[10px]">
+                  {addCommentShortcutDisplay("notion")}
+                </Kbd>
+              </label>
+            </RadioGroup>
+          </div>
         </div>
 
-        <div className="px-4 py-3 pb-4">
-          <p className="text-[11px] font-medium text-foreground">Other shortcuts</p>
-          <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
-            <ShortcutRow
-              label="Copy all comments"
-              keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
-            />
-            <ShortcutRow
-              label="Clear all comments"
-              keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
-            />
+        <div className={dialogSectionLast}>
+          <div className="space-y-2">
+            <h3 className={dialogSectionTitle}>Other shortcuts</h3>
+            <div className={dialogShortcutList}>
+              <ShortcutRow
+                label="Copy all comments"
+                keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
+              />
+              <ShortcutRow
+                label="Clear all comments"
+                keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
+              />
+            </div>
           </div>
         </div>
       </DialogContent>

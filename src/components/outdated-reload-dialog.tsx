@@ -34,7 +34,7 @@ export function OutdatedReloadDialog({
       }}
     >
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <AlertDialogHeader className="gap-2 sm:place-items-start sm:text-left">
           <AlertDialogTitle>Reload from disk?</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2 text-balance text-left">
             {dirty ? (

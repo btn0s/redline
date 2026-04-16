@@ -14,8 +14,22 @@ import {
   modShiftAltKey,
   modShiftKeyCompact,
 } from "@/lib/format-shortcut"
+import { cn } from "@/lib/utils"
+import {
+  dialogBody,
+  dialogHeaderBlock,
+  dialogLead,
+  dialogMonoLink,
+  dialogSection,
+  dialogSectionLast,
+  dialogSectionTitle,
+  dialogScrollableSurface,
+  dialogShortcutList,
+} from "@/components/review-dialog-styles"
 
 const REDLINE_REPO_URL = "https://github.com/btn0s/redline"
+const BTN0S_URL = "https://twitter.com/btn0s"
+const CURSOR_URL = "https://cursor.com"
 
 interface ReviewHelpDialogProps {
   open: boolean
@@ -26,8 +40,8 @@ interface ReviewHelpDialogProps {
 
 function Row({ label, keys }: { label: string; keys: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border/60 py-2 last:border-0">
-      <span className="text-muted-foreground shrink-0 pt-0.5">{label}</span>
+    <div className="flex items-start justify-between gap-3 border-b border-border/50 py-2 last:border-0">
+      <span className={cn(dialogBody, "shrink-0 pt-px")}>{label}</span>
       <div className="flex flex-wrap items-center justify-end gap-1">{keys}</div>
     </div>
   )
@@ -45,89 +59,112 @@ export function ReviewHelpDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[min(90svh,32rem)] w-full max-w-md gap-0 overflow-y-auto p-0 sm:max-w-md"
+        className={dialogScrollableSurface}
         data-prevent-redlines-dismiss=""
       >
-        <div className="p-4 pb-3">
-          <DialogHeader>
+        <div className={dialogHeaderBlock}>
+          <DialogHeader className="gap-3 text-left">
             <DialogTitle>Redline</DialogTitle>
             <DialogDescription className="sr-only">
               Redline: review markdown with anchored comments and keyboard shortcuts.
             </DialogDescription>
-            <div className="space-y-2 text-left text-xs/relaxed text-muted-foreground">
-              <p className="text-foreground/95 font-medium leading-snug">
+            <div className="space-y-2">
+              <p className={dialogLead}>
                 Review mode for LLM-generated plans — Docs-style comments on any{" "}
                 <code className="rounded bg-muted px-1 py-px font-mono text-[0.65rem]">
                   .md
                 </code>
                 , then copy everything back to the LLM in one shot.
               </p>
-              <p className="leading-snug">
-                Select text → thread replies →{" "}
-                <span className="text-foreground/90">Copy all</span>.
+              <p>
+                <a
+                  href={REDLINE_REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(dialogMonoLink, "inline-block max-w-full break-all")}
+                >
+                  {REDLINE_REPO_URL}
+                </a>
               </p>
             </div>
           </DialogHeader>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3">
-          <p className="text-[11px] font-medium text-foreground">Shortcuts</p>
-          {onOpenSettings ? (
-            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-              To customize these,{" "}
-              <button
-                type="button"
-                className="text-foreground underline-offset-2 hover:underline"
-                onClick={() => {
-                  onOpenChange(false)
-                  onOpenSettings()
-                }}
-              >
-                open Settings
-              </button>
-              .
+        <div className={dialogSection}>
+          <div className="space-y-2">
+            <h3 className={dialogSectionTitle}>How to use</h3>
+            <p className={dialogBody}>
+              Select text → thread replies →{" "}
+              <span className="font-medium text-foreground/90">Copy all</span>.
             </p>
-          ) : null}
-          <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
-            <Row
-              label={newCommentLabel}
-              keys={
-                <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
-              }
-            />
-            <Row
-              label="Copy all"
-              keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
-            />
-            <Row
-              label="Clear all"
-              keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
-            />
-            <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
           </div>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3 pb-4">
-          <p className="text-[11px] leading-snug text-muted-foreground">
-            Inspired by{" "}
+        <div className={dialogSection}>
+          <div className="space-y-2">
+            <h3 className={dialogSectionTitle}>Shortcuts</h3>
+            {onOpenSettings ? (
+              <p className={dialogBody}>
+                To customize these,{" "}
+                <button
+                  type="button"
+                  className="font-medium text-foreground underline-offset-2 transition-colors duration-150 ease-out hover:underline"
+                  onClick={() => {
+                    onOpenChange(false)
+                    onOpenSettings()
+                  }}
+                >
+                  open Settings
+                </button>
+                .
+              </p>
+            ) : null}
+            <div className={dialogShortcutList}>
+              <Row
+                label={newCommentLabel}
+                keys={
+                  <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
+                }
+              />
+              <Row
+                label="Copy all"
+                keys={<Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>}
+              />
+              <Row
+                label="Clear all"
+                keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
+              />
+              <Row label="Theme" keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>} />
+            </div>
+          </div>
+        </div>
+
+        <div className={dialogSectionLast}>
+          <p className={cn(dialogBody, "text-center")}>
+            <span className="font-sans">Handcrafted by </span>
             <a
-              href="https://agentation.dev"
+              href={BTN0S_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground underline-offset-2 hover:underline"
+              className={cn(
+                dialogMonoLink,
+                "font-semibold text-foreground/90 hover:text-foreground",
+              )}
             >
-              Agentation
+              btn0s
             </a>
-            . Learn more on{" "}
+            <span className="font-sans"> and </span>
             <a
-              href={REDLINE_REPO_URL}
+              href={CURSOR_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground underline-offset-2 hover:underline"
+              className={cn(
+                dialogMonoLink,
+                "font-semibold text-foreground/90 hover:text-foreground",
+              )}
             >
-              GitHub
+              Cursor
             </a>
-            .
           </p>
         </div>
       </DialogContent>

@@ -327,14 +327,10 @@ function AppShell({
     setOutdatedReloadPending,
   ])
 
-  const pathLeft = file.path ?? file.filename
-
   return (
     <div className="flex min-h-svh flex-col pt-[calc(env(safe-area-inset-top)+2.75rem)] pb-[max(3.5rem,env(safe-area-inset-bottom))]">
       <DeskLamp />
       <ReviewHeader
-        filePath={pathLeft}
-        rootLabel={file.root ?? null}
         isOutdated={isOutdated}
         saving={saving}
         onOutdatedClick={() => setOutdatedReloadOpen(true)}

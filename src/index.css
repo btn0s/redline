@@ -160,16 +160,17 @@
 }
 
 .dark {
-    /* Lights-off mode: desk sinks into shadow, paper is still paper, a
-       warm lamp pool in the top-left lights the workspace. */
+    /* Low-light mode: dim room (not pitch black), one soft lamp + wide ambient wash. */
 
-    /* Desk surface — deep, near-black, with a very faint warm shift */
-    --desk: oklch(0.14 0.008 60);
-    --desk-grain: oklch(0.08 0.006 50 / 0.5);
-    /* Lamp — warm tungsten pool */
-    --lamp-core: oklch(0.9 0.16 78 / 0.55);
-    --lamp-mid: oklch(0.62 0.12 72 / 0.25);
-    --lamp-falloff: oklch(0.3 0.05 70 / 0.08);
+    /* Desk — lifted mid-gray with warm undertone (evening / one bulb on) */
+    --desk: oklch(0.29 0.022 72);
+    --desk-grain: oklch(0.48 0.018 75 / 0.11);
+    /* Lamp layers — soft tungsten, large falloff (set in desk-lamp + vars below) */
+    --lamp-ambient: oklch(0.72 0.06 78 / 0.22);
+    --lamp-core: oklch(0.9 0.09 80 / 0.42);
+    --lamp-mid: oklch(0.68 0.06 76 / 0.2);
+    --lamp-falloff: oklch(0.45 0.035 78 / 0.07);
+    --lamp-edge: oklch(0.32 0.02 270 / 0.12);
 
     /* Paper — STILL a white sheet; lamp does the work */
     --paper: oklch(0.97 0.02 82);
@@ -178,22 +179,22 @@
 
     --sticky: oklch(0.9 0.1 95);
     --sticky-edge: oklch(0.8 0.11 92);
-    --sticky-shadow: oklch(0 0 0 / 0.6);
+    --sticky-shadow: oklch(0.12 0.02 270 / 0.35);
     --sticky-foreground: oklch(0.24 0.02 80);
 
     --background: var(--desk);
     --foreground: oklch(0.88 0.015 85);
     --card: var(--paper);
     --card-foreground: var(--paper-foreground);
-    --popover: oklch(0.18 0.01 70);
-    --popover-foreground: oklch(0.92 0.01 85);
+    --popover: oklch(0.24 0.014 72);
+    --popover-foreground: oklch(0.93 0.012 85);
     --primary: oklch(0.9 0.01 85);
     --primary-foreground: oklch(0.2 0.012 70);
-    --secondary: oklch(0.22 0.012 70);
-    --secondary-foreground: oklch(0.9 0.01 85);
-    --muted: oklch(0.22 0.012 70);
-    --muted-foreground: oklch(0.62 0.02 80);
-    --accent: oklch(0.24 0.015 70);
+    --secondary: oklch(0.28 0.014 72);
+    --secondary-foreground: oklch(0.92 0.012 85);
+    --muted: oklch(0.28 0.014 72);
+    --muted-foreground: oklch(0.66 0.022 80);
+    --accent: oklch(0.3 0.016 72);
     --accent-foreground: oklch(0.92 0.01 85);
     --destructive: oklch(0.68 0.19 22);
     --border: oklch(1 0 0 / 0.08);
@@ -208,7 +209,7 @@
     --sidebar-foreground: oklch(0.88 0.015 85);
     --sidebar-primary: oklch(0.488 0.243 264.376);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.24 0.015 70);
+    --sidebar-accent: oklch(0.3 0.016 72);
     --sidebar-accent-foreground: oklch(0.92 0.01 85);
     --sidebar-border: oklch(1 0 0 / 0.08);
     --sidebar-ring: oklch(0.55 0.03 80);
@@ -220,19 +221,19 @@
     --annotation-pill-dim: 0.38;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
 
-    /* Paper still casts a soft shadow onto the dark desk */
+    /* Paper shadow — softer in dim light (diffuse, not harsh black) */
     --paper-shadow:
-        0 1px 0 oklch(0 0 0 / 0.1),
-        0 2px 6px oklch(0 0 0 / 0.55),
-        0 22px 44px -14px oklch(0 0 0 / 0.7),
-        0 60px 100px -30px oklch(0 0 0 / 0.8);
+        0 1px 0 oklch(0 0 0 / 0.06),
+        0 4px 12px oklch(0.12 0.02 270 / 0.28),
+        0 24px 48px -16px oklch(0.08 0.02 270 / 0.38),
+        0 56px 90px -36px oklch(0.06 0.015 270 / 0.35);
     --sticky-shadow-lift:
-        0 1px 1px oklch(0 0 0 / 0.4),
-        2px 3px 6px -1px oklch(0 0 0 / 0.45),
-        6px 10px 18px -6px oklch(0 0 0 / 0.5);
+        0 1px 1px oklch(0.12 0.02 270 / 0.2),
+        2px 4px 10px -2px oklch(0.1 0.02 270 / 0.28),
+        6px 14px 22px -8px oklch(0.08 0.015 270 / 0.32);
     --sticky-shadow-press:
-        0 1px 1px oklch(0 0 0 / 0.4),
-        1px 1px 3px -1px oklch(0 0 0 / 0.45);
+        0 1px 1px oklch(0.12 0.02 270 / 0.2),
+        1px 2px 5px -1px oklch(0.1 0.02 270 / 0.26);
 
     --tape-bg: oklch(0.88 0.1 95 / 0.7);
     --tape-border: oklch(0.75 0.12 92 / 0.45);
@@ -370,6 +371,18 @@
 
 .dark .paper-page::before {
   opacity: 1;
+  /* Softer lamp spill on the sheet + gentle corner falloff (not harsh vignette) */
+  background:
+    radial-gradient(
+      130% 95% at -8% -8%,
+      oklch(0.99 0.05 82 / 0.2),
+      transparent 58%
+    ),
+    radial-gradient(
+      110% 85% at 108% 108%,
+      oklch(0.38 0.025 270 / 0.09),
+      transparent 58%
+    );
 }
 
 .paper-page::after {
@@ -558,7 +571,7 @@
   letter-spacing: 0.005em;
 }
 
-/* ---------- Tape (header filename) ---------- */
+/* ---------- Tape (app title chrome) ---------- */
 
 .tape-strip {
   position: relative;
