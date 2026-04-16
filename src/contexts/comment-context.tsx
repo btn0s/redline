@@ -87,8 +87,7 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
 
   const { hoveredCommentId, clearHover } = useCommentHover(editor)
 
-  const showCommentSidebar =
-    showNewComment || activeCommentId !== null || commentsPanelOpen
+  const showCommentSidebar = commentsPanelOpen
 
   const value: CommentContextValue = {
     comments,

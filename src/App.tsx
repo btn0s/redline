@@ -43,12 +43,9 @@ function AppKeyboardShortcuts() {
     if (!showCommentSidebar) return
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return
-      e.stopPropagation()
-      e.preventDefault()
       const h = handlerRef.current
-      if (h.showNewComment) { h.handleCloseNewComment(); return }
-      if (h.activeCommentId !== null) { h.setActiveCommentId(null); return }
-      if (h.commentsPanelOpen) h.closePanel()
+      if (h.showNewComment) { e.stopPropagation(); e.preventDefault(); h.handleCloseNewComment(); return }
+      if (h.activeCommentId !== null) { e.stopPropagation(); e.preventDefault(); h.setActiveCommentId(null); return }
     }
     window.addEventListener("keydown", handleKeyDown, true)
     return () => window.removeEventListener("keydown", handleKeyDown, true)
@@ -120,8 +117,8 @@ function AppCommandListeners() {
 }
 
 function EditorCommentSyncBridge({ editor }: { editor: TiptapEditor }) {
-  const { comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment } = useCommentContext()
-  useEditorCommentSync({ editor, comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment })
+  const { comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment, openPanel } = useCommentContext()
+  useEditorCommentSync({ editor, comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment, openPanel })
   return null
 }
 

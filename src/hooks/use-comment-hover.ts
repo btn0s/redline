@@ -19,6 +19,8 @@ export function useCommentHover(editor: TiptapEditor | null): {
     if (!editor) return
     const editorDom = editor.view.dom
 
+    let currentHovered: string | null = null
+
     const processHover = () => {
       pendingRaf.current = false
       const t = latestTarget.current
@@ -33,11 +35,10 @@ export function useCommentHover(editor: TiptapEditor | null): {
         next = mark?.getAttribute("data-comment-id") ?? null
       }
 
-      setHoveredCommentId((prev) => {
-        if (prev === next) return prev
-        setHoveredComment(editor, next)
-        return next
-      })
+      if (next === currentHovered) return
+      currentHovered = next
+      setHoveredComment(editor, next)
+      setHoveredCommentId(next)
     }
 
     const onMove = (e: PointerEvent) => {

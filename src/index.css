@@ -213,7 +213,8 @@
   }
 }
 
-.tiptap mark.comment-mark.comment-mark--hot::before {
+.tiptap mark.comment-mark.comment-mark--hot::before,
+.tiptap mark.comment-mark:has(> .comment-mark--hot)::before {
   opacity: 1 !important;
   transform: scaleX(1.04);
 }
