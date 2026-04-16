@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/dialog"
 import { Kbd } from "@/components/ui/kbd"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   addCommentShortcutDisplay,
   modAltKey,
@@ -18,7 +24,6 @@ import {
   modShiftKeyCompact,
 } from "@/lib/format-shortcut"
 import type { ShortcutScheme } from "@/lib/shortcut-scheme"
-import { cn } from "@/lib/utils"
 
 interface ReviewSettingsDialogProps {
   open: boolean
@@ -51,106 +56,68 @@ export function ReviewSettingsDialog({
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
-              New-comment layout, appearance, and the rest of the chord list.
+              Appearance, new-comment shortcut, and the rest of the chord list.
             </DialogDescription>
           </DialogHeader>
         </div>
 
         <div className="border-t border-border/60 px-4 py-3">
-          <Label className="text-[11px] font-medium text-foreground">
-            New comment (selection required)
-          </Label>
-          <p className="text-muted-foreground mt-1 mb-3 text-[11px] leading-snug">
-            Docs / Word vs Notion chord for the same action.
-          </p>
-          <RadioGroup
-            value={scheme}
-            onValueChange={(v) => setScheme(v as ShortcutScheme)}
-            className="gap-2"
-          >
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                scheme === "google-docs" && "border-primary/50 bg-muted/40",
-              )}
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <Label
+              htmlFor="settings-appearance"
+              className="text-[11px] font-medium text-foreground"
             >
-              <RadioGroupItem value="google-docs" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">Google Docs / Word</span>
-                <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
-                  <Kbd className="text-[10px]">{addCommentShortcutDisplay("google-docs")}</Kbd>
-                  <span>Docs / Word family.</span>
-                </span>
-              </span>
-            </label>
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                scheme === "notion" && "border-primary/50 bg-muted/40",
-              )}
-            >
-              <RadioGroupItem value="notion" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">Notion</span>
-                <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px]">
-                  <Kbd className="text-[10px]">{addCommentShortcutDisplay("notion")}</Kbd>
-                  <span>Notion “create comment”.</span>
-                </span>
-              </span>
-            </label>
-          </RadioGroup>
-        </div>
-
-        <div className="border-t border-border/60 px-4 py-3">
-          <Label className="text-[11px] font-medium text-foreground">Appearance</Label>
-          <p className="text-muted-foreground mt-1 mb-3 text-[11px] leading-snug">
-            Or press <Kbd className="text-[10px]">{modAltKey("T")}</Kbd> when not in a
-            text field.
-          </p>
-          <RadioGroup
+              Appearance
+            </Label>
+            <Kbd className="text-[10px]">{modAltKey("T")}</Kbd>
+          </div>
+          <Select
             value={theme}
             onValueChange={(v) =>
               setTheme(v as "system" | "light" | "dark")
             }
-            className="gap-2"
           >
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                theme === "system" && "border-primary/50 bg-muted/40",
-              )}
+            <SelectTrigger
+              id="settings-appearance"
+              size="sm"
+              className="w-full min-w-0 max-w-none"
             >
-              <RadioGroupItem value="system" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">System</span>
-                <span className="text-muted-foreground mt-0.5 block text-[11px]">
-                  Match the OS light/dark setting.
-                </span>
-              </span>
-            </label>
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                theme === "light" && "border-primary/50 bg-muted/40",
-              )}
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="border-t border-border/60 px-4 py-3 pb-4">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <Label
+              htmlFor="settings-comment-shortcut"
+              className="text-[11px] font-medium text-foreground"
             >
-              <RadioGroupItem value="light" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">Light</span>
-              </span>
-            </label>
-            <label
-              className={cn(
-                "flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/70 p-2.5 transition-colors",
-                theme === "dark" && "border-primary/50 bg-muted/40",
-              )}
+              New comment shortcut
+            </Label>
+            <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
+          </div>
+          <Select
+            value={scheme}
+            onValueChange={(v) => setScheme(v as ShortcutScheme)}
+          >
+            <SelectTrigger
+              id="settings-comment-shortcut"
+              size="sm"
+              className="w-full min-w-0 max-w-none"
             >
-              <RadioGroupItem value="dark" className="mt-0.5" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium">Dark</span>
-              </span>
-            </label>
-          </RadioGroup>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="google-docs">Google Docs / Word</SelectItem>
+              <SelectItem value="notion">Notion</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="border-t border-border/60 px-4 py-3 pb-4">
@@ -167,10 +134,6 @@ export function ReviewSettingsDialog({
             <ShortcutRow
               label="Clear all comments"
               keys={<Kbd className="text-[10px]">{modShiftAltKey("C")}</Kbd>}
-            />
-            <ShortcutRow
-              label="Cycle theme"
-              keys={<Kbd className="text-[10px]">{modAltKey("T")}</Kbd>}
             />
           </div>
         </div>
