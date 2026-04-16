@@ -1,18 +1,15 @@
-import { Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
+import { Copy, MessagesSquare, Trash2 } from "lucide-react"
 import { useCommentContext } from "@/contexts/comment-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Kbd } from "@/components/ui/kbd"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+
+const toolbarBtnClass =
+  "h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
 
 export function BottomToolbar() {
-  const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments, comments } =
+  const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments } =
     useCommentContext()
 
   return (
@@ -26,71 +23,73 @@ export function BottomToolbar() {
         role="toolbar"
         data-prevent-redlines-dismiss=""
       >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          title="Redlines — browse all comment threads (⌘⇧L / Ctrl+Shift+L)"
-          aria-label="Toggle redlines panel"
-          aria-pressed={commentsPanelOpen}
-          className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
-          onClick={togglePanel}
-        >
-          <MessagesSquare className="size-3.5 stroke-[1.5]" aria-hidden />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Toggle redlines panel"
+                aria-pressed={commentsPanelOpen}
+                className={toolbarBtnClass}
+                onClick={togglePanel}
+              >
+                <MessagesSquare className="size-3.5 stroke-[1.5]" aria-hidden />
+              </Button>
+            }
+          />
+          <TooltipContent side="top" sideOffset={8} className="max-w-[17rem] flex-col gap-1.5">
+            <span>Redlines — browse all comment threads in the side panel.</span>
+            <span className="flex flex-wrap items-center gap-1">
+              <Kbd className="text-[10px]">⌘⇧L</Kbd>
+              <span className="opacity-80">/</span>
+              <Kbd className="text-[10px]">Ctrl+Shift+L</Kbd>
+            </span>
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          disabled={!hasComments}
-          onClick={() => void copyComments()}
-          title="Copy all comments"
-          aria-label="Copy all comments"
-          className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
-        >
-          <Copy className="size-3.5 stroke-[1.5]" aria-hidden />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={!hasComments}
+                aria-label="Copy all comments"
+                className={toolbarBtnClass}
+                onClick={() => void copyComments()}
+              >
+                <Copy className="size-3.5 stroke-[1.5]" aria-hidden />
+              </Button>
+            }
+          />
+          <TooltipContent side="top" sideOffset={8}>
+            Copy every thread as plain text to the clipboard.
+          </TooltipContent>
+        </Tooltip>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          disabled={!hasComments}
-          onClick={clearAllComments}
-          title="Clear all comments"
-          aria-label="Clear all comments"
-          className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
-        >
-          <Trash2 className="size-3.5 stroke-[1.5]" aria-hidden />
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className="inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground outline-none transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] dark:text-zinc-400 dark:focus-visible:ring-white/30"
-            title="Settings"
-            aria-label="Settings"
-          >
-            <Settings className="size-3.5 stroke-[1.5]" aria-hidden />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" side="top" sideOffset={8}>
-            <DropdownMenuLabel>review-md</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>Comments: {comments.length}</DropdownMenuItem>
-            <DropdownMenuItem disabled className="text-xs">
-              Redlines panel:{" "}
-              <kbd className="bg-muted rounded px-1 py-0.5 font-mono">⌘⇧L</kbd> /{" "}
-              <kbd className="bg-muted rounded px-1 py-0.5 font-mono">
-                Ctrl+Shift+L
-              </kbd>
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled className="text-xs">
-              Theme:{" "}
-              <kbd className="bg-muted rounded px-1 py-0.5 font-mono">D</kbd> when
-              not editing text
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={!hasComments}
+                aria-label="Clear all comments"
+                className={toolbarBtnClass}
+                onClick={clearAllComments}
+              >
+                <Trash2 className="size-3.5 stroke-[1.5]" aria-hidden />
+              </Button>
+            }
+          />
+          <TooltipContent side="top" sideOffset={8}>
+            Remove all comment threads from this document.
+          </TooltipContent>
+        </Tooltip>
 
         <ThemeCycleButton />
       </div>
