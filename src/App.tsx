@@ -4,6 +4,7 @@ import { useFile } from "@/hooks/use-file"
 import { useEditorCommentSync } from "@/hooks/use-editor-comment-sync"
 import { CommentProvider, useCommentContext } from "@/contexts/comment-context"
 import { ShortcutSchemeProvider } from "@/contexts/shortcut-scheme-context"
+import { EditorSettingsProvider } from "@/contexts/editor-settings-context"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { BottomToolbar } from "@/components/bottom-toolbar"
@@ -234,23 +235,25 @@ export function App() {
 
   return (
     <ShortcutSchemeProvider>
-      <CommentProvider editor={editor} persistenceKey={commentsPersistenceKey}>
-        <AppShell
-          file={file}
-          editor={editor}
-          setEditor={setEditor}
-          saving={saving}
-          isOutdated={isOutdated}
-          dirty={dirty}
-          contentReloadNonce={contentReloadNonce}
-          handleMarkdownUpdate={handleMarkdownUpdate}
-          outdatedReloadOpen={outdatedReloadOpen}
-          setOutdatedReloadOpen={setOutdatedReloadOpen}
-          outdatedReloadPending={outdatedReloadPending}
-          setOutdatedReloadPending={setOutdatedReloadPending}
-          reloadFromDisk={reloadFromDisk}
-        />
-      </CommentProvider>
+      <EditorSettingsProvider>
+        <CommentProvider editor={editor} persistenceKey={commentsPersistenceKey}>
+          <AppShell
+            file={file}
+            editor={editor}
+            setEditor={setEditor}
+            saving={saving}
+            isOutdated={isOutdated}
+            dirty={dirty}
+            contentReloadNonce={contentReloadNonce}
+            handleMarkdownUpdate={handleMarkdownUpdate}
+            outdatedReloadOpen={outdatedReloadOpen}
+            setOutdatedReloadOpen={setOutdatedReloadOpen}
+            outdatedReloadPending={outdatedReloadPending}
+            setOutdatedReloadPending={setOutdatedReloadPending}
+            reloadFromDisk={reloadFromDisk}
+          />
+        </CommentProvider>
+      </EditorSettingsProvider>
     </ShortcutSchemeProvider>
   )
 }

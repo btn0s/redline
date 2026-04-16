@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { useTheme } from "@/components/theme-provider.tsx"
 import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
+import { useEditorSettings } from "@/contexts/editor-settings-context"
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
 import { Kbd } from "@/components/ui/kbd"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -47,6 +49,7 @@ export function ReviewSettingsDialog({
 }: ReviewSettingsDialogProps) {
   const { scheme, setScheme } = useShortcutScheme()
   const { theme, setTheme } = useTheme()
+  const { spellcheckEnabled, setSpellcheckEnabled } = useEditorSettings()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,7 +66,7 @@ export function ReviewSettingsDialog({
           </DialogHeader>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3">
+        <div className="px-4 py-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <Label
               htmlFor="settings-appearance"
@@ -94,7 +97,24 @@ export function ReviewSettingsDialog({
           </Select>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3 pb-4">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <Label
+              htmlFor="settings-spellcheck"
+              className="text-[11px] font-medium text-foreground"
+            >
+              Browser spellcheck
+            </Label>
+            <Switch
+              id="settings-spellcheck"
+              checked={spellcheckEnabled}
+              onCheckedChange={setSpellcheckEnabled}
+              aria-label="Toggle browser spellcheck"
+            />
+          </div>
+        </div>
+
+        <div className="px-4 py-3 pb-4">
           <Label className="text-[11px] font-medium text-foreground">
             New comment shortcut
           </Label>
@@ -138,7 +158,7 @@ export function ReviewSettingsDialog({
           </RadioGroup>
         </div>
 
-        <div className="border-t border-border/60 px-4 py-3 pb-4">
+        <div className="px-4 py-3 pb-4">
           <p className="text-[11px] font-medium text-foreground">Other shortcuts</p>
           <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 px-2.5">
             <ShortcutRow
