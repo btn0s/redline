@@ -50,6 +50,10 @@ export function ReviewHelpDialog({ open, onOpenChange }: ReviewHelpDialogProps) 
                 </code>
                 , then copy everything back to the LLM in one shot.
               </p>
+              <p className="leading-snug">
+                Select text → thread replies →{" "}
+                <span className="text-foreground/90">Copy all</span>.
+              </p>
               <p className="text-[11px] leading-snug">
                 Inspired by{" "}
                 <a
