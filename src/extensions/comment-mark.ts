@@ -38,6 +38,27 @@ export function setHoveredComment(
 
 const PILL_CLICK_ZONE_PX = 8
 
+function isInSquiggleBand(
+  el: HTMLElement,
+  clientX: number,
+  clientY: number,
+): boolean {
+  const range = document.createRange()
+  range.selectNodeContents(el)
+  const rects = range.getClientRects()
+  for (const r of rects) {
+    if (
+      clientX >= r.left &&
+      clientX <= r.right &&
+      clientY >= r.bottom - PILL_CLICK_ZONE_PX &&
+      clientY <= r.bottom + PILL_CLICK_ZONE_PX
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     commentMark: {
@@ -151,26 +172,54 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
             const dom = view.dom
             while (el && el !== dom) {
               if (el.matches("mark.comment-mark[data-comment-id]")) {
-                const rect = el.getBoundingClientRect()
-                if (event.clientY >= rect.bottom - PILL_CLICK_ZONE_PX) {
-                  const commentId = el.getAttribute("data-comment-id")
-                  if (!commentId) return false
-                  if (
-                    commentId.startsWith("draft-") &&
-                    !view.state.doc.type.schema.marks.commentMark
-                  ) {
-                    return false
-                  }
-                  if (storage.onPillClick) {
-                    storage.onPillClick(commentId)
-                    return true
-                  }
+                if (
+                  !isInSquiggleBand(
+                    el,
+                    event.clientX,
+                    event.clientY,
+                  )
+                ) {
+                  return false
+                }
+                const commentId = el.getAttribute("data-comment-id")
+                if (!commentId) return false
+                if (
+                  commentId.startsWith("draft-") &&
+                  !view.state.doc.type.schema.marks.commentMark
+                ) {
+                  return false
+                }
+                if (storage.onPillClick) {
+                  storage.onPillClick(commentId)
+                  return true
                 }
                 return false
               }
               el = el.parentElement
             }
             return false
+          },
+
+          handleDOMEvents: {
+            mousemove(view, event) {
+              const mouseEvent = event as MouseEvent
+              let el = mouseEvent.target as HTMLElement | null
+              const dom = view.dom
+              while (el && el !== dom) {
+                if (el.matches("mark.comment-mark[data-comment-id]")) {
+                  const hit = isInSquiggleBand(
+                    el,
+                    mouseEvent.clientX,
+                    mouseEvent.clientY,
+                  )
+                  dom.style.cursor = hit ? "pointer" : ""
+                  return false
+                }
+                el = el.parentElement
+              }
+              if (dom.style.cursor === "pointer") dom.style.cursor = ""
+              return false
+            },
           },
         },
       }),

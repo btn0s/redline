@@ -1484,18 +1484,56 @@
   background-color: transparent !important;
   color: inherit !important;
   border-radius: 0 !important;
-  padding: 0 !important;
+  padding: 0 0 3px 0 !important;
   margin: 0 !important;
   line-height: inherit !important;
   font-size: inherit !important;
   font-weight: inherit !important;
   font-family: inherit !important;
-  display: inline-block !important;
+  display: inline !important;
   position: relative !important;
   vertical-align: baseline !important;
   text-decoration: none !important;
   cursor: text !important;
   outline: none !important;
+
+  /* Dim only the squiggle band, not the text (avoid opacity on the element). */
+  --annotation-squiggle-fill: color-mix(
+    in oklch,
+    var(--annotation-pill-bg) calc(var(--annotation-pill-dim) * 100%),
+    transparent
+  );
+
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(100% - 6px),
+    var(--annotation-squiggle-fill) calc(100% - 6px),
+    var(--annotation-squiggle-fill) 100%
+  );
+  background-repeat: no-repeat;
+
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 calc(100% - 6px), transparent calc(100% - 6px)),
+    var(--annotation-squiggle-mask);
+  mask-image:
+    linear-gradient(to bottom, #000 calc(100% - 6px), transparent calc(100% - 6px)),
+    var(--annotation-squiggle-mask);
+  -webkit-mask-repeat: no-repeat, repeat-x;
+  mask-repeat: no-repeat, repeat-x;
+  -webkit-mask-size: 100% 100%, 53px 6px;
+  mask-size: 100% 100%, 53px 6px;
+  -webkit-mask-position: 0 0, 0 100%;
+  mask-position: 0 0, 0 100%;
+  -webkit-mask-composite: source-over;
+  mask-composite: add;
+
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+
+  transition:
+    --annotation-squiggle-fill 160ms var(--annotation-ease),
+    transform 140ms var(--annotation-ease);
 }
 
 .tiptap mark.comment-mark::selection {
@@ -1503,60 +1541,21 @@
   color: HighlightText;
 }
 
-.tiptap mark.comment-mark::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -3px;
-  height: 6px;
-  border-radius: 0;
-  background-color: var(--annotation-pill-bg);
-  border: none;
-  box-shadow: none;
-  -webkit-mask-image: var(--annotation-squiggle-mask);
-  mask-image: var(--annotation-squiggle-mask);
-  -webkit-mask-repeat: repeat-x;
-  mask-repeat: repeat-x;
-  -webkit-mask-size: 53px 6px;
-  mask-size: 53px 6px;
-  -webkit-mask-position: 0 100%;
-  mask-position: 0 100%;
-  pointer-events: none;
-  z-index: 5;
-  opacity: var(--annotation-pill-dim);
-  transition:
-    opacity 160ms var(--annotation-ease),
-    transform 140ms var(--annotation-ease);
-}
-
-.tiptap mark.comment-mark::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -8px;
-  height: 14px;
-  cursor: pointer;
-  pointer-events: auto;
-  z-index: 6;
-}
-
 @media (hover: hover) and (pointer: fine) {
-  .tiptap mark.comment-mark:hover::before {
-    opacity: 1;
+  .tiptap mark.comment-mark:hover {
+    --annotation-squiggle-fill: var(--annotation-pill-bg);
     transform: translateY(-0.5px);
   }
 }
 
-.tiptap mark.comment-mark.comment-mark--hot::before,
-.tiptap mark.comment-mark:has(> .comment-mark--hot)::before {
-  opacity: 1 !important;
+.tiptap mark.comment-mark.comment-mark--hot,
+.tiptap mark.comment-mark:has(.comment-mark--hot) {
+  --annotation-squiggle-fill: var(--annotation-pill-bg) !important;
   transform: translateY(-0.5px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tiptap mark.comment-mark::before {
+  .tiptap mark.comment-mark {
     transition: none;
   }
 }
