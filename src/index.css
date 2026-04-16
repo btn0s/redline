@@ -5,6 +5,7 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/source-serif-4";
 @import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/caveat";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -13,6 +14,8 @@
     --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular,
         monospace;
+    --font-hand: 'Caveat Variable', 'Kalam', 'Bradley Hand', 'Segoe Script',
+        cursive;
     --text-caption: 0.8125rem;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -45,6 +48,11 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-desk: var(--desk);
+    --color-paper: var(--paper);
+    --color-paper-foreground: var(--paper-foreground);
+    --color-sticky: var(--sticky);
+    --color-sticky-foreground: var(--sticky-foreground);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -55,45 +63,60 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    /* Desk surface — warm linen beneath the page */
+    --desk: oklch(0.915 0.022 82);
+    --desk-grain: oklch(0.86 0.025 78 / 0.28);
+
+    /* Paper — the editor "page" */
+    --paper: oklch(0.985 0.008 85);
+    --paper-foreground: oklch(0.22 0.015 270);
+    --paper-edge: oklch(0.83 0.02 80);
+
+    /* Sticky note — classic legal-pad yellow */
+    --sticky: oklch(0.93 0.12 99);
+    --sticky-edge: oklch(0.86 0.13 96);
+    --sticky-shadow: oklch(0.4 0.08 85 / 0.22);
+    --sticky-foreground: oklch(0.24 0.02 80);
+
+    --background: var(--desk);
+    --foreground: oklch(0.22 0.015 270);
+    --card: var(--paper);
+    --card-foreground: var(--paper-foreground);
+    --popover: oklch(0.99 0.005 85);
+    --popover-foreground: oklch(0.22 0.015 270);
+    --primary: oklch(0.26 0.02 270);
+    --primary-foreground: oklch(0.985 0.005 85);
+    --secondary: oklch(0.92 0.02 85);
+    --secondary-foreground: oklch(0.24 0.02 270);
+    --muted: oklch(0.92 0.022 85);
+    --muted-foreground: oklch(0.48 0.02 270);
+    --accent: oklch(0.9 0.03 85);
+    --accent-foreground: oklch(0.24 0.02 270);
+    --destructive: oklch(0.56 0.2 25);
+    --border: oklch(0.82 0.025 80);
+    --input: oklch(0.84 0.022 80);
+    --ring: oklch(0.7 0.04 80);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --radius: 0.5rem;
+    --sidebar: var(--desk);
+    --sidebar-foreground: oklch(0.22 0.015 270);
+    --sidebar-primary: oklch(0.26 0.02 270);
+    --sidebar-primary-foreground: oklch(0.985 0.005 85);
+    --sidebar-accent: oklch(0.9 0.03 85);
+    --sidebar-accent-foreground: oklch(0.24 0.02 270);
+    --sidebar-border: oklch(0.82 0.025 80);
+    --sidebar-ring: oklch(0.7 0.04 80);
     --highlight: oklch(0.93 0.12 99);
     /* Redlines — editorial markup (dim until hover / linked highlight) */
-    --annotation-pill-bg: oklch(0.62 0.2 25);
+    --annotation-pill-bg: oklch(0.58 0.2 25);
     --annotation-pill-fg: oklch(0.99 0.01 25);
-    --annotation-pill-border: oklch(0.52 0.18 25);
+    --annotation-pill-border: oklch(0.48 0.18 25);
     --annotation-pill-shadow: oklch(0.35 0.12 25 / 0.35);
-    --annotation-pill-dim: 0.34;
+    --annotation-pill-dim: 0.38;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
     /* Redline underline: squiggle mask tiled at native 53×6 (asset is white-filled path) */
     --annotation-squiggle-mask: url("./assets/annotation-squiggle.svg");
@@ -114,47 +137,96 @@
     --editor-h5-leading: 1.45;
     --editor-h6-size: 0.875rem;
     --editor-h6-leading: 1.45;
+
+    /* Paper shadow — soft, layered, as if sitting on the desk */
+    --paper-shadow:
+        0 1px 0 oklch(0 0 0 / 0.04),
+        0 2px 4px oklch(0 0 0 / 0.06),
+        0 18px 36px -12px oklch(0 0 0 / 0.18),
+        0 48px 80px -28px oklch(0 0 0 / 0.22);
+
+    /* Sticky note shadow — shorter, closer to the surface, with curl hint */
+    --sticky-shadow-lift:
+        0 1px 1px oklch(0 0 0 / 0.08),
+        2px 3px 6px -1px oklch(0 0 0 / 0.14),
+        6px 10px 18px -6px oklch(0 0 0 / 0.18);
+    --sticky-shadow-press:
+        0 1px 1px oklch(0 0 0 / 0.08),
+        1px 1px 3px -1px oklch(0 0 0 / 0.14);
+
+    /* Tape — washi-style semi-transparent yellow */
+    --tape-bg: oklch(0.94 0.1 95 / 0.72);
+    --tape-border: oklch(0.82 0.12 90 / 0.55);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    /* Desk surface — dark leather / cork */
+    --desk: oklch(0.2 0.012 60);
+    --desk-grain: oklch(0.1 0.01 50 / 0.4);
+
+    --paper: oklch(0.23 0.012 70);
+    --paper-foreground: oklch(0.92 0.01 85);
+    --paper-edge: oklch(0.14 0.01 60);
+
+    --sticky: oklch(0.68 0.12 95);
+    --sticky-edge: oklch(0.56 0.11 92);
+    --sticky-shadow: oklch(0 0 0 / 0.55);
+    --sticky-foreground: oklch(0.18 0.015 80);
+
+    --background: var(--desk);
+    --foreground: oklch(0.92 0.01 85);
+    --card: var(--paper);
+    --card-foreground: oklch(0.92 0.01 85);
+    --popover: oklch(0.25 0.012 70);
+    --popover-foreground: oklch(0.92 0.01 85);
+    --primary: oklch(0.9 0.01 85);
+    --primary-foreground: oklch(0.2 0.012 70);
+    --secondary: oklch(0.28 0.015 70);
+    --secondary-foreground: oklch(0.92 0.01 85);
+    --muted: oklch(0.28 0.015 70);
+    --muted-foreground: oklch(0.7 0.015 85);
+    --accent: oklch(0.3 0.018 70);
+    --accent-foreground: oklch(0.92 0.01 85);
+    --destructive: oklch(0.68 0.19 22);
+    --border: oklch(1 0 0 / 0.1);
+    --input: oklch(1 0 0 / 0.15);
+    --ring: oklch(0.55 0.03 80);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar: var(--desk);
+    --sidebar-foreground: oklch(0.92 0.01 85);
     --sidebar-primary: oklch(0.488 0.243 264.376);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --sidebar-accent: oklch(0.3 0.018 70);
+    --sidebar-accent-foreground: oklch(0.92 0.01 85);
+    --sidebar-border: oklch(1 0 0 / 0.1);
+    --sidebar-ring: oklch(0.55 0.03 80);
     --highlight: oklch(0.55 0.12 99);
     --annotation-pill-bg: oklch(0.62 0.19 22);
     --annotation-pill-fg: oklch(0.99 0.01 22);
     --annotation-pill-border: oklch(0.72 0.14 22 / 0.55);
     --annotation-pill-shadow: oklch(0 0 0 / 0.5);
-    --annotation-pill-dim: 0.38;
+    --annotation-pill-dim: 0.42;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
+
+    --paper-shadow:
+        0 1px 0 oklch(1 0 0 / 0.03),
+        0 2px 4px oklch(0 0 0 / 0.4),
+        0 22px 40px -14px oklch(0 0 0 / 0.55),
+        0 56px 90px -30px oklch(0 0 0 / 0.65);
+    --sticky-shadow-lift:
+        0 1px 1px oklch(0 0 0 / 0.45),
+        2px 4px 8px -1px oklch(0 0 0 / 0.5),
+        8px 14px 22px -8px oklch(0 0 0 / 0.55);
+    --sticky-shadow-press:
+        0 1px 1px oklch(0 0 0 / 0.4),
+        1px 1px 3px -1px oklch(0 0 0 / 0.45);
+
+    --tape-bg: oklch(0.4 0.08 95 / 0.55);
+    --tape-border: oklch(0.55 0.1 90 / 0.35);
 }
 
 @layer base {
@@ -162,47 +234,296 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: var(--desk);
+    background-image:
+      /* Subtle crosshatch / linen weave over the desk */
+      repeating-linear-gradient(
+        45deg,
+        var(--desk-grain) 0 1px,
+        transparent 1px 4px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        var(--desk-grain) 0 1px,
+        transparent 1px 4px
+      ),
+      radial-gradient(
+        1200px 800px at 15% -10%,
+        oklch(1 0 0 / 0.08),
+        transparent 60%
+      );
+    background-attachment: fixed;
     }
   html {
     @apply font-sans;
     }
 }
 
+/* ---------- Paper (editor page) ---------- */
+
+.paper-page {
+  position: relative;
+  background-color: var(--paper);
+  /* Faint warm paper grain */
+  background-image:
+    radial-gradient(
+      1200px 600px at 20% 0%,
+      oklch(1 0 0 / 0.6),
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      oklch(0 0 0 / 0.012) 0 1px,
+      transparent 1px 3px
+    );
+  border-radius: 2px;
+  box-shadow: var(--paper-shadow);
+  border: 1px solid var(--paper-edge);
+  color: var(--paper-foreground);
+  /* Extra air at top/bottom of the page content */
+  padding: clamp(2.25rem, 5vw, 4rem) clamp(1.5rem, 5vw, 3.5rem);
+  isolation: isolate;
+}
+
+.paper-page::before {
+  /* Top edge highlight — like a freshly cut sheet */
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 10px;
+  background: linear-gradient(
+    to bottom,
+    oklch(1 0 0 / 0.35),
+    transparent
+  );
+  pointer-events: none;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  z-index: 1;
+}
+
+.paper-page::after {
+  /* Bottom edge shade — depth cue */
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 14px;
+  background: linear-gradient(
+    to top,
+    oklch(0 0 0 / 0.06),
+    transparent
+  );
+  pointer-events: none;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  z-index: 1;
+}
+
+.dark .paper-page {
+  background-image:
+    radial-gradient(
+      1000px 500px at 18% 0%,
+      oklch(1 0 0 / 0.04),
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      oklch(1 0 0 / 0.015) 0 1px,
+      transparent 1px 3px
+    );
+}
+
+/* ---------- Sticky note (comment card) ---------- */
+
+.sticky-note {
+  position: relative;
+  background-color: var(--sticky);
+  color: var(--sticky-foreground);
+  border: 1px solid var(--sticky-edge);
+  border-radius: 1px 3px 2px 4px;
+  box-shadow: var(--sticky-shadow-lift);
+  padding: 0.7rem 0.8rem 0.85rem;
+  transition:
+    transform 180ms var(--annotation-ease),
+    box-shadow 180ms var(--annotation-ease),
+    filter 180ms var(--annotation-ease);
+  will-change: transform;
+  transform: rotate(var(--sticky-rotate, -0.6deg));
+}
+
+/* Paper grain + subtle vignette to sell the post-it feel */
+.sticky-note::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 80% at 20% 0%,
+      oklch(1 0 0 / 0.35),
+      transparent 55%
+    ),
+    radial-gradient(
+      120% 120% at 100% 100%,
+      oklch(0 0 0 / 0.09),
+      transparent 55%
+    );
+  mix-blend-mode: soft-light;
+}
+
+/* The curl — a soft gradient in the bottom-right corner */
+.sticky-note::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    oklch(0 0 0 / 0.1) 50%,
+    oklch(0 0 0 / 0.02) 100%
+  );
+  border-bottom-right-radius: inherit;
+}
+
+.sticky-note--pink {
+  --sticky: oklch(0.9 0.07 15);
+  --sticky-edge: oklch(0.82 0.08 15);
+}
+.sticky-note--blue {
+  --sticky: oklch(0.9 0.05 225);
+  --sticky-edge: oklch(0.8 0.06 225);
+}
+.sticky-note--green {
+  --sticky: oklch(0.9 0.07 145);
+  --sticky-edge: oklch(0.8 0.08 145);
+}
+
+.sticky-note--active {
+  transform: rotate(0deg) translateY(-1px);
+  box-shadow:
+    0 1px 1px oklch(0 0 0 / 0.08),
+    3px 6px 14px -2px oklch(0 0 0 / 0.22),
+    10px 18px 34px -10px oklch(0 0 0 / 0.28);
+  z-index: 2;
+}
+
+.sticky-note--pressable {
+  cursor: pointer;
+}
+
+.sticky-note--pressable:hover {
+  transform: rotate(calc(var(--sticky-rotate, -0.6deg) * 0.4)) translateY(-1px);
+  box-shadow:
+    0 1px 1px oklch(0 0 0 / 0.08),
+    3px 5px 10px -2px oklch(0 0 0 / 0.18),
+    8px 14px 26px -8px oklch(0 0 0 / 0.22);
+}
+
+.sticky-note--pressable:active {
+  transform: rotate(var(--sticky-rotate, -0.6deg)) translateY(0);
+  box-shadow: var(--sticky-shadow-press);
+}
+
+.sticky-note--dim {
+  filter: saturate(0.8) brightness(0.98);
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-note {
+    transition: none;
+  }
+  .sticky-note--pressable:hover,
+  .sticky-note--active {
+    transform: rotate(var(--sticky-rotate, -0.6deg));
+  }
+}
+
+/* Sticky note typography — slightly handwritten feel for body text */
+.sticky-note .sticky-handwritten {
+  font-family: var(--font-hand);
+  font-weight: 500;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  letter-spacing: 0.005em;
+}
+
+/* ---------- Tape (header filename) ---------- */
+
+.tape-strip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.75rem;
+  background-color: var(--tape-bg);
+  border-left: 1px dashed var(--tape-border);
+  border-right: 1px dashed var(--tape-border);
+  box-shadow:
+    0 1px 1px oklch(0 0 0 / 0.06),
+    0 4px 10px -4px oklch(0 0 0 / 0.12);
+  color: var(--foreground);
+  transform: rotate(-0.35deg);
+}
+
+.tape-strip::before,
+.tape-strip::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background:
+    radial-gradient(
+      circle at center,
+      oklch(0 0 0 / 0.08) 1px,
+      transparent 1.5px
+    );
+  background-size: 3px 4px;
+  opacity: 0.5;
+}
+.tape-strip::before { left: 0; }
+.tape-strip::after { right: 0; }
+
 /* Tailwind Typography — bind prose palette to app theme tokens */
 .prose {
-  --tw-prose-body: var(--foreground);
-  --tw-prose-headings: var(--foreground);
+  --tw-prose-body: var(--paper-foreground);
+  --tw-prose-headings: var(--paper-foreground);
   --tw-prose-lead: var(--muted-foreground);
   --tw-prose-links: var(--primary);
-  --tw-prose-bold: var(--foreground);
+  --tw-prose-bold: var(--paper-foreground);
   --tw-prose-counters: var(--muted-foreground);
   --tw-prose-bullets: var(--border);
   --tw-prose-hr: var(--border);
   --tw-prose-quotes: var(--muted-foreground);
   --tw-prose-quote-borders: var(--border);
   --tw-prose-captions: var(--muted-foreground);
-  --tw-prose-code: var(--foreground);
-  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-code: var(--paper-foreground);
+  --tw-prose-pre-code: var(--paper-foreground);
   --tw-prose-pre-bg: var(--muted);
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
 }
 
 .dark .prose {
-  --tw-prose-body: var(--foreground);
-  --tw-prose-headings: var(--foreground);
+  --tw-prose-body: var(--paper-foreground);
+  --tw-prose-headings: var(--paper-foreground);
   --tw-prose-lead: var(--muted-foreground);
   --tw-prose-links: var(--primary);
-  --tw-prose-bold: var(--foreground);
+  --tw-prose-bold: var(--paper-foreground);
   --tw-prose-counters: var(--muted-foreground);
   --tw-prose-bullets: var(--border);
   --tw-prose-hr: var(--border);
   --tw-prose-quotes: var(--muted-foreground);
   --tw-prose-quote-borders: var(--border);
   --tw-prose-captions: var(--muted-foreground);
-  --tw-prose-code: var(--foreground);
-  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-code: var(--paper-foreground);
+  --tw-prose-pre-code: var(--paper-foreground);
   --tw-prose-pre-bg: var(--muted);
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
@@ -211,13 +532,13 @@
 /* TipTap document — type scale, contrast, element polish */
 .tiptap {
   font-family: var(--font-sans);
-  color: var(--foreground);
+  color: var(--paper-foreground);
   font-feature-settings: "cv11", "ss01";
   line-height: 1.65;
 }
 
 .tiptap :where(p, li) {
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap h1 {
@@ -226,7 +547,7 @@
   line-height: var(--editor-h1-leading);
   letter-spacing: var(--editor-h1-tracking);
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap h2 {
@@ -235,7 +556,7 @@
   line-height: var(--editor-h2-leading);
   letter-spacing: var(--editor-h2-tracking);
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap h3 {
@@ -244,7 +565,7 @@
   line-height: var(--editor-h3-leading);
   letter-spacing: var(--editor-h3-tracking);
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap h4 {
@@ -253,7 +574,7 @@
   line-height: var(--editor-h4-leading);
   letter-spacing: var(--editor-h4-tracking);
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap h5 {
@@ -261,7 +582,7 @@
   font-size: var(--editor-h5-size);
   line-height: var(--editor-h5-leading);
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap h6 {
@@ -269,7 +590,7 @@
   font-size: var(--editor-h6-size);
   line-height: var(--editor-h6-leading);
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--paper-foreground);
 }
 
 .tiptap a {
@@ -285,7 +606,7 @@
 }
 
 .tiptap strong {
-  color: var(--foreground);
+  color: var(--paper-foreground);
   font-weight: 600;
 }
 
@@ -315,10 +636,15 @@
   font-family: var(--font-mono);
   font-size: 0.85em;
   font-weight: 500;
-  background-color: var(--muted);
+  background-color: oklch(0 0 0 / 0.05);
   padding: 0.1em 0.35em;
   border-radius: calc(var(--radius) * 0.5);
-  border: 1px solid var(--border);
+  border: 1px solid oklch(0 0 0 / 0.08);
+}
+
+.dark .tiptap :not(pre) > code {
+  background-color: oklch(1 0 0 / 0.08);
+  border-color: oklch(1 0 0 / 0.12);
 }
 
 .tiptap :not(pre) > code::before,
@@ -330,10 +656,15 @@
   font-family: var(--font-mono);
   font-size: 0.85em;
   line-height: 1.6;
-  background-color: var(--muted);
-  border: 1px solid var(--border);
+  background-color: oklch(0 0 0 / 0.05);
+  border: 1px solid oklch(0 0 0 / 0.08);
   border-radius: var(--radius-md);
-  color: var(--foreground);
+  color: var(--paper-foreground);
+}
+
+.dark .tiptap pre {
+  background-color: oklch(1 0 0 / 0.06);
+  border-color: oklch(1 0 0 / 0.1);
 }
 
 .tiptap pre code {
@@ -347,8 +678,8 @@
 }
 
 .tiptap thead th {
-  background-color: var(--muted);
-  color: var(--foreground);
+  background-color: oklch(0 0 0 / 0.04);
+  color: var(--paper-foreground);
   font-weight: 600;
   border-color: var(--border);
 }
@@ -458,14 +789,14 @@
 
 .comment-draft-enter {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateX(0) rotate(var(--sticky-rotate, -0.6deg));
   transition:
     opacity 200ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+    transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
 
   @starting-style {
     opacity: 0;
-    transform: translateX(-12px);
+    transform: translateX(-10px) rotate(-4deg);
   }
 }
 
@@ -478,7 +809,7 @@
   .comment-draft-enter {
     @starting-style {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(0) rotate(var(--sticky-rotate, -0.6deg));
     }
   }
 }
@@ -486,7 +817,7 @@
 @media (hover: hover) and (pointer: fine) {
   [role="toolbar"] button:hover,
   .bubble-menu button:hover {
-    background-color: var(--muted);
+    background-color: oklch(0 0 0 / 0.06);
   }
 
   :is(.dark) [role="toolbar"] button:hover,

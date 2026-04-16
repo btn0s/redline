@@ -382,11 +382,12 @@ function AppShell({
           >
             <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-center lg:gap-3 xl:gap-5 2xl:gap-6">
               <div
-                className={
+                className={cn(
+                  "paper-page",
                   showCommentSidebar
                     ? "min-w-0 w-full max-w-3xl"
-                    : "mx-auto min-w-0 w-full max-w-3xl"
-                }
+                    : "mx-auto min-w-0 w-full max-w-3xl",
+                )}
               >
                 <Editor
                   content={file.content}

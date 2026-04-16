@@ -54,7 +54,7 @@ export function BottomToolbar() {
         data-prevent-redlines-dismiss=""
       >
         <div
-          className="pointer-events-auto flex items-center gap-0 rounded-full border border-border bg-card/95 px-0.5 py-0.5 text-muted-foreground shadow-lg ring-1 ring-black/5 backdrop-blur-md supports-backdrop-filter:bg-card/85 dark:border-white/10 dark:bg-[#141414]/95 dark:text-zinc-400 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)] dark:ring-black/20 dark:supports-backdrop-filter:bg-[#141414]/85"
+          className="pointer-events-auto flex items-center gap-0 rounded-full border border-[color:var(--paper-edge)] bg-[color:var(--paper)]/95 px-0.5 py-0.5 text-foreground/70 shadow-[0_2px_4px_rgba(0,0,0,0.08),0_10px_24px_-8px_rgba(0,0,0,0.2),0_22px_40px_-16px_rgba(0,0,0,0.18)] ring-1 ring-black/5 backdrop-blur-md supports-backdrop-filter:bg-[color:var(--paper)]/85 dark:border-white/10 dark:text-zinc-400 dark:shadow-[0_10px_30px_rgba(0,0,0,0.45),0_24px_50px_-16px_rgba(0,0,0,0.55)] dark:ring-black/30"
           role="toolbar"
           data-prevent-redlines-dismiss=""
         >

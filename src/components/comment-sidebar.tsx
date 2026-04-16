@@ -4,6 +4,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react"
 import { MessageSquare, Trash2 } from "lucide-react"
@@ -15,6 +16,35 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useCommentSidebarLayout } from "@/hooks/use-comment-sidebar-layout"
+
+const STICKY_ROTATIONS = [-1.2, 0.9, -0.5, 1.4, -0.8, 0.6, -1.6, 1.1]
+const STICKY_COLOR_CLASSES = [
+  "",
+  "sticky-note--pink",
+  "",
+  "sticky-note--blue",
+  "",
+  "sticky-note--green",
+  "",
+]
+
+function stringHash(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) | 0
+  }
+  return Math.abs(h)
+}
+
+function stickyRotationStyle(seed: string): CSSProperties {
+  const idx = stringHash(seed) % STICKY_ROTATIONS.length
+  return { ["--sticky-rotate" as string]: `${STICKY_ROTATIONS[idx]}deg` }
+}
+
+function stickyColorClass(seed: string): string {
+  const idx = stringHash(seed) % STICKY_COLOR_CLASSES.length
+  return STICKY_COLOR_CLASSES[idx] ?? ""
+}
 
 export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
   const {
@@ -95,11 +125,11 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
     >
       {ordered.length === 0 && !showNewComment && (
         <div className="relative pt-12">
-          <p className="text-xs font-medium tracking-tight text-foreground">
-            No comments yet
+          <p className="font-hand text-lg leading-tight text-foreground/80">
+            No notes yet.
           </p>
           <p className="text-caption text-muted-foreground mt-1 leading-snug">
-            Select text in the document to start a thread.
+            Highlight text in the page to leave a sticky.
           </p>
         </div>
       )}
@@ -190,9 +220,12 @@ function NewCommentDraft({
   }
 
   return (
-    <div className="comment-draft-enter rounded-lg border border-border/60 bg-muted/30 p-2.5 shadow-sm">
+    <div
+      className="sticky-note comment-draft-enter"
+      style={{ ["--sticky-rotate" as string]: "-1.2deg" }}
+    >
       {quotedText ? (
-        <blockquote className="text-caption mb-2 border-l-2 border-border/70 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2">
+        <blockquote className="text-caption mb-2 border-l-2 border-[color:var(--sticky-edge)] pl-2 leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
           {quotedText}
         </blockquote>
       ) : null}
@@ -201,23 +234,28 @@ function NewCommentDraft({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Comment…"
+        placeholder="Jot something…"
         aria-label="New comment"
         rows={3}
-        className="resize-none text-[13px] border-border/50 bg-background/60"
+        className="sticky-handwritten resize-none border-0 bg-transparent text-[color:var(--sticky-foreground)] placeholder:text-[color:var(--sticky-foreground)]/50 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none p-0"
       />
       <div className="flex justify-end gap-1.5 mt-2">
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="text-muted-foreground h-7 text-xs"
+          className="h-7 text-xs text-[color:var(--sticky-foreground)]/70 hover:bg-black/5"
           onClick={onCancel}
         >
           Cancel
         </Button>
-        <Button type="button" size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-          Add
+        <Button
+          type="button"
+          size="sm"
+          className="h-7 text-xs bg-[color:var(--sticky-foreground)] text-[color:var(--sticky)] hover:bg-[color:var(--sticky-foreground)]/90"
+          onClick={handleSubmit}
+        >
+          Pin it
         </Button>
       </div>
     </div>
@@ -254,28 +292,32 @@ const ThreadRow = memo(function ThreadRow({
     }
   }
 
+  const rotateStyle = stickyRotationStyle(comment.id)
+  const colorClass = stickyColorClass(comment.id)
+
   if (isActive) {
     return (
       <article
-        className="rounded-lg border border-border/60 bg-muted/30 p-2.5 shadow-sm"
+        className={cn("sticky-note sticky-note--active", colorClass)}
+        style={rotateStyle}
         aria-labelledby={`comment-${comment.id}-quote`}
       >
         <blockquote
           id={`comment-${comment.id}-quote`}
-          className="text-caption border-l-2 border-border/70 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2"
+          className="text-caption border-l-2 border-[color:var(--sticky-foreground)]/25 pl-2 leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2"
         >
           {comment.quotedText}
         </blockquote>
 
-        <div className="mt-2 space-y-1">
+        <div className="mt-2 space-y-1.5">
           {comment.messages.map((message, index) => (
             <div
               key={message.id}
               className={cn(
-                "rounded-md px-2.5 py-1.5 text-[12px] leading-relaxed whitespace-pre-wrap",
+                "sticky-handwritten whitespace-pre-wrap text-[color:var(--sticky-foreground)]",
                 index === 0
-                  ? "bg-background/80"
-                  : "bg-background/50 ml-2 border-l border-border/40",
+                  ? ""
+                  : "ml-3 border-l border-[color:var(--sticky-foreground)]/20 pl-2.5",
               )}
             >
               {message.body}
@@ -292,7 +334,7 @@ const ThreadRow = memo(function ThreadRow({
             aria-label="Reply to comment thread"
             rows={2}
             placeholder="Reply…"
-            className="resize-none text-[12px] border-border/50 bg-background/60"
+            className="sticky-handwritten resize-none border-0 bg-transparent p-0 text-[color:var(--sticky-foreground)] placeholder:text-[color:var(--sticky-foreground)]/50 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
           />
         </div>
 
@@ -301,7 +343,7 @@ const ThreadRow = memo(function ThreadRow({
             type="button"
             variant="ghost"
             size="icon-xs"
-            className="text-muted-foreground/60 hover:text-destructive"
+            className="text-[color:var(--sticky-foreground)]/50 hover:bg-black/10 hover:text-destructive"
             onClick={onDelete}
             aria-label="Delete thread"
           >
@@ -310,7 +352,7 @@ const ThreadRow = memo(function ThreadRow({
           <Button
             type="button"
             size="sm"
-            className="h-6 px-2.5 text-[11px]"
+            className="h-6 px-2.5 text-[11px] bg-[color:var(--sticky-foreground)] text-[color:var(--sticky)] hover:bg-[color:var(--sticky-foreground)]/90"
             onClick={handleReply}
           >
             Reply
@@ -330,25 +372,21 @@ const ThreadRow = memo(function ThreadRow({
           onSelect()
         }
       }}
-      className={cn(
-        "cursor-pointer rounded-lg border border-transparent p-2.5",
-        "transition-[background-color,border-color,transform,box-shadow] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
-        "hover:border-border/50 hover:bg-muted/30 hover:shadow-sm",
-        "active:scale-[0.98]",
-      )}
+      className={cn("sticky-note sticky-note--pressable", colorClass)}
+      style={rotateStyle}
       onClick={(e) => {
         e.stopPropagation()
         onSelect()
       }}
     >
-      <blockquote className="text-caption border-l-2 border-border/50 pl-2.5 leading-snug text-muted-foreground not-italic line-clamp-2">
+      <blockquote className="text-caption border-l-2 border-[color:var(--sticky-foreground)]/25 pl-2 leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
         {comment.quotedText}
       </blockquote>
-      <p className="mt-1.5 text-[12px] leading-relaxed whitespace-pre-wrap line-clamp-3">
+      <p className="sticky-handwritten mt-1.5 whitespace-pre-wrap line-clamp-3 text-[color:var(--sticky-foreground)]">
         {latestMessage?.body}
       </p>
       {comment.messages.length > 1 && (
-        <div className="mt-1.5 flex items-center gap-1 text-muted-foreground/70">
+        <div className="mt-1.5 flex items-center gap-1 text-[color:var(--sticky-foreground)]/60">
           <MessageSquare className="size-3" />
           <span className="text-[10px]">
             {comment.messages.length} replies

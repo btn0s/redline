@@ -35,14 +35,14 @@ export function ReviewHeader({
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-40 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-md supports-backdrop-filter:bg-background/70"
+      className="fixed inset-x-0 top-0 z-40 pt-[env(safe-area-inset-top)]"
       aria-label="Current file and repository"
       data-prevent-redlines-dismiss=""
     >
       <div className="flex h-9 min-h-9 items-center justify-between gap-3 px-4 text-[0.75rem] leading-none">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <span
-            className="flex min-w-0 items-center font-mono text-muted-foreground"
+            className="tape-strip flex min-w-0 items-center font-mono text-foreground/80"
             title={fullDisplay}
           >
             {segments.map((segment, index) => {
@@ -52,7 +52,7 @@ export function ReviewHeader({
                   {index > 0 ? (
                     <span
                       aria-hidden
-                      className="mx-1 shrink-0 text-muted-foreground/50"
+                      className="mx-1 shrink-0 text-foreground/40"
                     >
                       /
                     </span>
@@ -61,7 +61,7 @@ export function ReviewHeader({
                     className={
                       isLast
                         ? "min-w-0 truncate text-foreground"
-                        : "shrink-0 text-muted-foreground"
+                        : "shrink-0 text-foreground/60"
                     }
                   >
                     {segment}
@@ -100,7 +100,7 @@ export function ReviewHeader({
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 font-mono text-muted-foreground tabular-nums underline-offset-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-foreground hover:underline"
+          className="shrink-0 font-mono text-foreground/60 tabular-nums underline-offset-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-foreground hover:underline"
         >
           @btn0s/redline
         </a>

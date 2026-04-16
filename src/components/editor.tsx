@@ -79,7 +79,7 @@ export function Editor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none min-h-[min(100vh,32rem)] py-12 outline-none focus-visible:outline-none",
+          "prose prose-sm max-w-none min-h-[min(100vh,32rem)] outline-none focus-visible:outline-none",
         spellcheck: "false",
       },
     },
@@ -146,13 +146,15 @@ export function Editor({
         >
           <button
             type="button"
-            title="Add comment"
-            aria-label="Add comment"
-            className="inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[10px] font-medium leading-none tracking-tight shadow-[0_2px_8px_var(--annotation-pill-shadow)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
+            title="Leave a sticky"
+            aria-label="Leave a sticky"
+            className="inline-flex h-6 shrink-0 items-center gap-1 border px-2.5 text-[11px] font-medium leading-none tracking-tight shadow-[0_1px_0_rgba(255,255,255,0.45)_inset,0_2px_4px_rgba(0,0,0,0.12),0_8px_18px_-6px_rgba(0,0,0,0.22)] transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
             style={{
-              backgroundColor: "var(--annotation-pill-bg)",
-              color: "var(--annotation-pill-fg)",
-              borderColor: "var(--annotation-pill-border)",
+              backgroundColor: "var(--sticky)",
+              color: "var(--sticky-foreground)",
+              borderColor: "var(--sticky-edge)",
+              borderRadius: "2px 4px 3px 5px",
+              transform: "rotate(-1.5deg)",
               visibility: spent ? "hidden" : undefined,
             }}
             onMouseDown={(e) => {
@@ -162,7 +164,14 @@ export function Editor({
               onAddComment()
             }}
           >
-            + Comment
+            <span
+              aria-hidden
+              className="text-base leading-none"
+              style={{ fontFamily: "var(--font-hand)" }}
+            >
+              +
+            </span>
+            <span>Sticky</span>
           </button>
         </BubbleMenu>
       ) : null}
