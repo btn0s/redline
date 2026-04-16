@@ -10,14 +10,19 @@ import { MessageSquare, Trash2 } from "lucide-react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 import { useCommentContext } from "@/contexts/comment-context"
+import { useShortcutScheme } from "@/contexts/shortcut-scheme-context"
 import { resolveCommentLinkHighlightId } from "@/extensions/comment-mark"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
-import { modShiftKeyCompact } from "@/lib/format-shortcut"
+import {
+  addCommentShortcutDisplay,
+  modShiftKeyCompact,
+} from "@/lib/format-shortcut"
 
 export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
+  const { scheme } = useShortcutScheme()
   const {
     comments,
     showNewComment,
@@ -68,7 +73,7 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
         {ordered.length === 0 && !showNewComment && (
           <p className="text-muted-foreground py-2 text-[12px] leading-snug">
             Select text, then add a comment (
-            <Kbd className="text-[10px]">{modShiftKeyCompact("M")}</Kbd>
+            <Kbd className="text-[10px]">{addCommentShortcutDisplay(scheme)}</Kbd>
             ). Open redlines with the toolbar or{" "}
             <Kbd className="text-[10px]">{modShiftKeyCompact("L")}</Kbd> (also
             works when the editor is not focused).

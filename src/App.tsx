@@ -3,6 +3,7 @@ import type { Editor as TiptapEditor } from "@tiptap/core"
 import { useFile } from "@/hooks/use-file"
 import { useEditorCommentSync } from "@/hooks/use-editor-comment-sync"
 import { CommentProvider, useCommentContext } from "@/contexts/comment-context"
+import { ShortcutSchemeProvider } from "@/contexts/shortcut-scheme-context"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { BottomToolbar } from "@/components/bottom-toolbar"
@@ -78,7 +79,9 @@ function AppDismissHandler() {
         t.closest('[data-slot="dropdown-menu-sub-content"]') ||
         t.closest('[data-slot="alert-dialog-overlay"]') ||
         t.closest('[data-slot="alert-dialog-content"]') ||
-        t.closest('[data-slot="alert-dialog-portal"]')
+        t.closest('[data-slot="alert-dialog-portal"]') ||
+        t.closest('[data-slot="dialog-content"]') ||
+        t.closest('[data-slot="dialog-overlay"]')
       ) {
         return
       }
@@ -230,23 +233,25 @@ export function App() {
   }
 
   return (
-    <CommentProvider editor={editor} persistenceKey={commentsPersistenceKey}>
-      <AppShell
-        file={file}
-        editor={editor}
-        setEditor={setEditor}
-        saving={saving}
-        isOutdated={isOutdated}
-        dirty={dirty}
-        contentReloadNonce={contentReloadNonce}
-        handleMarkdownUpdate={handleMarkdownUpdate}
-        outdatedReloadOpen={outdatedReloadOpen}
-        setOutdatedReloadOpen={setOutdatedReloadOpen}
-        outdatedReloadPending={outdatedReloadPending}
-        setOutdatedReloadPending={setOutdatedReloadPending}
-        reloadFromDisk={reloadFromDisk}
-      />
-    </CommentProvider>
+    <ShortcutSchemeProvider>
+      <CommentProvider editor={editor} persistenceKey={commentsPersistenceKey}>
+        <AppShell
+          file={file}
+          editor={editor}
+          setEditor={setEditor}
+          saving={saving}
+          isOutdated={isOutdated}
+          dirty={dirty}
+          contentReloadNonce={contentReloadNonce}
+          handleMarkdownUpdate={handleMarkdownUpdate}
+          outdatedReloadOpen={outdatedReloadOpen}
+          setOutdatedReloadOpen={setOutdatedReloadOpen}
+          outdatedReloadPending={outdatedReloadPending}
+          setOutdatedReloadPending={setOutdatedReloadPending}
+          reloadFromDisk={reloadFromDisk}
+        />
+      </CommentProvider>
+    </ShortcutSchemeProvider>
   )
 }
 
