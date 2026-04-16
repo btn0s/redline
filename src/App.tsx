@@ -1,10 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import { useFile } from "@/hooks/use-file"
-import { useComments } from "@/hooks/use-comments"
-import { useCommentHover } from "@/hooks/use-comment-hover"
-import { useDraftComment } from "@/hooks/use-draft-comment"
 import { useEditorCommentSync } from "@/hooks/use-editor-comment-sync"
+import { CommentProvider, useCommentContext } from "@/contexts/comment-context"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { BottomToolbar } from "@/components/bottom-toolbar"
@@ -13,145 +11,12 @@ import { ReviewHeader } from "@/components/review-header"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
-export function App() {
-  const {
-    file,
-    save,
-    saving,
-    loadError,
-    isOutdated,
-    reloadFromDisk,
-    notifyMarkdownChange,
-    dirty,
-    contentReloadNonce,
-  } = useFile()
-  const commentsPersistenceKey = file ? (file.path ?? file.filename) : null
-  const {
-    comments,
-    activeCommentId,
-    setActiveCommentId,
-    addComment,
-    addReplyToComment,
-    deleteComment,
-    copyComments,
-    clearAllComments,
-    syncCommentAnchorsFromEditor,
-    hasComments,
-  } = useComments(commentsPersistenceKey)
-
-  const [editor, setEditor] = useState<TiptapEditor | null>(null)
-  const [commentsPanelOpen, setCommentsPanelOpen] = useState(false)
-  const shellRef = useRef<HTMLDivElement | null>(null)
-  const [outdatedReloadOpen, setOutdatedReloadOpen] = useState(false)
-  const [outdatedReloadPending, setOutdatedReloadPending] = useState(false)
-
-  const {
-    showNewComment,
-    setShowNewComment,
-    draftQuotedText,
-    pendingDraftCommentId,
-    handleAddCommentClick,
-    handleCloseNewComment,
-    handleSubmitNewComment,
-  } = useDraftComment({
-    editor,
-    addComment,
-    setActiveCommentId,
-    onDraftStarted: () => setCommentsPanelOpen(true),
-  })
-
-  useEditorCommentSync({
-    editor,
-    comments,
-    syncCommentAnchorsFromEditor,
-    setActiveCommentId,
-    setShowNewComment,
-  })
-
-  const { hoveredCommentId, clearHover } = useCommentHover(editor)
-
-  const handleMarkdownUpdate = useCallback(
-    (md: string) => {
-      notifyMarkdownChange(md)
-      save(md)
-    },
-    [notifyMarkdownChange, save],
-  )
-
-  const confirmOutdatedReload = useCallback(async () => {
-    setOutdatedReloadPending(true)
-    try {
-      await reloadFromDisk()
-      if (showNewComment || pendingDraftCommentId) {
-        handleCloseNewComment()
-      }
-      clearAllComments()
-      setCommentsPanelOpen(false)
-      clearHover()
-      setOutdatedReloadOpen(false)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setOutdatedReloadPending(false)
-    }
-  }, [
-    showNewComment,
-    pendingDraftCommentId,
-    handleCloseNewComment,
-    clearAllComments,
-    reloadFromDisk,
-    clearHover,
-  ])
-
+function AppKeyboardShortcuts() {
+  const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel, togglePanel } = useCommentContext()
+  const handlerRef = useRef({ showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel })
   useEffect(() => {
-    const handleAddComment = () => handleAddCommentClick()
-    const handleCopy = () => {
-      if (hasComments) void copyComments()
-    }
-    const handleTogglePanel = () => {
-      setCommentsPanelOpen((p) => !p)
-    }
-
-    window.addEventListener("review-md:add-comment", handleAddComment)
-    window.addEventListener("review-md:copy-comments", handleCopy)
-    window.addEventListener("review-md:toggle-comments-panel", handleTogglePanel)
-    return () => {
-      window.removeEventListener("review-md:add-comment", handleAddComment)
-      window.removeEventListener("review-md:copy-comments", handleCopy)
-      window.removeEventListener(
-        "review-md:toggle-comments-panel",
-        handleTogglePanel,
-      )
-    }
-  }, [handleAddCommentClick, copyComments, hasComments])
-
-  const showCommentSidebar =
-    showNewComment || activeCommentId !== null || commentsPanelOpen
-
-  const collapseExpandedThreadOrDraft = useCallback(() => {
-    if (showNewComment) handleCloseNewComment()
-    if (activeCommentId !== null) setActiveCommentId(null)
-  }, [showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId])
-
-  const handleEscapeRedlines = useCallback(() => {
-    if (showNewComment) {
-      handleCloseNewComment()
-      return
-    }
-    if (activeCommentId !== null) {
-      setActiveCommentId(null)
-      return
-    }
-    if (commentsPanelOpen) {
-      setCommentsPanelOpen(false)
-    }
-  }, [
-    showNewComment,
-    handleCloseNewComment,
-    activeCommentId,
-    commentsPanelOpen,
-    setActiveCommentId,
-  ])
+    handlerRef.current = { showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel }
+  })
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -166,60 +31,126 @@ export function App() {
       ) {
         return
       }
-      if (t instanceof Element && t.closest(".ProseMirror")) {
-        return
-      }
+      if (t instanceof Element && t.closest(".ProseMirror")) return
       e.preventDefault()
-      setCommentsPanelOpen((p) => !p)
+      togglePanel()
     }
     window.addEventListener("keydown", onKey, true)
     return () => window.removeEventListener("keydown", onKey, true)
-  }, [])
+  }, [togglePanel])
 
   useEffect(() => {
     if (!showCommentSidebar) return
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation()
-        e.preventDefault()
-        handleEscapeRedlines()
-      }
+      if (e.key !== "Escape") return
+      e.stopPropagation()
+      e.preventDefault()
+      const h = handlerRef.current
+      if (h.showNewComment) { h.handleCloseNewComment(); return }
+      if (h.activeCommentId !== null) { h.setActiveCommentId(null); return }
+      if (h.commentsPanelOpen) h.closePanel()
     }
     window.addEventListener("keydown", handleKeyDown, true)
     return () => window.removeEventListener("keydown", handleKeyDown, true)
-  }, [showCommentSidebar, handleEscapeRedlines])
+  }, [showCommentSidebar])
+
+  return null
+}
+
+function AppDismissHandler() {
+  const { showCommentSidebar, activeCommentId, showNewComment, handleCloseNewComment, setActiveCommentId } = useCommentContext()
+  const handlerRef = useRef({ showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId })
+  useEffect(() => {
+    handlerRef.current = { showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId }
+  })
 
   useEffect(() => {
     if (!showCommentSidebar) return
     if (activeCommentId === null && !showNewComment) return
 
-    const exemptFromThreadCollapse = (el: Element | null) => {
-      if (!el) return false
-      return !!(
-        el.closest("[data-redlines-sidebar]") ||
-        el.closest(".bubble-menu") ||
-        el.closest("[data-prevent-redlines-dismiss]") ||
-        el.closest('[data-slot="dropdown-menu-content"]') ||
-        el.closest('[data-slot="dropdown-menu-sub-content"]') ||
-        el.closest('[data-slot="alert-dialog-overlay"]') ||
-        el.closest('[data-slot="alert-dialog-content"]') ||
-        el.closest('[data-slot="alert-dialog-portal"]')
-      )
-    }
     const onPointerDown = (e: PointerEvent) => {
       const t = e.target
       if (!(t instanceof Element)) return
-      if (exemptFromThreadCollapse(t)) return
-      collapseExpandedThreadOrDraft()
+      if (
+        t.closest("[data-redlines-sidebar]") ||
+        t.closest(".bubble-menu") ||
+        t.closest("[data-prevent-redlines-dismiss]") ||
+        t.closest('[data-slot="dropdown-menu-content"]') ||
+        t.closest('[data-slot="dropdown-menu-sub-content"]') ||
+        t.closest('[data-slot="alert-dialog-overlay"]') ||
+        t.closest('[data-slot="alert-dialog-content"]') ||
+        t.closest('[data-slot="alert-dialog-portal"]')
+      ) {
+        return
+      }
+      const h = handlerRef.current
+      if (h.showNewComment) h.handleCloseNewComment()
+      if (h.activeCommentId !== null) h.setActiveCommentId(null)
     }
     document.addEventListener("pointerdown", onPointerDown, true)
     return () => document.removeEventListener("pointerdown", onPointerDown, true)
-  }, [
-    showCommentSidebar,
-    activeCommentId,
-    showNewComment,
-    collapseExpandedThreadOrDraft,
-  ])
+  }, [showCommentSidebar, activeCommentId, showNewComment])
+
+  return null
+}
+
+function AppCommandListeners() {
+  const { handleAddCommentClick, copyComments, hasComments, togglePanel } = useCommentContext()
+  const ref = useRef({ handleAddCommentClick, copyComments, hasComments })
+  useEffect(() => {
+    ref.current = { handleAddCommentClick, copyComments, hasComments }
+  })
+
+  useEffect(() => {
+    const onAdd = () => ref.current.handleAddCommentClick()
+    const onCopy = () => { if (ref.current.hasComments) void ref.current.copyComments() }
+    const onToggle = () => togglePanel()
+
+    window.addEventListener("review-md:add-comment", onAdd)
+    window.addEventListener("review-md:copy-comments", onCopy)
+    window.addEventListener("review-md:toggle-comments-panel", onToggle)
+    return () => {
+      window.removeEventListener("review-md:add-comment", onAdd)
+      window.removeEventListener("review-md:copy-comments", onCopy)
+      window.removeEventListener("review-md:toggle-comments-panel", onToggle)
+    }
+  }, [togglePanel])
+
+  return null
+}
+
+function EditorCommentSyncBridge({ editor }: { editor: TiptapEditor }) {
+  const { comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment } = useCommentContext()
+  useEditorCommentSync({ editor, comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment })
+  return null
+}
+
+export function App() {
+  const {
+    file,
+    save,
+    saving,
+    loadError,
+    isOutdated,
+    reloadFromDisk,
+    notifyMarkdownChange,
+    dirty,
+    contentReloadNonce,
+  } = useFile()
+
+  const [editor, setEditor] = useState<TiptapEditor | null>(null)
+  const [outdatedReloadOpen, setOutdatedReloadOpen] = useState(false)
+  const [outdatedReloadPending, setOutdatedReloadPending] = useState(false)
+
+  const commentsPersistenceKey = file ? (file.path ?? file.filename) : null
+
+  const handleMarkdownUpdate = useCallback(
+    (md: string) => {
+      notifyMarkdownChange(md)
+      save(md)
+    },
+    [notifyMarkdownChange, save],
+  )
 
   if (loadError) {
     return (
@@ -258,21 +189,94 @@ export function App() {
     )
   }
 
-  const pathLeft = file.path ?? file.filename
+  return (
+    <CommentProvider editor={editor} persistenceKey={commentsPersistenceKey}>
+      <AppShell
+        file={file}
+        editor={editor}
+        setEditor={setEditor}
+        saving={saving}
+        isOutdated={isOutdated}
+        dirty={dirty}
+        contentReloadNonce={contentReloadNonce}
+        handleMarkdownUpdate={handleMarkdownUpdate}
+        outdatedReloadOpen={outdatedReloadOpen}
+        setOutdatedReloadOpen={setOutdatedReloadOpen}
+        outdatedReloadPending={outdatedReloadPending}
+        setOutdatedReloadPending={setOutdatedReloadPending}
+        reloadFromDisk={reloadFromDisk}
+      />
+    </CommentProvider>
+  )
+}
 
-  const sidebarProps = {
-    editor,
-    comments,
+interface AppShellProps {
+  file: { content: string; filename: string; path?: string }
+  editor: TiptapEditor | null
+  setEditor: (e: TiptapEditor) => void
+  saving: boolean
+  isOutdated: boolean
+  dirty: boolean
+  contentReloadNonce: number
+  handleMarkdownUpdate: (md: string) => void
+  outdatedReloadOpen: boolean
+  setOutdatedReloadOpen: (v: boolean) => void
+  outdatedReloadPending: boolean
+  setOutdatedReloadPending: (v: boolean) => void
+  reloadFromDisk: () => Promise<void>
+}
+
+function AppShell({
+  file,
+  editor,
+  setEditor,
+  saving,
+  isOutdated,
+  dirty,
+  contentReloadNonce,
+  handleMarkdownUpdate,
+  outdatedReloadOpen,
+  setOutdatedReloadOpen,
+  outdatedReloadPending,
+  setOutdatedReloadPending,
+  reloadFromDisk,
+}: AppShellProps) {
+  const {
+    showCommentSidebar,
     showNewComment,
-    draftQuotedText,
-    onCloseNewComment: handleCloseNewComment,
-    onSubmitNewComment: handleSubmitNewComment,
     activeCommentId,
-    setActiveCommentId,
-    addReplyToComment,
-    deleteComment,
-    hoveredCommentId,
-  }
+    pendingDraftCommentId,
+    handleCloseNewComment,
+    handleAddCommentClick,
+    clearAllComments,
+    clearHover,
+  } = useCommentContext()
+
+  const confirmOutdatedReload = useCallback(async () => {
+    setOutdatedReloadPending(true)
+    try {
+      await reloadFromDisk()
+      if (showNewComment || pendingDraftCommentId) handleCloseNewComment()
+      clearAllComments()
+      clearHover()
+      setOutdatedReloadOpen(false)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setOutdatedReloadPending(false)
+    }
+  }, [
+    showNewComment,
+    pendingDraftCommentId,
+    handleCloseNewComment,
+    clearAllComments,
+    reloadFromDisk,
+    clearHover,
+    setOutdatedReloadOpen,
+    setOutdatedReloadPending,
+  ])
+
+  const pathLeft = file.path ?? file.filename
 
   return (
     <div className="flex min-h-svh flex-col pt-[calc(env(safe-area-inset-top)+2.75rem)] pb-[max(3.5rem,env(safe-area-inset-bottom))]">
@@ -291,11 +295,15 @@ export function App() {
         onConfirm={confirmOutdatedReload}
       />
 
+      <AppKeyboardShortcuts />
+      <AppDismissHandler />
+      <AppCommandListeners />
+      {editor && <EditorCommentSyncBridge editor={editor} />}
+
       <div className="flex min-h-0 flex-1 flex-col">
         <main className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
           <h1 className="sr-only">Review {file.filename}</h1>
           <div
-            ref={shellRef}
             className={cn(
               "mx-auto w-full max-w-[72rem] py-6",
               showCommentSidebar
@@ -330,7 +338,7 @@ export function App() {
                 aria-hidden={!showCommentSidebar}
               >
                 <div className="min-w-0 w-full max-w-full">
-                  <CommentSidebar {...sidebarProps} />
+                  <CommentSidebar editor={editor} />
                 </div>
               </aside>
             </div>
@@ -338,13 +346,7 @@ export function App() {
         </main>
       </div>
 
-      <BottomToolbar
-        commentsPanelOpen={commentsPanelOpen}
-        onTogglePanel={() => setCommentsPanelOpen((p) => !p)}
-        hasComments={hasComments}
-        onCopyComments={copyComments}
-        commentsCount={comments.length}
-      />
+      <BottomToolbar />
     </div>
   )
 }

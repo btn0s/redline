@@ -1,14 +1,12 @@
-import { useEffect } from "react"
+import { useEffect, useLayoutEffect, useRef } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
-import type { Comment } from "@/hooks/use-comments"
+import type { Comment } from "@/types/comment"
+import { forEachCommentMark } from "@/lib/editor-utils"
 import {
   normalizeQuotedText,
   resolveCommentRange,
   resolveCommentRangeNearAnchor,
 } from "@/lib/comment-anchoring"
-
-/** Bottom strip of the comment mark hit target for opening the thread (see CSS). */
-const PILL_CLICK_ZONE_PX = 8
 
 interface UseEditorCommentSyncOptions {
   editor: TiptapEditor | null
@@ -31,15 +29,8 @@ export function useEditorCommentSync({
     if (!commentMarkType) return
 
     const existingCommentMarkIds = new Set<string>()
-    editor.state.doc.descendants((node) => {
-      node.marks.forEach((mark) => {
-        if (
-          mark.type.name === "commentMark" &&
-          typeof mark.attrs.commentId === "string"
-        ) {
-          existingCommentMarkIds.add(mark.attrs.commentId)
-        }
-      })
+    forEachCommentMark(editor.state.doc, (id) => {
+      existingCommentMarkIds.add(id)
     })
 
     const missingComments = comments.filter(
@@ -76,42 +67,46 @@ export function useEditorCommentSync({
     editor.view.dispatch(tr)
   }, [editor, comments])
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     if (!editor) return
     const syncAnchors = () => syncCommentAnchorsFromEditor(editor)
     syncAnchors()
-    editor.on("update", syncAnchors)
+
+    const debouncedSync = () => {
+      if (debounceRef.current !== null) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(syncAnchors, 300)
+    }
+
+    editor.on("update", debouncedSync)
     return () => {
-      editor.off("update", syncAnchors)
+      editor.off("update", debouncedSync)
+      if (debounceRef.current !== null) clearTimeout(debounceRef.current)
     }
   }, [editor, syncCommentAnchorsFromEditor])
 
+  // Pill-click callback — sets the callback in editor storage so the
+  // ProseMirror plugin (in comment-mark.ts) can invoke it on pill clicks.
+  const callbacksRef = useRef({ setActiveCommentId, setShowNewComment, comments })
+  useLayoutEffect(() => {
+    callbacksRef.current = { setActiveCommentId, setShowNewComment, comments }
+  })
+
   useEffect(() => {
     if (!editor) return
-    const dom = editor.view.dom
-
-    const onPillClick = (event: MouseEvent) => {
-      let el = event.target as HTMLElement | null
-      while (el && el !== dom) {
-        if (el.matches("mark.comment-mark[data-comment-id]")) {
-          const rect = el.getBoundingClientRect()
-          if (event.clientY >= rect.bottom - PILL_CLICK_ZONE_PX) {
-            const commentId = el.getAttribute("data-comment-id")
-            if (!commentId) return
-            const hasSavedThread = comments.some((c) => c.id === commentId)
-            if (commentId.startsWith("draft-") && !hasSavedThread) return
-            event.preventDefault()
-            event.stopPropagation()
-            setActiveCommentId(commentId)
-            setShowNewComment(false)
-          }
-          return
-        }
-        el = el.parentElement
-      }
+    const pillClickHandler = (commentId: string) => {
+      const { setActiveCommentId: setActive, setShowNewComment: setNew, comments: c } =
+        callbacksRef.current
+      const hasSavedThread = c.some((comment) => comment.id === commentId)
+      if (commentId.startsWith("draft-") && !hasSavedThread) return
+      setActive(commentId)
+      setNew(false)
     }
-
-    dom.addEventListener("click", onPillClick, true)
-    return () => dom.removeEventListener("click", onPillClick, true)
-  }, [editor, setActiveCommentId, setShowNewComment, comments])
+    // eslint-disable-next-line react-hooks/immutability -- writing to ProseMirror storage, not React props
+    ;(editor.storage.commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = pillClickHandler
+    return () => {
+      ;(editor.storage.commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = null
+    }
+  }, [editor])
 }

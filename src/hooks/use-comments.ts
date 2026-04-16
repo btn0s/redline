@@ -1,51 +1,16 @@
 import { useState, useCallback, useEffect } from "react"
 import type { Editor } from "@tiptap/core"
+import type { Comment } from "@/types/comment"
+import { isComment } from "@/types/comment"
+import { removeCommentMarkFromEditor } from "@/lib/editor-utils"
+import { forEachCommentMark } from "@/lib/editor-utils"
 
-export interface CommentMessage {
-  id: string
-  body: string
-  createdAt: string
-}
-
-export interface Comment {
-  id: string
-  quotedText: string
-  messages: CommentMessage[]
-  createdAt: string
-  /** First character position in the document (for ordering threads in the gutter). */
-  anchorFrom: number
-  /** End character position in the document for restoring comment marks. */
-  anchorTo?: number
-}
+export type { Comment, CommentMessage } from "@/types/comment"
 
 const STORAGE_PREFIX = "review-md:comments:v1:"
 
 function storageKey(fileKey: string) {
   return `${STORAGE_PREFIX}${encodeURIComponent(fileKey)}`
-}
-
-function isCommentMessage(x: unknown): x is CommentMessage {
-  if (typeof x !== "object" || x === null) return false
-  const m = x as Record<string, unknown>
-  return (
-    typeof m.id === "string" &&
-    typeof m.body === "string" &&
-    typeof m.createdAt === "string"
-  )
-}
-
-function isComment(x: unknown): x is Comment {
-  if (typeof x !== "object" || x === null) return false
-  const c = x as Record<string, unknown>
-  if (typeof c.id !== "string") return false
-  if (typeof c.quotedText !== "string") return false
-  if (typeof c.createdAt !== "string") return false
-  if (typeof c.anchorFrom !== "number") return false
-  if (c.anchorTo !== undefined && typeof c.anchorTo !== "number") return false
-  if (!Array.isArray(c.messages) || !c.messages.every(isCommentMessage)) {
-    return false
-  }
-  return true
 }
 
 function loadPersisted(fileKey: string): {
@@ -77,46 +42,24 @@ function loadPersisted(fileKey: string): {
   }
 }
 
+let saveTimeout: ReturnType<typeof setTimeout> | null = null
+
 function savePersisted(
   fileKey: string,
   comments: Comment[],
   activeCommentId: string | null,
 ) {
-  try {
-    localStorage.setItem(
-      storageKey(fileKey),
-      JSON.stringify({ comments, activeCommentId }),
-    )
-  } catch {
-    // quota / private mode
-  }
-}
-
-/** Remove every `commentMark` with the given id from the document. */
-export function removeCommentMarkFromEditor(editor: Editor, commentId: string): void {
-  const { doc } = editor.state
-  let markFrom: number | null = null
-  let markTo: number | null = null
-
-  doc.descendants((node, pos) => {
-    node.marks.forEach((mark) => {
-      if (
-        mark.type.name === "commentMark" &&
-        mark.attrs.commentId === commentId
-      ) {
-        if (markFrom === null) markFrom = pos
-        markTo = pos + node.nodeSize
-      }
-    })
-  })
-
-  if (markFrom !== null && markTo !== null) {
-    const markType = editor.state.schema.marks.commentMark
-    if (markType) {
-      const tr = editor.state.tr.removeMark(markFrom, markTo, markType)
-      editor.view.dispatch(tr)
+  if (saveTimeout !== null) clearTimeout(saveTimeout)
+  saveTimeout = setTimeout(() => {
+    try {
+      localStorage.setItem(
+        storageKey(fileKey),
+        JSON.stringify({ comments, activeCommentId }),
+      )
+    } catch {
+      // quota / private mode
     }
-  }
+  }, 500)
 }
 
 export function useComments(persistenceKey: string | null) {
@@ -126,7 +69,6 @@ export function useComments(persistenceKey: string | null) {
 
   useEffect(() => {
     if (!persistenceKey) {
-      // Reset client comment state when no file is loaded (intentional sync from key).
       // eslint-disable-next-line react-hooks/set-state-in-effect -- persistence key cleared
       setComments([])
       setActiveCommentId(null)
@@ -175,7 +117,6 @@ export function useComments(persistenceKey: string | null) {
 
   const deleteComment = useCallback((editor: Editor, commentId: string) => {
     removeCommentMarkFromEditor(editor, commentId)
-
     setComments((prev) => prev.filter((c) => c.id !== commentId))
     setActiveCommentId(null)
   }, [])
@@ -224,27 +165,16 @@ export function useComments(persistenceKey: string | null) {
 
   const syncCommentAnchorsFromEditor = useCallback((editor: Editor) => {
     const nextAnchors = new Map<string, { anchorFrom: number; anchorTo: number }>()
-    editor.state.doc.descendants((node, pos) => {
-      for (const mark of node.marks) {
-        if (
-          mark.type.name !== "commentMark" ||
-          typeof mark.attrs.commentId !== "string"
-        ) {
-          continue
-        }
-        const commentId = mark.attrs.commentId
-        const nextFrom = pos
-        const nextTo = pos + node.nodeSize
-        const existing = nextAnchors.get(commentId)
-        if (!existing) {
-          nextAnchors.set(commentId, { anchorFrom: nextFrom, anchorTo: nextTo })
-          continue
-        }
-        nextAnchors.set(commentId, {
-          anchorFrom: Math.min(existing.anchorFrom, nextFrom),
-          anchorTo: Math.max(existing.anchorTo, nextTo),
-        })
+    forEachCommentMark(editor.state.doc, (commentId, from, to) => {
+      const existing = nextAnchors.get(commentId)
+      if (!existing) {
+        nextAnchors.set(commentId, { anchorFrom: from, anchorTo: to })
+        return
       }
+      nextAnchors.set(commentId, {
+        anchorFrom: Math.min(existing.anchorFrom, from),
+        anchorTo: Math.max(existing.anchorTo, to),
+      })
     })
 
     setComments((prev) => {

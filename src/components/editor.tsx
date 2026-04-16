@@ -3,34 +3,11 @@ import { useEditor, EditorContent } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import StarterKit from "@tiptap/starter-kit"
 import { Markdown } from "tiptap-markdown"
-import { Extension } from "@tiptap/core"
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import { MessageSquarePlus } from "lucide-react"
 import { CommentMark } from "@/extensions/comment-mark"
+import { CommentShortcuts } from "@/extensions/comment-shortcuts"
 import { Button } from "@/components/ui/button"
-
-const CommentShortcuts = Extension.create({
-  name: "commentShortcuts",
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-m": () => {
-        const { from, to } = this.editor.state.selection
-        if (from !== to) {
-          window.dispatchEvent(new CustomEvent("review-md:add-comment"))
-        }
-        return true
-      },
-      "Mod-Shift-c": () => {
-        window.dispatchEvent(new CustomEvent("review-md:copy-comments"))
-        return true
-      },
-      "Mod-Shift-l": () => {
-        window.dispatchEvent(new CustomEvent("review-md:toggle-comments-panel"))
-        return true
-      },
-    }
-  },
-})
 
 interface EditorProps {
   content: string

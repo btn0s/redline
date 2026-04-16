@@ -1,4 +1,5 @@
 import {
+  memo,
   useEffect,
   useMemo,
   useRef,
@@ -6,39 +7,27 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
-import type { Comment } from "@/hooks/use-comments"
+import type { Comment } from "@/types/comment"
+import { useCommentContext } from "@/contexts/comment-context"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
 
-interface CommentSidebarProps {
-  editor: TiptapEditor | null
-  comments: Comment[]
-  showNewComment: boolean
-  draftQuotedText: string
-  onCloseNewComment: () => void
-  onSubmitNewComment: (body: string) => void
-  activeCommentId: string | null
-  setActiveCommentId: (id: string | null) => void
-  addReplyToComment: (commentId: string, body: string) => void
-  deleteComment: (editor: TiptapEditor, commentId: string) => void
-  hoveredCommentId: string | null
-}
+export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
+  const {
+    comments,
+    showNewComment,
+    draftQuotedText,
+    handleCloseNewComment,
+    handleSubmitNewComment,
+    activeCommentId,
+    setActiveCommentId,
+    addReplyToComment,
+    deleteComment,
+    hoveredCommentId,
+  } = useCommentContext()
 
-export function CommentSidebar({
-  editor,
-  comments,
-  showNewComment,
-  draftQuotedText,
-  onCloseNewComment,
-  onSubmitNewComment,
-  activeCommentId,
-  setActiveCommentId,
-  addReplyToComment,
-  deleteComment,
-  hoveredCommentId,
-}: CommentSidebarProps) {
   const ordered = useMemo(
     () => [...comments].sort((a, b) => a.anchorFrom - b.anchorFrom),
     [comments],
@@ -63,8 +52,8 @@ export function CommentSidebar({
           <NewCommentDraft
             key={draftQuotedText}
             quotedText={draftQuotedText}
-            onSubmit={onSubmitNewComment}
-            onCancel={onCloseNewComment}
+            onSubmit={handleSubmitNewComment}
+            onCancel={handleCloseNewComment}
           />
         )}
 
@@ -169,7 +158,7 @@ function NewCommentDraft({
   )
 }
 
-function ThreadRow({
+const ThreadRow = memo(function ThreadRow({
   comment,
   isActive,
   onSelect,
@@ -285,4 +274,4 @@ function ThreadRow({
       </p>
     </div>
   )
-}
+})

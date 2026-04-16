@@ -1,4 +1,5 @@
-import { Copy, MessagesSquare, Settings } from "lucide-react"
+import { Copy, MessagesSquare, Settings, Trash2 } from "lucide-react"
+import { useCommentContext } from "@/contexts/comment-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,21 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-interface BottomToolbarProps {
-  commentsPanelOpen: boolean
-  onTogglePanel: () => void
-  hasComments: boolean
-  onCopyComments: () => void
-  commentsCount: number
-}
+export function BottomToolbar() {
+  const { commentsPanelOpen, togglePanel, hasComments, copyComments, clearAllComments, comments } =
+    useCommentContext()
 
-export function BottomToolbar({
-  commentsPanelOpen,
-  onTogglePanel,
-  hasComments,
-  onCopyComments,
-  commentsCount,
-}: BottomToolbarProps) {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
@@ -44,7 +34,7 @@ export function BottomToolbar({
           aria-label="Toggle redlines panel"
           aria-pressed={commentsPanelOpen}
           className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
-          onClick={onTogglePanel}
+          onClick={togglePanel}
         >
           <MessagesSquare className="size-3.5 stroke-[1.5]" aria-hidden />
         </Button>
@@ -54,12 +44,25 @@ export function BottomToolbar({
           variant="ghost"
           size="icon-sm"
           disabled={!hasComments}
-          onClick={() => void onCopyComments()}
+          onClick={() => void copyComments()}
           title="Copy all comments"
           aria-label="Copy all comments"
           className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
         >
           <Copy className="size-3.5 stroke-[1.5]" aria-hidden />
+        </Button>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          disabled={!hasComments}
+          onClick={clearAllComments}
+          title="Clear all comments"
+          aria-label="Clear all comments"
+          className="h-8 w-8 min-h-8 min-w-8 shrink-0 rounded-full text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] dark:text-zinc-400"
+        >
+          <Trash2 className="size-3.5 stroke-[1.5]" aria-hidden />
         </Button>
 
         <DropdownMenu>
@@ -73,7 +76,7 @@ export function BottomToolbar({
           <DropdownMenuContent align="center" side="top" sideOffset={8}>
             <DropdownMenuLabel>review-md</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>Comments: {commentsCount}</DropdownMenuItem>
+            <DropdownMenuItem disabled>Comments: {comments.length}</DropdownMenuItem>
             <DropdownMenuItem disabled className="text-xs">
               Redlines panel:{" "}
               <kbd className="bg-muted rounded px-1 py-0.5 font-mono">⌘⇧L</kbd> /{" "}

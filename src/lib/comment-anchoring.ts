@@ -1,6 +1,6 @@
 import type { Editor as TiptapEditor } from "@tiptap/core"
 import type { Node as PMNode } from "@tiptap/pm/model"
-import type { Comment } from "@/hooks/use-comments"
+import type { Comment } from "@/types/comment"
 
 /** Collapse whitespace like `textBetween(..., " ")` + comparison in the editor. */
 export function normalizeQuotedText(value: string): string {

@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import type { Editor as TiptapEditor } from "@tiptap/core"
-import { removeCommentMarkFromEditor } from "@/hooks/use-comments"
+import { removeCommentMarkFromEditor } from "@/lib/editor-utils"
 
 interface UseDraftCommentOptions {
   editor: TiptapEditor | null
