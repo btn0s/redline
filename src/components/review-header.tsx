@@ -8,7 +8,7 @@ interface ReviewHeaderProps {
   onOutdatedClick: () => void
 }
 
-const HANDLE_RIGHT = "@btn0s/review-md"
+const REPO_URL = "https://github.com/btn0s/redline"
 
 export function ReviewHeader({
   filePath,
@@ -56,12 +56,14 @@ export function ReviewHeader({
             </span>
           )}
         </div>
-        <span
-          className="shrink-0 font-mono text-muted-foreground tabular-nums"
-          title={HANDLE_RIGHT}
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 font-mono text-muted-foreground tabular-nums underline-offset-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-foreground hover:underline"
         >
-          {HANDLE_RIGHT}
-        </span>
+          @btn0s/redline
+        </a>
       </div>
     </header>
   )
