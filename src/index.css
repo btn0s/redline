@@ -697,6 +697,31 @@
     "calt" 0;
 }
 
+/* Mini key caps inside sticky toolbar buttons — bordered like desk kbd pills */
+.sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--neutral {
+  padding: 0.12em 0.32em;
+  border-radius: 0.2rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 22%, var(--background) 78%);
+  background-color: color-mix(in oklch, var(--muted) 28%, var(--background) 72%);
+}
+
+.dark .sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--neutral {
+  border-color: color-mix(in oklch, var(--foreground) 30%, var(--background) 70%);
+  background-color: color-mix(in oklch, var(--muted) 32%, var(--background) 68%);
+}
+
+.sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--primary {
+  padding: 0.12em 0.32em;
+  border-radius: 0.2rem;
+  border: 1px solid color-mix(in oklch, white 22%, var(--sticky-foreground) 78%);
+  background-color: color-mix(in oklch, white 12%, var(--sticky-foreground) 88%);
+}
+
+.dark .sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--primary {
+  border-color: color-mix(in oklch, white 18%, var(--sticky-foreground) 82%);
+  background-color: color-mix(in oklch, white 10%, var(--sticky-foreground) 90%);
+}
+
 .sticky-skeuo-shortcut-mod {
   font-weight: 500;
 }
@@ -1032,7 +1057,7 @@
   color: color-mix(in oklch, var(--foreground) 68%, var(--background) 32%);
 }
 
-/* Flat shortcut chip — no border/shadow (matches reference kbd rows) */
+/* Shortcut chip — same family as .btn-skeuo keys; always has a visible edge */
 .desk-skeuo-pill {
   display: inline-flex;
   align-items: center;
@@ -1047,7 +1072,7 @@
   letter-spacing: 0.01em;
   white-space: nowrap;
   vertical-align: middle;
-  border: none;
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, var(--background) 84%);
   box-shadow: none;
   background-color: color-mix(in oklch, var(--muted) 18%, var(--background) 82%);
   color: color-mix(in oklch, var(--foreground) 72%, var(--background) 28%);
@@ -1059,7 +1084,7 @@
 }
 
 .dark .desk-skeuo-pill {
-  border: none;
+  border-color: color-mix(in oklch, var(--foreground) 22%, var(--background) 78%);
   background-color: color-mix(in oklch, var(--muted) 22%, var(--background) 78%);
   color: color-mix(in oklch, var(--foreground) 76%, var(--background) 24%);
 }
