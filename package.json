@@ -17,7 +17,8 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "redline": "pnpm build; node dist/cli/index.js"
+    "redline": "pnpm build; node dist/cli/index.js",
+    "release": "pnpm build && pnpm publish --access public --no-git-checks"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
