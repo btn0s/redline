@@ -95,7 +95,7 @@
     --annotation-pill-shadow: oklch(0.35 0.12 25 / 0.35);
     --annotation-pill-dim: 0.34;
     --annotation-ease: cubic-bezier(0.23, 1, 0.32, 1);
-    /* Redline underline: tiled squiggle mask (asset is white-filled path, 53×6) */
+    /* Redline underline: squiggle mask tiled at native 53×6 (asset is white-filled path) */
     --annotation-squiggle-mask: url("./assets/annotation-squiggle.svg");
     /* Editor heading scale (tighter than default prose-sm) */
     --editor-h1-size: 1.75rem;
@@ -388,22 +388,22 @@
 .tiptap mark.comment-mark::before {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
-  bottom: -4px;
-  height: 7px;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 6px;
   border-radius: 0;
   background-color: var(--annotation-pill-bg);
   border: none;
   box-shadow: none;
   -webkit-mask-image: var(--annotation-squiggle-mask);
   mask-image: var(--annotation-squiggle-mask);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-position: left bottom;
-  mask-position: left bottom;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-size: 53px 6px;
+  mask-size: 53px 6px;
+  -webkit-mask-position: 0 100%;
+  mask-position: 0 100%;
   pointer-events: none;
   z-index: 5;
   opacity: var(--annotation-pill-dim);
@@ -427,14 +427,14 @@
 @media (hover: hover) and (pointer: fine) {
   .tiptap mark.comment-mark:hover::before {
     opacity: 1;
-    transform: scaleX(1.04);
+    transform: translateY(-0.5px);
   }
 }
 
 .tiptap mark.comment-mark.comment-mark--hot::before,
 .tiptap mark.comment-mark:has(> .comment-mark--hot)::before {
   opacity: 1 !important;
-  transform: scaleX(1.04);
+  transform: translateY(-0.5px);
 }
 
 @media (prefers-reduced-motion: reduce) {
