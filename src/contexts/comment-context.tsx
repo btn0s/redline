@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react"
 import type { Editor } from "@tiptap/core"
@@ -15,6 +16,10 @@ import {
   resolveCommentLinkHighlightId,
   setHoveredComment,
 } from "@/extensions/comment-mark"
+import {
+  loadCommentsPanelOpen,
+  saveCommentsPanelOpen,
+} from "@/lib/comments-panel-storage"
 
 interface CommentContextValue {
   comments: Comment[]
@@ -76,10 +81,37 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     syncCommentAnchorsFromEditor,
   } = useComments(persistenceKey)
 
-  const [commentsPanelOpen, setCommentsPanelOpen] = useState(false)
-  const togglePanel = useCallback(() => setCommentsPanelOpen((p) => !p), [])
-  const closePanel = useCallback(() => setCommentsPanelOpen(false), [])
-  const openPanel = useCallback(() => setCommentsPanelOpen(true), [])
+  const [commentsPanelOpen, setCommentsPanelOpen] = useState(() =>
+    loadCommentsPanelOpen(persistenceKey) ?? false,
+  )
+
+  const prevPersistenceKeyRef = useRef<string | null | undefined>(undefined)
+  useEffect(() => {
+    if (prevPersistenceKeyRef.current === persistenceKey) return
+    prevPersistenceKeyRef.current = persistenceKey
+    const next = loadCommentsPanelOpen(persistenceKey) ?? false
+    queueMicrotask(() => {
+      setCommentsPanelOpen(next)
+    })
+  }, [persistenceKey])
+
+  const togglePanel = useCallback(() => {
+    setCommentsPanelOpen((p) => {
+      const next = !p
+      saveCommentsPanelOpen(persistenceKey, next)
+      return next
+    })
+  }, [persistenceKey])
+
+  const closePanel = useCallback(() => {
+    setCommentsPanelOpen(false)
+    saveCommentsPanelOpen(persistenceKey, false)
+  }, [persistenceKey])
+
+  const openPanel = useCallback(() => {
+    setCommentsPanelOpen(true)
+    saveCommentsPanelOpen(persistenceKey, true)
+  }, [persistenceKey])
 
   const {
     showNewComment,
