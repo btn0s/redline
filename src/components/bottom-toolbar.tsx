@@ -85,7 +85,7 @@ export function BottomToolbar() {
                   variant="ghost"
                   size="icon-sm"
                   disabled={!hasComments}
-                  aria-label={copied ? "Comments copied" : "Copy all comments"}
+                  aria-label={copied ? "Copied" : "Copy review as prompt"}
                   aria-live="polite"
                   className={toolbarBtnClass}
                   onClick={() => void handleCopyClick()}
@@ -109,14 +109,9 @@ export function BottomToolbar() {
                 </Button>
               }
             />
-            <TooltipContent side="top" sideOffset={8} className="max-w-[16rem] flex-col gap-1.5">
-              <span>Copy every thread as plain text to the clipboard.</span>
-              <span className="flex flex-wrap items-center gap-1">
-                <Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>
-                <span className="text-[10px] opacity-80">
-                  (from the editor, or anywhere outside a text field)
-                </span>
-              </span>
+            <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
+              <span>Copy review as prompt</span>
+              <Kbd className="text-[10px]">{modShiftKeyCompact("C")}</Kbd>
             </TooltipContent>
           </Tooltip>
 
