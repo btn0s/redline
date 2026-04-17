@@ -1,6 +1,6 @@
 # Redline
 
-<img width="3984" height="2634" alt="image" src="https://github.com/user-attachments/assets/81e10f61-3383-42c0-93da-6ae91e599ef7" />
+<img width="3984" alt="image" src="https://github.com/user-attachments/assets/81e10f61-3383-42c0-93da-6ae91e599ef7" />
 
 Review mode for LLM-generated plans.
 
