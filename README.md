@@ -1,5 +1,7 @@
 # Redline
 
+<img width="3984" height="2634" alt="image" src="https://github.com/user-attachments/assets/81e10f61-3383-42c0-93da-6ae91e599ef7" />
+
 Review mode for LLM-generated plans.
 
 LLMs write plans and specs as markdown. Reviewing them in chat is imprecise — you end up quoting passages by hand, losing context, or just saying "looks good" when it doesn't. Redline gives you a Google Docs-style commenting experience on any `.md` file so you can leave anchored, passage-level feedback. When you're done, copy all your comments in one click and paste them back into the LLM.
