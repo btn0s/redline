@@ -10,14 +10,12 @@ interface UseDraftCommentOptions {
     existingCommentId?: string,
   ) => unknown
   setActiveCommentId: (id: string | null) => void
-  onDraftStarted: () => void
 }
 
 export function useDraftComment({
   editor,
   addComment,
   setActiveCommentId,
-  onDraftStarted,
 }: UseDraftCommentOptions) {
   const [showNewComment, setShowNewComment] = useState(false)
   const [draftQuotedText, setDraftQuotedText] = useState("")
@@ -35,8 +33,7 @@ export function useDraftComment({
     setDraftQuotedText(editor.state.doc.textBetween(from, to, " "))
     setShowNewComment(true)
     setActiveCommentId(null)
-    onDraftStarted()
-  }, [editor, setActiveCommentId, onDraftStarted])
+  }, [editor, setActiveCommentId])
 
   const handleCloseNewComment = useCallback(() => {
     if (pendingDraftCommentId && editor) {

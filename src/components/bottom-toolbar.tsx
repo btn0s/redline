@@ -97,7 +97,7 @@ export function BottomToolbar() {
             />
             <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
               <span>Copy review as prompt</span>
-              <Kbd variant="skeuo">
+              <Kbd>
                 <ChordModShiftCompact letter="C" />
               </Kbd>
             </TooltipContent>
@@ -121,7 +121,7 @@ export function BottomToolbar() {
             />
             <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
               <span>Delete all threads</span>
-              <Kbd variant="skeuo">
+              <Kbd>
                 <ChordModShiftAlt letter="C" />
               </Kbd>
             </TooltipContent>

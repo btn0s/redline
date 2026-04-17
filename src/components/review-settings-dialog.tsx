@@ -82,7 +82,7 @@ export function ReviewSettingsDialog({
               >
                 Appearance
               </Label>
-              <Kbd variant="skeuo">
+              <Kbd>
                 <ChordModAltCompact letter="T" />
               </Kbd>
             </div>
@@ -135,7 +135,7 @@ export function ReviewSettingsDialog({
                       Google Docs style
                     </span>
                   </div>
-                  <Kbd variant="skeuo" className="shrink-0">
+                  <Kbd className="shrink-0">
                     <ChordModAltCompact letter="M" />
                   </Kbd>
                 </label>
@@ -156,7 +156,7 @@ export function ReviewSettingsDialog({
                       Notion style
                     </span>
                   </div>
-                  <Kbd variant="skeuo" className="shrink-0">
+                  <Kbd className="shrink-0">
                     <ChordModShiftCompact letter="M" />
                   </Kbd>
                 </label>
@@ -172,7 +172,7 @@ export function ReviewSettingsDialog({
               <ShortcutRow
                 label="Copy all comments"
                 keys={
-                  <Kbd variant="skeuo">
+                  <Kbd>
                     <ChordModShiftCompact letter="C" />
                   </Kbd>
                 }
@@ -180,7 +180,7 @@ export function ReviewSettingsDialog({
               <ShortcutRow
                 label="Clear all comments"
                 keys={
-                  <Kbd variant="skeuo">
+                  <Kbd>
                     <ChordModShiftAlt letter="C" />
                   </Kbd>
                 }

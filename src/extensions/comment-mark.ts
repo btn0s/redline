@@ -1,7 +1,10 @@
 import { Mark, mergeAttributes, type Editor } from "@tiptap/core"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { Decoration, DecorationSet } from "@tiptap/pm/view"
+import { createDraftPseudoSelectionPlugin } from "@/extensions/draft-pseudo-selection"
 import { forEachCommentMark } from "@/lib/editor-utils"
+
+export { setDraftSelectionHighlight } from "@/extensions/draft-pseudo-selection"
 
 export interface CommentMarkOptions {
   HTMLAttributes: Record<string, string>
@@ -199,28 +202,6 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
             }
             return false
           },
-
-          handleDOMEvents: {
-            mousemove(view, event) {
-              const mouseEvent = event as MouseEvent
-              let el = mouseEvent.target as HTMLElement | null
-              const dom = view.dom
-              while (el && el !== dom) {
-                if (el.matches("mark.comment-mark[data-comment-id]")) {
-                  const hit = isInSquiggleBand(
-                    el,
-                    mouseEvent.clientX,
-                    mouseEvent.clientY,
-                  )
-                  dom.style.cursor = hit ? "pointer" : ""
-                  return false
-                }
-                el = el.parentElement
-              }
-              if (dom.style.cursor === "pointer") dom.style.cursor = ""
-              return false
-            },
-          },
         },
       }),
       new Plugin({
@@ -241,6 +222,7 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
           return newState.tr.setMeta(commentHoverPluginKey, hoveredId)
         },
       }),
+      createDraftPseudoSelectionPlugin(),
     ]
   },
 })

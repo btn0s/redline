@@ -14,7 +14,6 @@ interface UseEditorCommentSyncOptions {
   syncCommentAnchorsFromEditor: (editor: TiptapEditor) => void
   setActiveCommentId: (id: string | null) => void
   setShowNewComment: (show: boolean) => void
-  openPanel: () => void
 }
 
 export function useEditorCommentSync({
@@ -23,9 +22,11 @@ export function useEditorCommentSync({
   syncCommentAnchorsFromEditor,
   setActiveCommentId,
   setShowNewComment,
-  openPanel,
 }: UseEditorCommentSyncOptions): void {
-  useEffect(() => {
+  // Insert missing comment marks before paint so the sidebar's first anchored
+  // measurement sees them in the editor DOM. If this ran post-paint, cards
+  // would flash at fallback stack positions, then animate to their anchors.
+  useLayoutEffect(() => {
     if (!editor || comments.length === 0) return
     const commentMarkType = editor.state.schema.marks.commentMark
     if (!commentMarkType) return
@@ -90,21 +91,20 @@ export function useEditorCommentSync({
 
   // Pill-click callback — sets the callback in editor storage so the
   // ProseMirror plugin (in comment-mark.ts) can invoke it on pill clicks.
-  const callbacksRef = useRef({ setActiveCommentId, setShowNewComment, comments, openPanel })
+  const callbacksRef = useRef({ setActiveCommentId, setShowNewComment, comments })
   useLayoutEffect(() => {
-    callbacksRef.current = { setActiveCommentId, setShowNewComment, comments, openPanel }
+    callbacksRef.current = { setActiveCommentId, setShowNewComment, comments }
   })
 
   useEffect(() => {
     if (!editor) return
     const pillClickHandler = (commentId: string) => {
-      const { setActiveCommentId: setActive, setShowNewComment: setNew, comments: c, openPanel: open } =
+      const { setActiveCommentId: setActive, setShowNewComment: setNew, comments: c } =
         callbacksRef.current
       const hasSavedThread = c.some((comment) => comment.id === commentId)
       if (commentId.startsWith("draft-") && !hasSavedThread) return
       setActive(commentId)
       setNew(false)
-      open()
     }
     // eslint-disable-next-line react-hooks/immutability -- writing to ProseMirror storage, not React props
     ;((editor.storage as unknown as Record<string, unknown>).commentMark as { onPillClick: ((id: string) => void) | null }).onPillClick = pillClickHandler

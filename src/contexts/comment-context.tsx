@@ -1,9 +1,9 @@
 import {
   createContext,
   useContext,
-  useState,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   type ReactNode,
 } from "react"
@@ -14,12 +14,9 @@ import { useDraftComment } from "@/hooks/use-draft-comment"
 import { useCommentHover } from "@/hooks/use-comment-hover"
 import {
   resolveCommentLinkHighlightId,
+  setDraftSelectionHighlight,
   setHoveredComment,
 } from "@/extensions/comment-mark"
-import {
-  loadCommentsPanelOpen,
-  saveCommentsPanelOpen,
-} from "@/lib/comments-panel-storage"
 
 interface CommentContextValue {
   comments: Comment[]
@@ -46,10 +43,6 @@ interface CommentContextValue {
   handleAddCommentClick: () => void
   handleCloseNewComment: () => void
   handleSubmitNewComment: (body: string) => void
-
-  commentsPanelOpen: boolean
-  closePanel: () => void
-  openPanel: () => void
 
   hoveredCommentId: string | null
   clearHover: () => void
@@ -97,30 +90,6 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     clearAllCommentsBase(editorRef.current)
   }, [clearAllCommentsBase])
 
-  const [commentsPanelOpen, setCommentsPanelOpen] = useState(() =>
-    loadCommentsPanelOpen(persistenceKey) ?? false,
-  )
-
-  const prevPersistenceKeyRef = useRef<string | null | undefined>(undefined)
-  useEffect(() => {
-    if (prevPersistenceKeyRef.current === persistenceKey) return
-    prevPersistenceKeyRef.current = persistenceKey
-    const next = loadCommentsPanelOpen(persistenceKey) ?? false
-    queueMicrotask(() => {
-      setCommentsPanelOpen(next)
-    })
-  }, [persistenceKey])
-
-  const closePanel = useCallback(() => {
-    setCommentsPanelOpen(false)
-    saveCommentsPanelOpen(persistenceKey, false)
-  }, [persistenceKey])
-
-  const openPanel = useCallback(() => {
-    setCommentsPanelOpen(true)
-    saveCommentsPanelOpen(persistenceKey, true)
-  }, [persistenceKey])
-
   const {
     showNewComment,
     setShowNewComment,
@@ -133,25 +102,16 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     editor,
     addComment,
     setActiveCommentId,
-    onDraftStarted: openPanel,
   })
 
   const { hoveredCommentId, clearHover } = useCommentHover(editor)
 
   useEffect(() => {
     if (comments.length > 0 || showNewComment) return
-    if (!commentsPanelOpen) return
     queueMicrotask(() => {
       setActiveCommentId(null)
-      closePanel()
     })
-  }, [
-    comments.length,
-    showNewComment,
-    commentsPanelOpen,
-    closePanel,
-    setActiveCommentId,
-  ])
+  }, [comments.length, showNewComment, setActiveCommentId])
 
   const linkHighlightId = resolveCommentLinkHighlightId(
     activeCommentId,
@@ -163,7 +123,12 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     setHoveredComment(editor, linkHighlightId)
   }, [editor, linkHighlightId])
 
-  const showCommentSidebar = commentsPanelOpen
+  useLayoutEffect(() => {
+    if (!editor) return
+    setDraftSelectionHighlight(editor, pendingDraftCommentId)
+  }, [editor, pendingDraftCommentId])
+
+  const showCommentSidebar = comments.length > 0 || showNewComment
 
   const value: CommentContextValue = {
     comments,
@@ -185,9 +150,6 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     handleAddCommentClick,
     handleCloseNewComment,
     handleSubmitNewComment,
-    commentsPanelOpen,
-    closePanel,
-    openPanel,
     hoveredCommentId,
     clearHover,
     showCommentSidebar,

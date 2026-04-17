@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { Kbd } from "@/components/ui/kbd"
 import { modDeleteChord, modEnterChord } from "@/lib/format-shortcut"
 import { isModKey } from "@/lib/mod-key"
 import { useCommentSidebarLayout } from "@/hooks/use-comment-sidebar-layout"
@@ -92,7 +93,8 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
     positions,
     draftTop,
     containerMinHeightPx,
-    layoutReady,
+    measured,
+    transitionsArmed,
     reduceMotion,
   } = useCommentSidebarLayout({
     editor,
@@ -129,11 +131,15 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
     <div
       ref={containerRef}
       className="relative min-h-0 w-full pr-1"
-      style={
-        editor
+      style={{
+        ...(editor
           ? { minHeight: `${Math.max(containerMinHeightPx, 1)}px` }
-          : undefined
-      }
+          : null),
+        // Keep the sidebar invisible until positions are real. `visibility` is
+        // instant (no fade) so the cards never paint at y=0 before the editor
+        // mounts its comment marks.
+        visibility: measured ? "visible" : "hidden",
+      }}
       data-redlines-sidebar=""
       aria-label="Redlines"
     >
@@ -149,10 +155,10 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
               itemRefs.current[comment.id] = el
             }}
             className={cn(
-              "absolute right-0 top-0 -left-14 will-change-transform",
-              layoutReady &&
+              "absolute right-0 top-0 -left-14",
+              transitionsArmed &&
                 !reduceMotion &&
-                "transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                "transition-transform duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]",
               "transition-[filter] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
               dimForLink && "brightness-[0.62]",
             )}
@@ -183,10 +189,10 @@ export function CommentSidebar({ editor }: { editor: TiptapEditor | null }) {
           data-comment-draft=""
           className={cn(
             "absolute right-0 top-0 -left-14 will-change-transform",
-            layoutReady &&
+            transitionsArmed &&
               !reduceMotion &&
               draftYSettled &&
-              "transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+              "transition-transform duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]",
           )}
           style={{ transform: `translate3d(0, ${draftTop ?? 0}px, 0)` }}
         >
@@ -232,7 +238,7 @@ function NewCommentDraft({
 
   return (
     <div
-      className="sticky-with-actions"
+      className="sticky-with-actions sticky-with-actions--expanded"
       style={{ ["--sticky-rotate" as string]: "-1.2deg" }}
     >
       <div className="sticky-note comment-draft-enter">
@@ -269,14 +275,14 @@ function NewCommentDraft({
           aria-keyshortcuts="Escape"
           onClick={onCancel}
         >
-          <span className="inline-flex items-baseline gap-2">
+          <span className="inline-flex items-center gap-2">
             Cancel
-            <span
+            <Kbd
               className="sticky-skeuo-shortcut sticky-skeuo-shortcut--neutral sticky-skeuo-shortcut--chord"
               aria-hidden
             >
               Esc
-            </span>
+            </Kbd>
           </span>
         </Button>
         <Button
@@ -289,9 +295,9 @@ function NewCommentDraft({
           )}
           onClick={handleSubmit}
         >
-          <span className="inline-flex items-baseline gap-2">
+          <span className="inline-flex items-center gap-2">
             Pin it
-            <span
+            <Kbd
               className="sticky-skeuo-shortcut sticky-skeuo-shortcut--primary sticky-skeuo-shortcut--chord"
               aria-hidden
             >
@@ -300,7 +306,7 @@ function NewCommentDraft({
                 <span className="sticky-skeuo-shortcut-joiner">{pinChord.joiner}</span>
               ) : null}
               <span className="sticky-skeuo-shortcut-key">{pinChord.key}</span>
-            </span>
+            </Kbd>
           </span>
         </Button>
       </div>
@@ -419,168 +425,238 @@ const ThreadRow = memo(function ThreadRow({
   const replyChord = modEnterChord()
   const deleteChord = modDeleteChord()
 
-  if (isActive) {
-    return (
-      <>
-      <div className={cn("sticky-with-actions", colorClass)} style={rotateStyle}>
-        <article
-          className={cn("sticky-note sticky-note--active", colorClass)}
-          aria-labelledby={`comment-${comment.id}-quote`}
-        >
-          <blockquote
-            id={`comment-${comment.id}-quote`}
-            className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2"
-          >
-            {"\u201C"}
-            {comment.quotedText}
-            {"\u201D"}
-          </blockquote>
-          <hr className="sticky-dashed" aria-hidden />
+  const handleCollapsedArticleKeyDown = (
+    e: ReactKeyboardEvent<HTMLElement>,
+  ) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      onSelect()
+    }
+  }
 
-          <div className="space-y-2">
-            {comment.messages.map((message, index) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex gap-1.5",
-                  index === 0 ? "" : "items-start",
-                )}
+  return (
+    <>
+      <div
+        className={cn(
+          "sticky-with-actions",
+          colorClass,
+          isActive && "sticky-with-actions--expanded",
+        )}
+        style={rotateStyle}
+      >
+        <article
+          role={isActive ? undefined : "button"}
+          tabIndex={isActive ? undefined : 0}
+          aria-labelledby={
+            isActive ? `comment-${comment.id}-quote` : undefined
+          }
+          className={cn(
+            "sticky-note",
+            isActive ? "sticky-note--active" : "sticky-note--pressable",
+            colorClass,
+          )}
+          onClick={
+            isActive
+              ? undefined
+              : (e) => {
+                  e.stopPropagation()
+                  onSelect()
+                }
+          }
+          onKeyDown={isActive ? undefined : handleCollapsedArticleKeyDown}
+        >
+          {isActive ? (
+            <>
+              <blockquote
+                id={`comment-${comment.id}-quote`}
+                className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2"
               >
-                {index > 0 ? (
-                  <span
-                    className="mt-0.5 shrink-0 font-mono text-[10px] leading-none text-[color:var(--sticky-foreground)]/45 select-none"
-                    aria-hidden
+                {"\u201C"}
+                {comment.quotedText}
+                {"\u201D"}
+              </blockquote>
+              <hr className="sticky-dashed" aria-hidden />
+
+              <div className="space-y-2">
+                {comment.messages.map((message, index) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "flex gap-1.5",
+                      index === 0 ? "" : "items-start",
+                    )}
                   >
-                    +
-                  </span>
-                ) : null}
-                <div className="min-w-0 flex-1">
-                {editingMessageId === message.id ? (
-                  <div className="space-y-1.5">
-                    <Textarea
-                      autoFocus
-                      value={editDraft}
-                      onChange={(e) => setEditDraft(e.target.value)}
-                      onKeyDown={handleEditKeyDown}
-                      aria-label={
-                        index === 0
-                          ? "Edit original note"
-                          : "Edit reply"
-                      }
-                      rows={3}
-                      className="sticky-handwritten min-h-[3.25rem] w-full resize-y border-0 bg-transparent p-0 text-[color:var(--sticky-foreground)] placeholder:text-[color:var(--sticky-foreground)]/50 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
-                    />
-                    <div className="flex flex-wrap gap-1.5">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-[10px] text-[color:var(--sticky-foreground)]/80 hover:bg-black/10"
-                        onClick={saveEditing}
+                    {index > 0 ? (
+                      <span
+                        className="mt-0.5 shrink-0 font-mono text-[10px] leading-none text-[color:var(--sticky-foreground)]/45 select-none"
+                        aria-hidden
                       >
-                        Save
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-[10px] text-[color:var(--sticky-foreground)]/60 hover:bg-black/10"
-                        onClick={cancelEditing}
-                      >
-                        Cancel
-                      </Button>
+                        +
+                      </span>
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      {editingMessageId === message.id ? (
+                        <div className="space-y-1.5">
+                          <Textarea
+                            autoFocus
+                            value={editDraft}
+                            onChange={(e) => setEditDraft(e.target.value)}
+                            onKeyDown={handleEditKeyDown}
+                            aria-label={
+                              index === 0
+                                ? "Edit original note"
+                                : "Edit reply"
+                            }
+                            rows={3}
+                            className="sticky-handwritten min-h-[3.25rem] w-full resize-y border-0 bg-transparent p-0 text-[color:var(--sticky-foreground)] placeholder:text-[color:var(--sticky-foreground)]/50 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                          />
+                          <div className="flex flex-wrap gap-1.5">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-[10px] text-[color:var(--sticky-foreground)]/80 hover:bg-black/10"
+                              onClick={saveEditing}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-[10px] text-[color:var(--sticky-foreground)]/60 hover:bg-black/10"
+                              onClick={cancelEditing}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between gap-1.5">
+                          <p className="sticky-handwritten min-w-0 flex-1 whitespace-pre-wrap text-[color:var(--sticky-foreground)]">
+                            {message.body}
+                          </p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            className="h-6 w-6 shrink-0 p-0 text-[color:var(--sticky-foreground)]/50 hover:bg-black/10 hover:text-[color:var(--sticky-foreground)]"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              startEditing(message)
+                            }}
+                            aria-label={
+                              index === 0
+                                ? "Edit original note"
+                                : "Edit reply"
+                            }
+                          >
+                            <Pencil className="size-3" strokeWidth={2} />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-start justify-between gap-1.5">
-                    <p className="sticky-handwritten min-w-0 flex-1 whitespace-pre-wrap text-[color:var(--sticky-foreground)]">
-                      {message.body}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      className="h-6 w-6 shrink-0 p-0 text-[color:var(--sticky-foreground)]/50 hover:bg-black/10 hover:text-[color:var(--sticky-foreground)]"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        startEditing(message)
-                      }}
-                      aria-label={
-                        index === 0 ? "Edit original note" : "Edit reply"
-                      }
-                    >
-                      <Pencil className="size-3" strokeWidth={2} />
-                    </Button>
-                  </div>
-                )}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="mt-2.5">
-            <Textarea
-              autoFocus
-              value={replyBody}
-              onChange={(e) => setReplyBody(e.target.value)}
-              onKeyDown={handleKeyDown}
-              aria-label="Reply to comment thread"
-              rows={2}
-              placeholder="Reply…"
-              className="sticky-handwritten resize-none border-0 bg-transparent p-0 text-[color:var(--sticky-foreground)] placeholder:text-[color:var(--sticky-foreground)]/50 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
-            />
-          </div>
+              <div className="mt-2.5">
+                <Textarea
+                  autoFocus
+                  value={replyBody}
+                  onChange={(e) => setReplyBody(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  aria-label="Reply to comment thread"
+                  rows={2}
+                  placeholder="Reply…"
+                  className="sticky-handwritten resize-none border-0 bg-transparent p-0 text-[color:var(--sticky-foreground)] placeholder:text-[color:var(--sticky-foreground)]/50 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <blockquote className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
+                {"\u201C"}
+                {comment.quotedText}
+                {"\u201D"}
+              </blockquote>
+              <hr className="sticky-dashed" aria-hidden />
+              <p className="sticky-handwritten whitespace-pre-wrap line-clamp-3 text-[color:var(--sticky-foreground)]">
+                {latestMessage?.body}
+              </p>
+              {comment.messages.length > 1 && (
+                <div
+                  className="mt-1.5 font-mono text-[10px] leading-none text-[color:var(--sticky-foreground)]/50"
+                  aria-label={`${comment.messages.length - 1} more in thread`}
+                >
+                  <span aria-hidden>
+                    + {comment.messages.length - 1}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </article>
-        <div className="sticky-action-bar" role="toolbar" aria-label="Thread actions">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className={cn(
-              "sticky-skeuo-btn sticky-skeuo-btn--neutral",
-              "gap-2 px-2.5 text-xs active:!translate-y-0",
-            )}
-            onClick={() => setDeleteThreadOpen(true)}
-            aria-label="Delete thread"
-          >
-            <span className="inline-flex items-baseline gap-2">
-              Delete
-              <span
-                className="sticky-skeuo-shortcut sticky-skeuo-shortcut--neutral sticky-skeuo-shortcut--chord"
-                aria-hidden
+        <div
+          className="sticky-action-bar sticky-action-bar--thread"
+          role="toolbar"
+          aria-label="Thread actions"
+          aria-hidden={!isActive}
+          inert={!isActive}
+        >
+          <div className="sticky-action-bar__grow">
+            <div className="sticky-action-bar__motion">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={cn(
+                  "sticky-skeuo-btn sticky-skeuo-btn--neutral",
+                  "gap-2 px-2.5 text-xs active:!translate-y-0",
+                )}
+                onClick={() => setDeleteThreadOpen(true)}
+                aria-label="Delete thread"
               >
-                <span className="sticky-skeuo-shortcut-mod">{deleteChord.mod}</span>
-                {deleteChord.joiner != null ? (
-                  <span className="sticky-skeuo-shortcut-joiner">{deleteChord.joiner}</span>
-                ) : null}
-                <span className="sticky-skeuo-shortcut-key">{deleteChord.key}</span>
-              </span>
-            </span>
-          </Button>
-          <Button
-            type="button"
-            variant="default"
-            size="sm"
-            className={cn(
-              "sticky-skeuo-btn sticky-skeuo-btn--primary",
-              "gap-2 px-2.5 text-xs active:!translate-y-0",
-            )}
-            onClick={handleReply}
-          >
-            <span className="inline-flex items-baseline gap-2">
-              Reply
-              <span
-                className="sticky-skeuo-shortcut sticky-skeuo-shortcut--primary sticky-skeuo-shortcut--chord"
-                aria-hidden
+                <span className="inline-flex items-center gap-2">
+                  Delete
+                  <Kbd
+                    className="sticky-skeuo-shortcut sticky-skeuo-shortcut--neutral sticky-skeuo-shortcut--chord"
+                    aria-hidden
+                  >
+                    <span className="sticky-skeuo-shortcut-mod">{deleteChord.mod}</span>
+                    {deleteChord.joiner != null ? (
+                      <span className="sticky-skeuo-shortcut-joiner">{deleteChord.joiner}</span>
+                    ) : null}
+                    <span className="sticky-skeuo-shortcut-key">{deleteChord.key}</span>
+                  </Kbd>
+                </span>
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                className={cn(
+                  "sticky-skeuo-btn sticky-skeuo-btn--primary",
+                  "gap-2 px-2.5 text-xs active:!translate-y-0",
+                )}
+                onClick={handleReply}
               >
-                <span className="sticky-skeuo-shortcut-mod">{replyChord.mod}</span>
-                {replyChord.joiner != null ? (
-                  <span className="sticky-skeuo-shortcut-joiner">{replyChord.joiner}</span>
-                ) : null}
-                <span className="sticky-skeuo-shortcut-key">{replyChord.key}</span>
-              </span>
-            </span>
-          </Button>
+                <span className="inline-flex items-center gap-2">
+                  Reply
+                  <Kbd
+                    className="sticky-skeuo-shortcut sticky-skeuo-shortcut--primary sticky-skeuo-shortcut--chord"
+                    aria-hidden
+                  >
+                    <span className="sticky-skeuo-shortcut-mod">{replyChord.mod}</span>
+                    {replyChord.joiner != null ? (
+                      <span className="sticky-skeuo-shortcut-joiner">{replyChord.joiner}</span>
+                    ) : null}
+                    <span className="sticky-skeuo-shortcut-key">{replyChord.key}</span>
+                  </Kbd>
+                </span>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       <AlertDialog open={deleteThreadOpen} onOpenChange={setDeleteThreadOpen}>
@@ -667,47 +743,7 @@ const ThreadRow = memo(function ThreadRow({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      </>
-    )
-  }
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
-          onSelect()
-        }
-      }}
-      className={cn("sticky-note sticky-note--pressable", colorClass)}
-      style={rotateStyle}
-      onClick={(e) => {
-        e.stopPropagation()
-        onSelect()
-      }}
-    >
-      <blockquote className="text-caption leading-snug text-[color:var(--sticky-foreground)]/70 not-italic line-clamp-2">
-        {"\u201C"}
-        {comment.quotedText}
-        {"\u201D"}
-      </blockquote>
-      <hr className="sticky-dashed" aria-hidden />
-      <p className="sticky-handwritten whitespace-pre-wrap line-clamp-3 text-[color:var(--sticky-foreground)]">
-        {latestMessage?.body}
-      </p>
-      {comment.messages.length > 1 && (
-        <div
-          className="mt-1.5 font-mono text-[10px] leading-none text-[color:var(--sticky-foreground)]/50"
-          aria-label={`${comment.messages.length - 1} more in thread`}
-        >
-          <span aria-hidden>
-            + {comment.messages.length - 1}
-          </span>
-        </div>
-      )}
-    </div>
+    </>
   )
 })
 

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils"
 import {
   dialogBody,
   dialogHeaderBlock,
+  dialogInlineKbdChip,
   dialogLead,
   dialogMonoLink,
   dialogSection,
@@ -71,7 +72,9 @@ export function ReviewHelpDialog({
             <div className="space-y-2">
               <p className={dialogLead}>
                 Review mode for LLM-generated plans — Docs-style comments on any{" "}
-                <code className="desk-skeuo-pill desk-skeuo-pill--mono">.md</code>
+                <Kbd className={dialogInlineKbdChip}>
+                  .md
+                </Kbd>
                 , then copy everything back to the LLM in one shot.
               </p>
               <p>
@@ -121,7 +124,7 @@ export function ReviewHelpDialog({
               <Row
                 label={newCommentLabel}
                 keys={
-                  <Kbd variant="skeuo">
+                  <Kbd>
                     <ChordNewCommentShortcut scheme={scheme} />
                   </Kbd>
                 }
@@ -129,7 +132,7 @@ export function ReviewHelpDialog({
               <Row
                 label="Copy all"
                 keys={
-                  <Kbd variant="skeuo">
+                  <Kbd>
                     <ChordModShiftCompact letter="C" />
                   </Kbd>
                 }
@@ -137,7 +140,7 @@ export function ReviewHelpDialog({
               <Row
                 label="Clear all"
                 keys={
-                  <Kbd variant="skeuo">
+                  <Kbd>
                     <ChordModShiftAlt letter="C" />
                   </Kbd>
                 }
@@ -145,7 +148,7 @@ export function ReviewHelpDialog({
               <Row
                 label="Theme"
                 keys={
-                  <Kbd variant="skeuo">
+                  <Kbd>
                     <ChordModAltCompact letter="T" />
                   </Kbd>
                 }

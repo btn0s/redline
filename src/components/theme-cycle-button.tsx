@@ -29,7 +29,7 @@ export function ThemeCycleButton() {
       />
       <TooltipContent side="top" sideOffset={8} className="flex flex-wrap items-center gap-1.5">
         <span>Toggle theme</span>
-        <Kbd variant="skeuo">
+        <Kbd>
           <ChordModAltCompact letter="T" />
         </Kbd>
       </TooltipContent>

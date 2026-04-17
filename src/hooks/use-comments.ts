@@ -66,10 +66,23 @@ function savePersisted(
   }, 500)
 }
 
+function initialThreadState(persistenceKey: string | null): {
+  comments: Comment[]
+  activeCommentId: string | null
+  loadedKey: string | null
+} {
+  if (!persistenceKey) {
+    return { comments: [], activeCommentId: null, loadedKey: null }
+  }
+  const { comments, activeCommentId } = loadPersisted(persistenceKey)
+  return { comments, activeCommentId, loadedKey: persistenceKey }
+}
+
 export function useComments(persistenceKey: string | null) {
-  const [comments, setComments] = useState<Comment[]>([])
-  const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
-  const [loadedKey, setLoadedKey] = useState<string | null>(null)
+  const [seed] = useState(() => initialThreadState(persistenceKey))
+  const [comments, setComments] = useState(seed.comments)
+  const [activeCommentId, setActiveCommentId] = useState(seed.activeCommentId)
+  const [loadedKey, setLoadedKey] = useState(seed.loadedKey)
 
   useEffect(() => {
     if (!persistenceKey) {

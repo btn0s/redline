@@ -30,10 +30,10 @@ function reviewStampDate(d: Date = new Date()): string {
 }
 
 function AppKeyboardShortcuts() {
-  const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel } = useCommentContext()
-  const handlerRef = useRef({ showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel })
+  const { showCommentSidebar, showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId } = useCommentContext()
+  const handlerRef = useRef({ showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId })
   useEffect(() => {
-    handlerRef.current = { showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId, commentsPanelOpen, closePanel }
+    handlerRef.current = { showNewComment, handleCloseNewComment, activeCommentId, setActiveCommentId }
   })
 
   useEffect(() => {
@@ -181,8 +181,8 @@ function AppCommandListeners({
 }
 
 function EditorCommentSyncBridge({ editor }: { editor: TiptapEditor }) {
-  const { comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment, openPanel } = useCommentContext()
-  useEditorCommentSync({ editor, comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment, openPanel })
+  const { comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment } = useCommentContext()
+  useEditorCommentSync({ editor, comments, syncCommentAnchorsFromEditor, setActiveCommentId, setShowNewComment })
   return null
 }
 
@@ -376,7 +376,6 @@ function AppShell({
             <div
               className={cn(
                 "relative mx-auto w-full",
-                "transition-[max-width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
                 showCommentSidebar
                   ? "max-w-3xl lg:max-w-[min(100%,calc(48rem+clamp(13.5rem,22vw,16.5rem)))]"
                   : "max-w-3xl",
@@ -408,7 +407,7 @@ function AppShell({
 
               <aside
                 className={cn(
-                  "min-h-0 min-w-0 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                  "min-h-0 min-w-0",
                   showCommentSidebar
                     ? "opacity-100"
                     : "pointer-events-none opacity-0 max-lg:hidden max-lg:max-h-0 max-lg:overflow-hidden lg:translate-x-1",

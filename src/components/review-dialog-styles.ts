@@ -16,8 +16,13 @@ export const dialogMonoLink =
 /** Inset surfaces inside `.desk-panel` dialogs: `muted/10` on desk reads as identical;
  * use paper (`card`) in light mode and a stronger muted wash in dark. */
 /** No outer padding: borderless wash only; rows (`dialogShortcutRow`) supply spacing. */
+/** `shortcut-table-kbd-context`: lifts default `Kbd` toward the same
+ *  contrast as shortcuts inside the inverted tooltip bar (see index.css). */
 export const dialogShortcutList =
-  "rounded-lg border-0 bg-muted/15 p-0 shadow-none ring-0 dark:bg-muted/30"
+  "shortcut-table-kbd-context rounded-lg border-0 bg-muted/15 p-0 shadow-none ring-0 dark:bg-muted/30"
+
+/** Inline hint chip in dialog body copy (same lift as shortcut table). */
+export const dialogInlineKbdChip = "shortcut-inline-kbd-chip"
 
 /** Single row inside `dialogShortcutList` (help + settings shortcut tables). */
 export const dialogShortcutRow =

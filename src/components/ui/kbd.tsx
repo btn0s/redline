@@ -1,20 +1,30 @@
+import { cva, type VariantProps } from "class-variance-authority"
+
 import { cn } from "@/lib/utils"
+
+const kbdVariants = cva(
+  "pointer-events-none inline-flex w-fit min-h-0 min-w-0 items-center justify-center select-none [&_svg:not([class*='size-'])]:size-3",
+  {
+    variants: {
+      variant: {
+        default: "desk-skeuo-pill",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 function Kbd({
   className,
   variant = "default",
   ...props
-}: React.ComponentProps<"kbd"> & { variant?: "default" | "skeuo" }) {
+}: React.ComponentProps<"kbd"> & VariantProps<typeof kbdVariants>) {
   return (
     <kbd
       data-slot="kbd"
-      className={cn(
-        variant === "skeuo" &&
-          "desk-skeuo-pill pointer-events-none inline-flex w-fit min-h-0 min-w-0 items-center justify-center font-sans select-none",
-        variant === "default" &&
-          "pointer-events-none inline-flex h-5 w-fit min-w-5 items-center justify-center gap-1 rounded-xs border border-border bg-muted px-1 font-sans text-[0.625rem] font-medium text-muted-foreground select-none in-data-[slot=tooltip-content]:border-background/25 in-data-[slot=tooltip-content]:bg-background/20 in-data-[slot=tooltip-content]:text-background dark:in-data-[slot=tooltip-content]:border-background/15 dark:in-data-[slot=tooltip-content]:bg-background/10 [&_svg:not([class*='size-'])]:size-3",
-        className
-      )}
+      className={cn(kbdVariants({ variant, className }))}
       {...props}
     />
   )

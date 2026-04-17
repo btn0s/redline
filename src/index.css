@@ -255,15 +255,12 @@
   * {
     @apply border-border outline-ring/50;
     }
+  /* Desk wash on <html> so it sits behind everything (#root, loading, errors).
+     Body and #root stay transparent and only carry layout / text color. */
   html {
     @apply font-sans;
-    transition:
-      color 400ms ease-out,
-      background-color 400ms ease-out,
-      border-color 400ms ease-out;
-    }
-  body {
-    @apply overflow-x-hidden text-foreground;
+    min-height: 100%;
+    min-height: 100svh;
     background-color: var(--desk);
     background-image:
       /* Subtle crosshatch / linen weave over the desk */
@@ -284,9 +281,23 @@
       );
     background-attachment: fixed;
     transition:
+      color 400ms ease-out,
       background-color 450ms cubic-bezier(0.4, 0, 0.2, 1),
       background-image 450ms cubic-bezier(0.4, 0, 0.2, 1),
-      color 400ms ease-out;
+      border-color 400ms ease-out;
+    }
+  body {
+    @apply overflow-x-hidden text-foreground;
+    min-height: 100%;
+    min-height: 100svh;
+    background: transparent;
+    transition: color 400ms ease-out;
+    }
+  #root {
+    min-height: 100%;
+    min-height: 100svh;
+    width: 100%;
+    background: transparent;
     }
 }
 
@@ -437,6 +448,7 @@
 
 .sticky-note {
   position: relative;
+  isolation: isolate;
   background-color: var(--sticky);
   color: var(--sticky-foreground);
   border: 1px solid var(--sticky-edge);
@@ -547,9 +559,7 @@
   }
 
   body {
-    transition:
-      background-color 60ms ease,
-      color 60ms ease;
+    transition: color 60ms ease;
   }
 
   .paper-stack::before,
@@ -626,14 +636,49 @@
   transform: rotate(var(--sticky-rotate, 0deg));
 }
 
-/* Expanded thread uses a flat card (.sticky-note--active); bar matches that pose */
-.sticky-with-actions:has(.sticky-note--active) .sticky-action-bar {
+/* Thread toolbar: instant 0fr/1fr (layout not animated — avoids fighting stack reflow).
+   Optional fade-in on open only; close snaps off (frequent interaction → minimal motion). */
+.sticky-with-actions .sticky-action-bar.sticky-action-bar--thread {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  overflow: hidden;
+  transform: rotate(var(--sticky-rotate, 0deg));
+}
+
+.sticky-with-actions--expanded .sticky-action-bar.sticky-action-bar--thread {
+  grid-template-rows: 1fr;
+  margin-top: 0.35rem;
   transform: rotate(0deg) translateY(-1px);
 }
 
+.sticky-action-bar__grow {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sticky-action-bar__motion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  opacity: 0;
+  transition: none;
+}
+
+.sticky-with-actions--expanded .sticky-action-bar--thread .sticky-action-bar__motion {
+  opacity: 1;
+  transition: opacity 100ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sticky-with-actions:has(.sticky-note--active) .sticky-action-bar {
+  .sticky-with-actions--expanded .sticky-action-bar.sticky-action-bar--thread {
     transform: rotate(var(--sticky-rotate, -0.6deg));
+  }
+
+  .sticky-with-actions--expanded .sticky-action-bar--thread .sticky-action-bar__motion {
+    transition: none;
   }
 }
 
@@ -667,7 +712,7 @@
 }
 
 .sticky-skeuo-shortcut--primary {
-  color: color-mix(in oklch, var(--sticky) 32%, transparent);
+  color: color-mix(in oklch, var(--primary-foreground) 32%, transparent);
   text-shadow:
     0 0.5px 0 color-mix(in oklch, black 14%, transparent),
     0 1px 1px color-mix(in oklch, black 12%, transparent),
@@ -675,28 +720,15 @@
 }
 
 .dark .sticky-skeuo-shortcut--primary {
-  color: color-mix(in oklch, var(--sticky) 28%, transparent);
+  color: color-mix(in oklch, var(--primary-foreground) 52%, transparent);
   text-shadow:
-    0 0.5px 0 color-mix(in oklch, black 20%, transparent),
-    0 1px 1px color-mix(in oklch, black 16%, transparent),
-    0 -0.5px 0 color-mix(in oklch, white 6%, transparent);
+    0 0.5px 0 color-mix(in oklch, white 22%, transparent),
+    0 1px 1px color-mix(in oklch, white 14%, transparent),
+    0 -0.5px 0 color-mix(in oklch, black 18%, transparent);
 }
 
-/* Chord hints: JetBrains Mono, slightly larger than base glyph row */
-.sticky-skeuo-shortcut--chord {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.22em;
-  font-family: var(--font-mono);
-  font-size: 0.53rem;
-  font-weight: 450;
-  letter-spacing: 0.03em;
-  line-height: 1;
-  font-feature-settings:
-    "liga" 0,
-    "calt" 0;
-}
-
+/* Chord row on sticky buttons — border/face only; metrics come from .desk-skeuo-pill
+   on <Kbd>. */
 /* Mini key caps inside sticky toolbar buttons — bordered like desk kbd pills */
 .sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--neutral {
   padding: 0.12em 0.32em;
@@ -713,13 +745,13 @@
 .sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--primary {
   padding: 0.12em 0.32em;
   border-radius: 0.2rem;
-  border: 1px solid color-mix(in oklch, white 22%, var(--sticky-foreground) 78%);
-  background-color: color-mix(in oklch, white 12%, var(--sticky-foreground) 88%);
+  border: 1px solid color-mix(in oklch, white 22%, var(--primary) 78%);
+  background-color: color-mix(in oklch, white 12%, var(--primary) 88%);
 }
 
 .dark .sticky-skeuo-shortcut--chord.sticky-skeuo-shortcut--primary {
-  border-color: color-mix(in oklch, white 18%, var(--sticky-foreground) 82%);
-  background-color: color-mix(in oklch, white 10%, var(--sticky-foreground) 90%);
+  border-color: color-mix(in oklch, black 18%, var(--primary) 82%);
+  background-color: color-mix(in oklch, black 10%, var(--primary) 90%);
 }
 
 .sticky-skeuo-shortcut-mod {
@@ -804,26 +836,24 @@
   color: color-mix(in oklch, var(--foreground) 90%, var(--background) 10%) !important;
 }
 
-/* Primary — uses sticky ink / paper contrast */
+/* Primary — matches the app's primary skeuo key so Reply/Pin-it read as the
+   canonical primary action in both themes (dark face on light, light face on
+   dark) instead of a sticky-ink chip. */
 .sticky-skeuo-btn--primary {
-  border-color: color-mix(
-    in oklch,
-    var(--sticky-foreground) 55%,
-    color-mix(in oklch, black 40%, var(--sticky-foreground) 60%) 45%
-  ) !important;
+  border-color: color-mix(in oklch, black 38%, var(--primary) 62%) !important;
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--sticky-foreground) 88%, white 12%) 0%,
-    color-mix(in oklch, var(--sticky-foreground) 100%, black 0%) 55%,
-    color-mix(in oklch, var(--sticky-foreground) 92%, black 8%) 100%
+    color-mix(in oklch, white 12%, var(--primary) 88%) 0%,
+    var(--primary) 55%,
+    color-mix(in oklch, black 8%, var(--primary) 92%) 100%
   ) !important;
-  color: var(--sticky) !important;
-  text-shadow: 0 1px 0 color-mix(in oklch, black 14%, var(--sticky-foreground) 86%);
+  color: var(--primary-foreground) !important;
+  text-shadow: 0 1px 0 color-mix(in oklch, black 14%, var(--primary) 86%);
 }
 
 .dark .sticky-skeuo-btn--primary {
-  border-color: color-mix(in oklch, var(--sticky-foreground) 50%, black 50%) !important;
-  text-shadow: 0 1px 0 color-mix(in oklch, black 38%, var(--sticky-foreground) 62%);
+  border-color: color-mix(in oklch, black 55%, var(--primary) 45%) !important;
+  text-shadow: 0 1px 0 color-mix(in oklch, white 22%, var(--primary) 78%);
 }
 
 /* Icon-only (e.g. delete) */
@@ -872,9 +902,9 @@
 }
 
 .sticky-skeuo-btn--primary:disabled {
-  border-color: color-mix(in oklch, var(--sticky-foreground) 35%, var(--background) 65%) !important;
-  background: color-mix(in oklch, var(--sticky-foreground) 45%, var(--background) 55%) !important;
-  color: color-mix(in oklch, var(--sticky) 55%, var(--sticky-foreground) 45%) !important;
+  border-color: color-mix(in oklch, var(--primary) 35%, var(--background) 65%) !important;
+  background: color-mix(in oklch, var(--primary) 45%, var(--background) 55%) !important;
+  color: color-mix(in oklch, var(--primary-foreground) 55%, var(--primary) 45%) !important;
 }
 
 .sticky-skeuo-btn--icon:disabled {
@@ -1057,19 +1087,23 @@
   color: color-mix(in oklch, var(--foreground) 68%, var(--background) 32%);
 }
 
-/* Shortcut chip — same family as .btn-skeuo keys; always has a visible edge */
+/* Shortcut chip — compact chord metrics (same as sticky action bar hints);
+   JetBrains Mono; always has a visible edge. */
 .desk-skeuo-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.125rem;
-  border-radius: 0.375rem;
-  padding: 0.25rem 0.5rem;
-  font-family: var(--font-sans);
-  font-size: 0.625rem;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
+  gap: 0.22em;
+  border-radius: 0.2rem;
+  padding: 0.12em 0.32em;
+  font-family: var(--font-mono);
+  font-size: 0.53rem;
+  font-weight: 450;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
   white-space: nowrap;
   vertical-align: middle;
   border: 1px solid color-mix(in oklch, var(--foreground) 16%, var(--background) 84%);
@@ -1078,15 +1112,39 @@
   color: color-mix(in oklch, var(--foreground) 72%, var(--background) 28%);
 }
 
-.desk-skeuo-pill--mono {
-  font-family: var(--font-mono);
-  font-weight: 450;
-}
-
 .dark .desk-skeuo-pill {
   border-color: color-mix(in oklch, var(--foreground) 22%, var(--background) 78%);
   background-color: color-mix(in oklch, var(--muted) 22%, var(--background) 78%);
   color: color-mix(in oklch, var(--foreground) 76%, var(--background) 24%);
+}
+
+/* Toolbar tooltips use `TooltipContent` with `bg-foreground` / `text-background`
+   — an inverted strip. The same `desk-skeuo-pill` then reads as a chip *on* that
+   bar. Dialog shortcut tables sit on `bg-muted/15` on the desk: same pill tokens
+   blend into the wash. Echo the tooltip chip (lighter face + lip) here and on
+   inline dialog hints. Sticky actions keep `.sticky-skeuo-*` and are excluded. */
+.shortcut-table-kbd-context [data-slot="kbd"].desk-skeuo-pill:not(
+    .sticky-skeuo-shortcut
+  ),
+.shortcut-inline-kbd-chip.desk-skeuo-pill:not(.sticky-skeuo-shortcut) {
+  border-color: color-mix(in oklch, var(--foreground) 16%, var(--background) 84%);
+  background-color: color-mix(in oklch, var(--card) 78%, var(--background) 22%);
+  color: color-mix(in oklch, var(--foreground) 68%, var(--background) 32%);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 -1px 0 oklch(0 0 0 / 0.07) inset;
+}
+
+.dark .shortcut-table-kbd-context [data-slot="kbd"].desk-skeuo-pill:not(
+    .sticky-skeuo-shortcut
+  ),
+.dark .shortcut-inline-kbd-chip.desk-skeuo-pill:not(.sticky-skeuo-shortcut) {
+  border-color: color-mix(in oklch, var(--foreground) 26%, var(--background) 74%);
+  background-color: color-mix(in oklch, var(--foreground) 12%, var(--background) 88%);
+  color: color-mix(in oklch, var(--foreground) 80%, var(--background) 20%);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.14) inset,
+    0 -1px 0 oklch(0 0 0 / 0.18) inset;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1150,8 +1208,11 @@
    feedback, and disabled state are inherited from .btn-skeuo. */
 
 /* Primary — dark ink key using --primary as the face color.
-   In dark mode --primary flips to a light tone; the gradient auto-adapts. */
-.btn-skeuo-primary {
+   In dark mode --primary flips to a light tone; the gradient auto-adapts.
+   Chained with .btn-skeuo to outrank `.dark .btn-skeuo`'s dark neutral
+   gradient, which otherwise wins on specificity and makes primary read as
+   secondary in dark mode. */
+.btn-skeuo.btn-skeuo-primary {
   border-color: color-mix(in oklch, black 38%, var(--primary) 62%);
   background-color: var(--primary);
   background-image: linear-gradient(
@@ -1163,12 +1224,12 @@
   color: var(--primary-foreground);
 }
 
-.dark .btn-skeuo-primary {
+.dark .btn-skeuo.btn-skeuo-primary {
   border-color: color-mix(in oklch, black 55%, var(--primary) 45%);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-skeuo-primary:hover {
+  .btn-skeuo.btn-skeuo-primary:hover {
     border-color: color-mix(in oklch, black 48%, var(--primary) 52%);
     color: var(--primary-foreground);
   }
@@ -1176,7 +1237,7 @@
 
 /* Destructive — red alarm key. Warm near-white text reads on the red face
    in both modes without needing a theme-specific foreground token. */
-.btn-skeuo-destructive {
+.btn-skeuo.btn-skeuo-destructive {
   border-color: color-mix(in oklch, black 38%, var(--destructive) 62%);
   background-color: var(--destructive);
   background-image: linear-gradient(
@@ -1189,7 +1250,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-skeuo-destructive:hover {
+  .btn-skeuo.btn-skeuo-destructive:hover {
     border-color: color-mix(in oklch, black 48%, var(--destructive) 52%);
     color: oklch(0.99 0.01 25);
   }
@@ -1227,7 +1288,9 @@
 /* Ghost — flat and chromeless at rest, rises into a subtle skeuo key on hover.
    Preserves the "invisible until interacted" semantic of the original ghost
    variant while still giving physical press feedback. */
-.btn-skeuo-ghost {
+/* Chain .btn-skeuo to outrank `.dark .btn-skeuo` (same specificity, declared
+   later) so ghost stays transparent in dark mode too. */
+.btn-skeuo.btn-skeuo-ghost {
   border-color: transparent;
   background-color: transparent;
   background-image: none;
@@ -1236,7 +1299,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-skeuo-ghost:hover {
+  .btn-skeuo.btn-skeuo-ghost:hover {
     border-color: color-mix(in oklch, var(--foreground) 14%, var(--background) 86%);
     background-color: var(--background);
     background-image: linear-gradient(
@@ -1252,7 +1315,7 @@
       0 2px 3px -1px oklch(0 0 0 / 0.14);
   }
 
-  .dark .btn-skeuo-ghost:hover {
+  .dark .btn-skeuo.btn-skeuo-ghost:hover {
     border-color: color-mix(in oklch, var(--foreground) 22%, var(--background) 78%);
     background-image: linear-gradient(
       180deg,
@@ -1263,12 +1326,12 @@
 }
 
 /* Ghost press — start from flat, not from raised, so the inset is gentler. */
-.btn-skeuo-ghost:active {
+.btn-skeuo.btn-skeuo-ghost:active {
   background-color: color-mix(in oklch, var(--muted) 55%, var(--background) 45%);
   box-shadow: 0 1px 3px oklch(0 0 0 / 0.1) inset;
 }
 
-.dark .btn-skeuo-ghost:active {
+.dark .btn-skeuo.btn-skeuo-ghost:active {
   box-shadow: 0 1px 3px oklch(0 0 0 / 0.28) inset;
 }
 
@@ -1513,6 +1576,16 @@
   color: HighlightText;
 }
 
+/* When the new-note textarea steals focus, native ::selection is gone; this
+   inline decoration matches system selection so the quoted range still reads as highlighted. */
+.tiptap .comment-draft-pseudo-selection {
+  background-color: Highlight;
+  color: HighlightText;
+  border-radius: 0.1em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 .tiptap mark.comment-mark {
   background-color: transparent !important;
   color: inherit !important;
@@ -1527,7 +1600,7 @@
   position: relative !important;
   vertical-align: baseline !important;
   text-decoration: none !important;
-  cursor: text !important;
+  cursor: text;
   outline: none !important;
 
   /* Dim only the squiggle band, not the text (avoid opacity on the element). */
@@ -1567,6 +1640,18 @@
   transition:
     --annotation-squiggle-fill 160ms var(--annotation-ease),
     transform 140ms var(--annotation-ease);
+}
+
+/* Invisible strip over the squiggle (matches PILL_CLICK_ZONE in comment-mark.ts) — pointer cursor in CSS */
+.tiptap mark.comment-mark::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 8px;
+  z-index: 1;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .tiptap mark.comment-mark::selection {

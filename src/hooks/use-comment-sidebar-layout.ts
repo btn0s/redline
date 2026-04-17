@@ -44,7 +44,10 @@ export interface CommentSidebarLayoutResult {
   positions: Record<string, number>
   draftTop: number | null
   containerMinHeightPx: number
-  layoutReady: boolean
+  /** True once we've measured real positions (editor DOM + marks present, or nothing to show). Card container must stay hidden until then. */
+  measured: boolean
+  /** True a frame after `measured` flips; only then is it safe to transition position changes. */
+  transitionsArmed: boolean
   reduceMotion: boolean
 }
 
@@ -91,20 +94,24 @@ export function useCommentSidebarLayout({
   draftWrapperRef,
 }: UseCommentSidebarLayoutArgs): CommentSidebarLayoutResult {
   const reduceMotion = usePrefersReducedMotion()
-  const [layoutReady, setLayoutReady] = useState(false)
-  const firstLayoutDone = useRef(false)
+  const [measured, setMeasured] = useState(false)
+  const [transitionsArmed, setTransitionsArmed] = useState(false)
 
   const [positions, setPositions] = useState<Record<string, number>>({})
   const [draftTop, setDraftTop] = useState<number | null>(null)
   const [containerMinHeightPx, setContainerMinHeightPx] = useState(0)
 
-  const computeLayout = useCallback(() => {
+  /** Returns true if this pass produced positions we're willing to show.
+      Requires the editor DOM to be attached (otherwise every anchor falls back
+      to y=0 and the cards would paint stacked at the top). If there's nothing
+      to place, the layout is trivially real. */
+  const computeLayout = useCallback((): boolean => {
     const container = containerRef.current
     if (!container) {
       setPositions({})
       setDraftTop(null)
       setContainerMinHeightPx(0)
-      return
+      return false
     }
 
     const editorDom = editor?.view.dom
@@ -165,6 +172,9 @@ export function useCommentSidebarLayout({
     const contentBottom =
       Math.max(stackBottom - GAP_PX, 0) + CONTAINER_BOTTOM_PAD_PX
     setContainerMinHeightPx(Math.max(editorH, contentBottom))
+
+    if (merged.length === 0) return true
+    return editor != null
   }, [
     containerRef,
     draftWrapperRef,
@@ -175,18 +185,18 @@ export function useCommentSidebarLayout({
   ])
 
   useLayoutEffect(() => {
-    // Measure DOM on commit so the first paint has correct card positions.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- layout sync from refs/DOM before paint
-    computeLayout()
-    if (!firstLayoutDone.current) {
-      const id = requestAnimationFrame(() => {
-        computeLayout()
-        firstLayoutDone.current = true
-        setLayoutReady(true)
-      })
-      return () => cancelAnimationFrame(id)
-    }
-  }, [computeLayout, activeCommentId])
+    const real = computeLayout()
+    if (real && !measured) setMeasured(true)
+  }, [computeLayout, activeCommentId, measured])
+
+  // Arm transitions one frame after we first have real positions so the reveal
+  // itself is instant, but later movements animate.
+  useEffect(() => {
+    if (!measured || transitionsArmed) return
+    const id = requestAnimationFrame(() => setTransitionsArmed(true))
+    return () => cancelAnimationFrame(id)
+  }, [measured, transitionsArmed])
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
@@ -244,7 +254,8 @@ export function useCommentSidebarLayout({
     positions,
     draftTop,
     containerMinHeightPx,
-    layoutReady,
+    measured,
+    transitionsArmed,
     reduceMotion,
   }
 }
