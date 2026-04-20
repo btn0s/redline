@@ -347,6 +347,7 @@ const ThreadRow = memo(function ThreadRow({
     string | null
   >(null)
   const replyTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const latestMessage = comment.messages[comment.messages.length - 1]
 
   useEffect(() => {
@@ -370,6 +371,11 @@ const ThreadRow = memo(function ThreadRow({
     if (!isActive) return
     replyTextareaRef.current?.focus({ preventScroll: true })
   }, [isActive])
+
+  useEffect(() => {
+    if (editingMessageId === null) return
+    editTextareaRef.current?.focus({ preventScroll: true })
+  }, [editingMessageId])
 
   const handleReply = () => {
     const trimmed = replyBody.trim()
@@ -517,7 +523,7 @@ const ThreadRow = memo(function ThreadRow({
                       {editingMessageId === message.id ? (
                         <div className="space-y-1.5">
                           <Textarea
-                            autoFocus
+                            ref={editTextareaRef}
                             value={editDraft}
                             onChange={(e) => setEditDraft(e.target.value)}
                             onKeyDown={handleEditKeyDown}
