@@ -218,6 +218,14 @@ function NewCommentDraft({
   onCancel: () => void
 }) {
   const [body, setBody] = useState("")
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  // Same reason as ThreadRow's reply focus: autoFocus runs during commit
+  // before the sidebar layout effect positions the draft wrapper, so the
+  // wrapper sits at y=0 and the browser scrolls the page to reach it.
+  useEffect(() => {
+    textareaRef.current?.focus({ preventScroll: true })
+  }, [])
 
   const handleSubmit = () => {
     const trimmed = body.trim()
@@ -253,7 +261,7 @@ function NewCommentDraft({
           </>
         ) : null}
         <Textarea
-          autoFocus
+          ref={textareaRef}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -338,6 +346,8 @@ const ThreadRow = memo(function ThreadRow({
   const [pendingReplyDeleteId, setPendingReplyDeleteId] = useState<
     string | null
   >(null)
+  const replyTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const latestMessage = comment.messages[comment.messages.length - 1]
 
   useEffect(() => {
@@ -351,6 +361,21 @@ const ThreadRow = memo(function ThreadRow({
       setEditDraft("")
     })
   }, [isActive, comment.messages, editingMessageId])
+
+  // Focus the reply box when this thread becomes active. We can't use
+  // `autoFocus` because it runs during commit (before the sidebar's layout
+  // effect sets the sticky's transform), so the wrapper still sits at y=0
+  // and the browser scrolls the page to bring the textarea into view —
+  // jerking the page to the top of the editor.
+  useEffect(() => {
+    if (!isActive) return
+    replyTextareaRef.current?.focus({ preventScroll: true })
+  }, [isActive])
+
+  useEffect(() => {
+    if (editingMessageId === null) return
+    editTextareaRef.current?.focus({ preventScroll: true })
+  }, [editingMessageId])
 
   const handleReply = () => {
     const trimmed = replyBody.trim()
@@ -498,7 +523,7 @@ const ThreadRow = memo(function ThreadRow({
                       {editingMessageId === message.id ? (
                         <div className="space-y-1.5">
                           <Textarea
-                            autoFocus
+                            ref={editTextareaRef}
                             value={editDraft}
                             onChange={(e) => setEditDraft(e.target.value)}
                             onKeyDown={handleEditKeyDown}
@@ -562,7 +587,7 @@ const ThreadRow = memo(function ThreadRow({
 
               <div className="mt-2.5">
                 <Textarea
-                  autoFocus
+                  ref={replyTextareaRef}
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
                   onKeyDown={handleKeyDown}
