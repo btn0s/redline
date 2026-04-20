@@ -218,6 +218,14 @@ function NewCommentDraft({
   onCancel: () => void
 }) {
   const [body, setBody] = useState("")
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  // Same reason as ThreadRow's reply focus: autoFocus runs during commit
+  // before the sidebar layout effect positions the draft wrapper, so the
+  // wrapper sits at y=0 and the browser scrolls the page to reach it.
+  useEffect(() => {
+    textareaRef.current?.focus({ preventScroll: true })
+  }, [])
 
   const handleSubmit = () => {
     const trimmed = body.trim()
@@ -253,7 +261,7 @@ function NewCommentDraft({
           </>
         ) : null}
         <Textarea
-          autoFocus
+          ref={textareaRef}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={handleKeyDown}
