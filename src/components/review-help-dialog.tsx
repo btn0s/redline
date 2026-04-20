@@ -96,7 +96,7 @@ export function ReviewHelpDialog({
             <h3 className={dialogSectionTitle}>How to use</h3>
             <p className={dialogBody}>
               Select text → thread replies →{" "}
-              <span className="font-medium text-foreground/90">Copy all</span>.
+              <span className="font-medium text-foreground/90">Submit review</span>.
             </p>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function ReviewHelpDialog({
                 }
               />
               <Row
-                label="Copy all"
+                label="Submit review"
                 keys={
                   <Kbd>
                     <ChordModShiftCompact letter="C" />

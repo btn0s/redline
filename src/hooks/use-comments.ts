@@ -165,24 +165,34 @@ export function useComments(persistenceKey: string | null) {
     [],
   )
 
-  const formatComments = useCallback(() => {
-    const fileLabel = persistenceKey?.trim() || "this file"
-    const header = [
-      `Feedback on \`${fileLabel}\``,
-      "",
-      "Review comments below. Each block quotes a passage from the file, then lists the notes for that passage.",
-      "",
-    ].join("\n")
+  const formatReview = useCallback(
+    (summary: string): string => {
+      const fileLabel = persistenceKey?.trim() || "this file"
+      const header = `Review of \`${fileLabel}\``
 
-    const threads = comments
-      .map((c) => {
-        const thread = c.messages.map((m) => `- ${m.body}`).join("\n")
-        return `> ${c.quotedText}\n${thread}`
-      })
-      .join("\n\n")
+      const trimmedSummary = summary.trim()
+      const summaryBlock = trimmedSummary
+        ? ["Summary:", trimmedSummary].join("\n")
+        : null
 
-    return `${header}${threads}`
-  }, [comments, persistenceKey])
+      const threadsBlock = comments.length
+        ? [
+            "Inline comments:",
+            comments
+              .map((c) => {
+                const thread = c.messages.map((m) => `- ${m.body}`).join("\n")
+                return `> ${c.quotedText}\n${thread}`
+              })
+              .join("\n\n"),
+          ].join("\n")
+        : null
+
+      return [header, summaryBlock, threadsBlock]
+        .filter((s): s is string => s !== null)
+        .join("\n\n")
+    },
+    [comments, persistenceKey],
+  )
 
   const addReplyToComment = useCallback((commentId: string, body: string) => {
     const trimmed = body.trim()
@@ -267,18 +277,21 @@ export function useComments(persistenceKey: string | null) {
     })
   }, [])
 
-  const copyComments = useCallback(async (): Promise<boolean> => {
-    const text = formatComments()
-    try {
-      await navigator.clipboard.writeText(text)
-      toast.success("Comments copied to clipboard")
-      return true
-    } catch (e) {
-      console.error("Failed to copy comments:", e)
-      toast.error("Failed to copy comments")
-      return false
-    }
-  }, [formatComments])
+  const submitReview = useCallback(
+    async (summary: string): Promise<boolean> => {
+      const text = formatReview(summary)
+      try {
+        await navigator.clipboard.writeText(text)
+        toast.success("Review copied to clipboard")
+        return true
+      } catch (e) {
+        console.error("Failed to copy review:", e)
+        toast.error("Failed to copy review")
+        return false
+      }
+    },
+    [formatReview],
+  )
 
   const clearAllComments = useCallback((editor?: Editor | null) => {
     if (editor) removeAllCommentMarksFromEditor(editor)
@@ -297,7 +310,7 @@ export function useComments(persistenceKey: string | null) {
     syncCommentAnchorsFromEditor,
     deleteComment,
     deleteCommentMessage,
-    copyComments,
+    submitReview,
     clearAllComments,
     hasComments: comments.length > 0,
   }

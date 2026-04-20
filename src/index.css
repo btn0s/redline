@@ -972,6 +972,168 @@
     0 16px 32px -10px oklch(0 0 0 / 0.34);
 }
 
+/* ---------- Review tray (paper cover sheet above the toolbar) ---------- */
+
+/* A paper-note surface that carries the review summary + submit action.
+   Reuses sticky-note motifs (grain via ::before, soft shadow, rotation)
+   but sits flat-ish — it reads as a cover sheet clipped to the bottom
+   of the page rather than a loose sticky. */
+.review-tray {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--sticky);
+  color: var(--sticky-foreground);
+  border: 1px solid var(--sticky-edge);
+  border-radius: 4px 6px 5px 7px;
+  box-shadow: var(--sticky-shadow-lift);
+  transform: rotate(var(--sticky-rotate, -0.6deg));
+  transition:
+    transform 180ms var(--annotation-ease),
+    box-shadow 400ms ease-out,
+    filter 180ms var(--annotation-ease),
+    background-color 400ms ease-out;
+  will-change: transform;
+}
+
+.review-tray::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 80% at 20% 0%,
+      oklch(1 0 0 / 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      120% 120% at 100% 100%,
+      oklch(0 0 0 / 0.07),
+      transparent 55%
+    );
+  mix-blend-mode: soft-light;
+}
+
+.review-tray-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.6rem 0.45rem 0.55rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--sticky-foreground) 72%, transparent);
+}
+
+.review-tray-header-button {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.review-tray-clip {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  color: color-mix(in oklch, var(--sticky-foreground) 45%, transparent);
+}
+
+.review-tray-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background-color: color-mix(in oklch, var(--sticky-foreground) 14%, transparent);
+  color: var(--sticky-foreground);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+}
+
+.review-tray-chevron {
+  margin-left: auto;
+  width: 0.85rem;
+  height: 0.85rem;
+  color: color-mix(in oklch, var(--sticky-foreground) 60%, transparent);
+  transition: transform 180ms var(--annotation-ease);
+}
+
+.review-tray[data-collapsed="true"] .review-tray-chevron {
+  transform: rotate(-180deg);
+}
+
+.review-tray-body {
+  padding: 0 0.6rem 0.55rem 0.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.review-tray-textarea {
+  width: 100%;
+  min-height: 3.75rem;
+  max-height: 12rem;
+  resize: vertical;
+  padding: 0.5rem 0.6rem;
+  background-color: color-mix(in oklch, white 30%, var(--sticky) 70%);
+  color: var(--sticky-foreground);
+  border: 1px dashed color-mix(in oklch, var(--sticky-foreground) 22%, transparent);
+  border-radius: 3px;
+  font-family: var(--font-hand);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  outline: none;
+  transition:
+    border-color 200ms var(--annotation-ease),
+    background-color 200ms var(--annotation-ease);
+}
+
+.review-tray-textarea:focus-visible {
+  border-color: color-mix(in oklch, var(--sticky-foreground) 40%, transparent);
+  background-color: color-mix(in oklch, white 45%, var(--sticky) 55%);
+}
+
+.review-tray-textarea::placeholder {
+  color: color-mix(in oklch, var(--sticky-foreground) 50%, transparent);
+  font-style: italic;
+}
+
+.review-tray-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* The stamp accent: red ink on the submit label only, not the surface. */
+.review-tray-submit-label {
+  color: oklch(0.55 0.18 25);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.dark .review-tray-submit-label {
+  color: oklch(0.7 0.17 25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-tray {
+    transition: none;
+  }
+  .review-tray-chevron {
+    transition: none;
+  }
+}
+
 /* Raised plastic panel — scaled-up sibling of .desk-toolbar. Same lighting
    math (top highlight, bottom lip, contact, atmospheric falloff) but with
    larger shadow radii so it reads as a floating panel, not a pill. Note:

@@ -1,0 +1,11 @@
+export const reviewTrayContainer =
+  "review-tray pointer-events-auto w-full max-w-[32rem]"
+export const reviewTrayHeader = "review-tray-header"
+export const reviewTrayHeaderButton = "review-tray-header-button"
+export const reviewTrayClip = "review-tray-clip"
+export const reviewTrayCount = "review-tray-count"
+export const reviewTrayChevron = "review-tray-chevron"
+export const reviewTrayBody = "review-tray-body"
+export const reviewTrayTextarea = "review-tray-textarea"
+export const reviewTrayActions = "review-tray-actions"
+export const reviewTraySubmitLabel = "review-tray-submit-label"

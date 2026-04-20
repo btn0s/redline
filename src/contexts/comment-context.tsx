@@ -10,6 +10,7 @@ import {
 import type { Editor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 import { useComments } from "@/hooks/use-comments"
+import { useReviewState } from "@/hooks/use-review-state"
 import { useDraftComment } from "@/hooks/use-draft-comment"
 import { useCommentHover } from "@/hooks/use-comment-hover"
 import {
@@ -31,7 +32,7 @@ interface CommentContextValue {
     commentId: string,
     messageId: string,
   ) => void
-  copyComments: () => Promise<boolean>
+  submitReview: () => Promise<boolean>
   clearAllComments: () => void
   hasComments: boolean
   syncCommentAnchorsFromEditor: (editor: Editor) => void
@@ -48,6 +49,12 @@ interface CommentContextValue {
   clearHover: () => void
 
   showCommentSidebar: boolean
+
+  summary: string
+  setSummary: (next: string) => void
+  isReviewTrayCollapsed: boolean
+  setReviewTrayCollapsed: (next: boolean) => void
+  showReviewTray: boolean
 }
 
 const CommentContext = createContext<CommentContextValue | null>(null)
@@ -75,11 +82,19 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     editCommentMessage,
     deleteComment,
     deleteCommentMessage,
-    copyComments,
+    submitReview: submitReviewWithSummary,
     clearAllComments: clearAllCommentsBase,
     hasComments,
     syncCommentAnchorsFromEditor,
   } = useComments(persistenceKey)
+
+  const {
+    summary,
+    setSummary,
+    isReviewTrayCollapsed,
+    setReviewTrayCollapsed,
+    resetReview,
+  } = useReviewState(persistenceKey)
 
   const editorRef = useRef<Editor | null>(editor)
   useEffect(() => {
@@ -88,7 +103,13 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
 
   const clearAllComments = useCallback(() => {
     clearAllCommentsBase(editorRef.current)
-  }, [clearAllCommentsBase])
+    resetReview()
+  }, [clearAllCommentsBase, resetReview])
+
+  const submitReview = useCallback(
+    () => submitReviewWithSummary(summary),
+    [submitReviewWithSummary, summary],
+  )
 
   const {
     showNewComment,
@@ -130,6 +151,8 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
 
   const showCommentSidebar = comments.length > 0 || showNewComment
 
+  const showReviewTray = comments.length > 0
+
   const value: CommentContextValue = {
     comments,
     activeCommentId,
@@ -139,7 +162,7 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     editCommentMessage,
     deleteComment,
     deleteCommentMessage,
-    copyComments,
+    submitReview,
     clearAllComments,
     hasComments,
     syncCommentAnchorsFromEditor,
@@ -153,6 +176,11 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     hoveredCommentId,
     clearHover,
     showCommentSidebar,
+    summary,
+    setSummary,
+    isReviewTrayCollapsed,
+    setReviewTrayCollapsed,
+    showReviewTray,
   }
 
   return <CommentContext value={value}>{children}</CommentContext>
