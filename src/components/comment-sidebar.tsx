@@ -338,6 +338,7 @@ const ThreadRow = memo(function ThreadRow({
   const [pendingReplyDeleteId, setPendingReplyDeleteId] = useState<
     string | null
   >(null)
+  const replyTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const latestMessage = comment.messages[comment.messages.length - 1]
 
   useEffect(() => {
@@ -351,6 +352,16 @@ const ThreadRow = memo(function ThreadRow({
       setEditDraft("")
     })
   }, [isActive, comment.messages, editingMessageId])
+
+  // Focus the reply box when this thread becomes active. We can't use
+  // `autoFocus` because it runs during commit (before the sidebar's layout
+  // effect sets the sticky's transform), so the wrapper still sits at y=0
+  // and the browser scrolls the page to bring the textarea into view —
+  // jerking the page to the top of the editor.
+  useEffect(() => {
+    if (!isActive) return
+    replyTextareaRef.current?.focus({ preventScroll: true })
+  }, [isActive])
 
   const handleReply = () => {
     const trimmed = replyBody.trim()
@@ -562,7 +573,7 @@ const ThreadRow = memo(function ThreadRow({
 
               <div className="mt-2.5">
                 <Textarea
-                  autoFocus
+                  ref={replyTextareaRef}
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
                   onKeyDown={handleKeyDown}
