@@ -5,11 +5,13 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type ReactNode,
 } from "react"
 import type { Editor } from "@tiptap/core"
 import type { Comment } from "@/types/comment"
 import { useComments } from "@/hooks/use-comments"
+import { useReviewState } from "@/hooks/use-review-state"
 import { useDraftComment } from "@/hooks/use-draft-comment"
 import { useCommentHover } from "@/hooks/use-comment-hover"
 import {
@@ -31,7 +33,7 @@ interface CommentContextValue {
     commentId: string,
     messageId: string,
   ) => void
-  copyComments: () => Promise<boolean>
+  submitReview: () => Promise<boolean>
   clearAllComments: () => void
   hasComments: boolean
   syncCommentAnchorsFromEditor: (editor: Editor) => void
@@ -48,6 +50,11 @@ interface CommentContextValue {
   clearHover: () => void
 
   showCommentSidebar: boolean
+
+  summary: string
+  setSummary: (next: string) => void
+  finishReviewOpen: boolean
+  setFinishReviewOpen: (open: boolean) => void
 }
 
 const CommentContext = createContext<CommentContextValue | null>(null)
@@ -75,11 +82,15 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     editCommentMessage,
     deleteComment,
     deleteCommentMessage,
-    copyComments,
+    submitReview: submitReviewWithSummary,
     clearAllComments: clearAllCommentsBase,
     hasComments,
     syncCommentAnchorsFromEditor,
   } = useComments(persistenceKey)
+
+  const { summary, setSummary, resetReview } = useReviewState(persistenceKey)
+
+  const [finishReviewOpen, setFinishReviewOpen] = useState(false)
 
   const editorRef = useRef<Editor | null>(editor)
   useEffect(() => {
@@ -87,8 +98,15 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
   }, [editor])
 
   const clearAllComments = useCallback(() => {
+    setFinishReviewOpen(false)
     clearAllCommentsBase(editorRef.current)
-  }, [clearAllCommentsBase])
+    resetReview()
+  }, [clearAllCommentsBase, resetReview])
+
+  const submitReview = useCallback(
+    () => submitReviewWithSummary(summary),
+    [submitReviewWithSummary, summary],
+  )
 
   const {
     showNewComment,
@@ -130,6 +148,13 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
 
   const showCommentSidebar = comments.length > 0 || showNewComment
 
+  useEffect(() => {
+    if (!hasComments) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- close sheet when last thread is removed
+      setFinishReviewOpen(false)
+    }
+  }, [hasComments])
+
   const value: CommentContextValue = {
     comments,
     activeCommentId,
@@ -139,7 +164,7 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     editCommentMessage,
     deleteComment,
     deleteCommentMessage,
-    copyComments,
+    submitReview,
     clearAllComments,
     hasComments,
     syncCommentAnchorsFromEditor,
@@ -153,6 +178,10 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     hoveredCommentId,
     clearHover,
     showCommentSidebar,
+    summary,
+    setSummary,
+    finishReviewOpen,
+    setFinishReviewOpen,
   }
 
   return <CommentContext value={value}>{children}</CommentContext>

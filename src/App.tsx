@@ -7,6 +7,7 @@ import { ShortcutSchemeProvider } from "@/contexts/shortcut-scheme-context"
 import { Editor } from "@/components/editor"
 import { CommentSidebar } from "@/components/comment-sidebar"
 import { BottomToolbar } from "@/components/bottom-toolbar"
+import { ReviewTray } from "@/components/review-tray"
 import { ClearCommentsDialog } from "@/components/clear-comments-dialog"
 import { OutdatedReloadDialog } from "@/components/outdated-reload-dialog"
 import { ReviewHeader } from "@/components/review-header"
@@ -19,7 +20,7 @@ import {
 import {
   REVIEW_MD_ADD_COMMENT,
   REVIEW_MD_CLEAR_ALL_COMMENTS,
-  REVIEW_MD_COPY_COMMENTS,
+  REVIEW_MD_SUBMIT_REVIEW,
 } from "@/lib/review-md-events"
 
 function reviewStampDate(d: Date = new Date()): string {
@@ -115,27 +116,44 @@ function AppCommandListeners({
 }: {
   onRequestClearAll: () => void
 }) {
-  const { handleAddCommentClick, copyComments, hasComments } =
-    useCommentContext()
+  const {
+    handleAddCommentClick,
+    submitReview,
+    hasComments,
+    finishReviewOpen,
+    setFinishReviewOpen,
+  } = useCommentContext()
   const ref = useRef({
     handleAddCommentClick,
-    copyComments,
+    submitReview,
     hasComments,
+    finishReviewOpen,
+    setFinishReviewOpen,
     onRequestClearAll,
   })
   useEffect(() => {
     ref.current = {
       handleAddCommentClick,
-      copyComments,
+      submitReview,
       hasComments,
+      finishReviewOpen,
+      setFinishReviewOpen,
       onRequestClearAll,
     }
   })
 
   useEffect(() => {
     const onAdd = () => ref.current.handleAddCommentClick()
-    const onCopy = () => {
-      if (ref.current.hasComments) void ref.current.copyComments()
+    const onSubmit = () => {
+      const r = ref.current
+      if (!r.hasComments) return
+      if (!r.finishReviewOpen) {
+        r.setFinishReviewOpen(true)
+        return
+      }
+      void r.submitReview().then((ok) => {
+        if (ok) r.setFinishReviewOpen(false)
+      })
     }
     const onClear = () => {
       if (!ref.current.hasComments) return
@@ -143,11 +161,11 @@ function AppCommandListeners({
     }
 
     window.addEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
-    window.addEventListener(REVIEW_MD_COPY_COMMENTS, onCopy)
+    window.addEventListener(REVIEW_MD_SUBMIT_REVIEW, onSubmit)
     window.addEventListener(REVIEW_MD_CLEAR_ALL_COMMENTS, onClear)
     return () => {
       window.removeEventListener(REVIEW_MD_ADD_COMMENT, onAdd)
-      window.removeEventListener(REVIEW_MD_COPY_COMMENTS, onCopy)
+      window.removeEventListener(REVIEW_MD_SUBMIT_REVIEW, onSubmit)
       window.removeEventListener(REVIEW_MD_CLEAR_ALL_COMMENTS, onClear)
     }
   }, [])
@@ -171,7 +189,7 @@ function AppCommandListeners({
       if (e.target instanceof Element && e.target.closest(".ProseMirror")) return
       if (shouldBlockReviewChromeShortcut(e.target)) return
       e.preventDefault()
-      window.dispatchEvent(new CustomEvent(REVIEW_MD_COPY_COMMENTS))
+      window.dispatchEvent(new CustomEvent(REVIEW_MD_SUBMIT_REVIEW))
     }
     window.addEventListener("keydown", onKey, true)
     return () => window.removeEventListener("keydown", onKey, true)
@@ -426,7 +444,13 @@ function AppShell({
           </div>
         </main>
 
-      <BottomToolbar />
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1"
+        aria-label="Quick actions"
+      >
+        <BottomToolbar />
+      </div>
+      <ReviewTray />
     </div>
   )
 }

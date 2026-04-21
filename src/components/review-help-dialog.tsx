@@ -96,7 +96,10 @@ export function ReviewHelpDialog({
             <h3 className={dialogSectionTitle}>How to use</h3>
             <p className={dialogBody}>
               Select text → thread replies →{" "}
-              <span className="font-medium text-foreground/90">Copy all</span>.
+              <span className="font-medium text-foreground/90">
+                Finish review
+              </span>{" "}
+              to open the sheet and copy.
             </p>
           </div>
         </div>
@@ -130,7 +133,7 @@ export function ReviewHelpDialog({
                 }
               />
               <Row
-                label="Copy all"
+                label="Finish review / copy"
                 keys={
                   <Kbd>
                     <ChordModShiftCompact letter="C" />
