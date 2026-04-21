@@ -116,12 +116,19 @@ function AppCommandListeners({
 }: {
   onRequestClearAll: () => void
 }) {
-  const { handleAddCommentClick, submitReview, hasComments } =
-    useCommentContext()
+  const {
+    handleAddCommentClick,
+    submitReview,
+    hasComments,
+    finishReviewOpen,
+    setFinishReviewOpen,
+  } = useCommentContext()
   const ref = useRef({
     handleAddCommentClick,
     submitReview,
     hasComments,
+    finishReviewOpen,
+    setFinishReviewOpen,
     onRequestClearAll,
   })
   useEffect(() => {
@@ -129,6 +136,8 @@ function AppCommandListeners({
       handleAddCommentClick,
       submitReview,
       hasComments,
+      finishReviewOpen,
+      setFinishReviewOpen,
       onRequestClearAll,
     }
   })
@@ -136,7 +145,15 @@ function AppCommandListeners({
   useEffect(() => {
     const onAdd = () => ref.current.handleAddCommentClick()
     const onSubmit = () => {
-      if (ref.current.hasComments) void ref.current.submitReview()
+      const r = ref.current
+      if (!r.hasComments) return
+      if (!r.finishReviewOpen) {
+        r.setFinishReviewOpen(true)
+        return
+      }
+      void r.submitReview().then((ok) => {
+        if (ok) r.setFinishReviewOpen(false)
+      })
     }
     const onClear = () => {
       if (!ref.current.hasComments) return
@@ -428,12 +445,12 @@ function AppShell({
         </main>
 
       <div
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex flex-col items-center gap-2 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
-        aria-label="Review and quick actions"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1"
+        aria-label="Quick actions"
       >
-        <ReviewTray />
         <BottomToolbar />
       </div>
+      <ReviewTray />
     </div>
   )
 }

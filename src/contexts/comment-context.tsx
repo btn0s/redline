@@ -5,6 +5,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type ReactNode,
 } from "react"
 import type { Editor } from "@tiptap/core"
@@ -52,9 +53,8 @@ interface CommentContextValue {
 
   summary: string
   setSummary: (next: string) => void
-  isReviewTrayCollapsed: boolean
-  setReviewTrayCollapsed: (next: boolean) => void
-  showReviewTray: boolean
+  finishReviewOpen: boolean
+  setFinishReviewOpen: (open: boolean) => void
 }
 
 const CommentContext = createContext<CommentContextValue | null>(null)
@@ -88,13 +88,9 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     syncCommentAnchorsFromEditor,
   } = useComments(persistenceKey)
 
-  const {
-    summary,
-    setSummary,
-    isReviewTrayCollapsed,
-    setReviewTrayCollapsed,
-    resetReview,
-  } = useReviewState(persistenceKey)
+  const { summary, setSummary, resetReview } = useReviewState(persistenceKey)
+
+  const [finishReviewOpen, setFinishReviewOpen] = useState(false)
 
   const editorRef = useRef<Editor | null>(editor)
   useEffect(() => {
@@ -102,6 +98,7 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
   }, [editor])
 
   const clearAllComments = useCallback(() => {
+    setFinishReviewOpen(false)
     clearAllCommentsBase(editorRef.current)
     resetReview()
   }, [clearAllCommentsBase, resetReview])
@@ -151,7 +148,12 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
 
   const showCommentSidebar = comments.length > 0 || showNewComment
 
-  const showReviewTray = comments.length > 0
+  useEffect(() => {
+    if (!hasComments) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- close sheet when last thread is removed
+      setFinishReviewOpen(false)
+    }
+  }, [hasComments])
 
   const value: CommentContextValue = {
     comments,
@@ -178,9 +180,8 @@ export function CommentProvider({ editor, persistenceKey, children }: CommentPro
     showCommentSidebar,
     summary,
     setSummary,
-    isReviewTrayCollapsed,
-    setReviewTrayCollapsed,
-    showReviewTray,
+    finishReviewOpen,
+    setFinishReviewOpen,
   }
 
   return <CommentContext value={value}>{children}</CommentContext>

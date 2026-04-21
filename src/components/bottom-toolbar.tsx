@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { CircleHelp, Settings, Trash2 } from "lucide-react"
+import { CircleHelp, ClipboardCheck, Settings, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useCommentContext } from "@/contexts/comment-context"
 import { ThemeCycleButton } from "@/components/theme-cycle-button"
@@ -18,7 +18,7 @@ const toolbarBtnClass =
 export function BottomToolbar() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
-  const { hasComments } = useCommentContext()
+  const { hasComments, setFinishReviewOpen } = useCommentContext()
 
   const requestClearAll = () => {
     window.dispatchEvent(new CustomEvent(REVIEW_MD_CLEAR_ALL_COMMENTS))
@@ -39,6 +39,28 @@ export function BottomToolbar() {
         role="toolbar"
         data-prevent-redlines-dismiss=""
       >
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={!hasComments}
+                aria-label="Finish review — open summary and copy"
+                className="sticky-skeuo-btn !rounded-full h-8 shrink-0 gap-1.5 px-3 pl-2.5 text-[0.65rem] font-medium active:scale-[0.97]"
+                onClick={() => setFinishReviewOpen(true)}
+              >
+                <ClipboardCheck className="size-3.5 shrink-0 stroke-[1.5]" aria-hidden />
+                Finish review
+              </Button>
+            }
+          />
+          <TooltipContent side="top" sideOffset={8}>
+            Summary and copy formatted review to the clipboard
+          </TooltipContent>
+        </Tooltip>
+
         <Tooltip>
           <TooltipTrigger
             render={
