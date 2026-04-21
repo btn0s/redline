@@ -71,6 +71,7 @@
     --paper: oklch(0.985 0.008 85);
     --paper-foreground: oklch(0.22 0.015 270);
     --paper-edge: oklch(0.83 0.02 80);
+    --paper-link: oklch(0.26 0.02 270);
 
     /* Sticky note — classic legal-pad yellow */
     --sticky: oklch(0.93 0.12 99);
@@ -182,6 +183,7 @@
     --paper: oklch(0.985 0.008 85);
     --paper-foreground: oklch(0.22 0.015 270);
     --paper-edge: oklch(0.83 0.02 80);
+    --paper-link: oklch(0.26 0.02 270);
     --sticky: oklch(0.93 0.12 99);
     --sticky-edge: oklch(0.86 0.13 96);
     --sticky-shadow: oklch(0.4 0.08 85 / 0.22);
@@ -1587,7 +1589,7 @@
   --tw-prose-body: var(--paper-foreground);
   --tw-prose-headings: var(--paper-foreground);
   --tw-prose-lead: var(--muted-foreground);
-  --tw-prose-links: var(--primary);
+  --tw-prose-links: var(--paper-link);
   --tw-prose-bold: var(--paper-foreground);
   --tw-prose-counters: var(--muted-foreground);
   --tw-prose-bullets: var(--border);
@@ -1606,7 +1608,7 @@
   --tw-prose-body: var(--paper-foreground);
   --tw-prose-headings: var(--paper-foreground);
   --tw-prose-lead: var(--muted-foreground);
-  --tw-prose-links: var(--primary);
+  --tw-prose-links: var(--paper-link);
   --tw-prose-bold: var(--paper-foreground);
   --tw-prose-counters: var(--muted-foreground);
   --tw-prose-bullets: var(--border);
@@ -1686,7 +1688,7 @@
 }
 
 .tiptap a {
-  color: var(--primary);
+  color: var(--paper-link);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
